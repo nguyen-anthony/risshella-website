@@ -48,6 +48,7 @@ function CareerRandomizer({ allSelectedCareers }: CareerRandomizerProps) {
           console.log(`User chose: ${currentCareer.career_name}`);
           setGenNum((prev) => prev + 1);
           // Additional logic such as disabling the chosen career can be added here.
+          console.log(`${genNum}`)
         }
       }, 500);
     }, 1500);
