@@ -97,6 +97,23 @@ export default function CareerLegacy() {
     });
   }
 
+  function getAllSelectedCareers(): { career_id: string; career_name: string }[] {
+  const allSelected: { career_id: string; career_name: string }[] = [];
+
+  Object.entries(selectedCareerIds).forEach(([packId, careerIds]) => {
+    const pack = PACKS.find((p) => p.pack_id === packId);
+    if (!pack) return;
+    pack.careers.forEach((career) => {
+      if (careerIds.includes(career.career_id)) {
+        allSelected.push(career);
+      }
+    });
+  });
+
+  return allSelected;
+}
+
+
   // 5) Logic for "Select all packs"
   const allPacksCount = PACKS.length;
   const selectedPacksCount = Object.keys(selectedCareerIds).length;
@@ -166,7 +183,7 @@ export default function CareerLegacy() {
               selectAllIndeterminate={selectAllIndeterminate}
             />
 
-              <CareerRandomizer selectedCareerIds={selectedCareerIds} />
+            <CareerRandomizer allSelectedCareers={getAllSelectedCareers()} />
 
 
             {/* 
