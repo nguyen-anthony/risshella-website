@@ -59,7 +59,7 @@ const Navigation: React.FC = () => {
           <IconButton
             color="inherit"
             component="a"
-            href="https://bsky.app/profile/Risshella"
+            href="https://bsky.app/profile/risshella.com"
             target="_blank"
             rel="noopener noreferrer"
           >
