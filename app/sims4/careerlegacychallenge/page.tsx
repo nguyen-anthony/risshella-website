@@ -210,36 +210,31 @@ export default function CareerLegacy() {
           {/* Tab Panel 2 */}
           <CustomTabPanel value={value} index={1}>
             {/* 6) Pass all the needed props into PacksToggleList */}
-            <PacksToggleList
-              packs={PACKS}                      // the data
-              selectedCareerIds={selectedCareerIds}
-              disabledCareerIds={disabledCareerIds}
-              onTogglePack={handleTogglePack}
-              onToggleCareer={handleToggleCareer}
-              onSelectAll={handleSelectAll}
-              getPackCheckboxState={getPackCheckboxState}
-              selectAllChecked={selectAllChecked}
-              selectAllIndeterminate={selectAllIndeterminate}
-            />
+            <div style={{ display: "flex", gap: "6rem" }} >
+              <PacksToggleList
+                packs={PACKS}                      // the data
+                selectedCareerIds={selectedCareerIds}
+                disabledCareerIds={disabledCareerIds}
+                onTogglePack={handleTogglePack}
+                onToggleCareer={handleToggleCareer}
+                onSelectAll={handleSelectAll}
+                getPackCheckboxState={getPackCheckboxState}
+                selectAllChecked={selectAllChecked}
+                selectAllIndeterminate={selectAllIndeterminate}
+              />
 
-            <CareerRandomizer 
-              allSelectedCareers={getAllSelectedCareers()}         
-              onCareerChosen={handleCareerChosen} // pass a callback for final selection
-            />
-            <ProgressTracking
-              completedCareers={completedCareers}
-              // onClear={handleClearCompleted}
-              // onSave={handleSave}
-              // onExport={handleExport}
-              // onFileSelected={handleFileSelected}
-            />
-
-
-            {/* 
-              7) If you have a separate CareerRandomizer component, 
-                 it can also receive selectedCareerIds (or a flattened list).
-                 e.g. <CareerRandomizer selectedCareerIds={selectedCareerIds} />
-            */}
+              <CareerRandomizer 
+                allSelectedCareers={getAllSelectedCareers()}         
+                onCareerChosen={handleCareerChosen} // pass a callback for final selection
+              />
+              <ProgressTracking
+                completedCareers={completedCareers}
+                // onClear={handleClearCompleted}
+                // onSave={handleSave}
+                // onExport={handleExport}
+                // onFileSelected={handleFileSelected}
+              />
+            </div>
           </CustomTabPanel>
         </Box>
       </main>

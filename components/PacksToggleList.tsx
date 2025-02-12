@@ -25,6 +25,12 @@ function PacksToggleList({
   selectAllChecked,
   selectAllIndeterminate
 }: PacksToggleListProps) {
+  // Calculate the total number of careers across all packs
+  const totalCareerCount = packs.reduce((sum, pack) => sum + pack.careers.length, 0);
+  // Determine if all careers are disabled
+  const allCareersDisabled = totalCareerCount > 0 && disabledCareerIds.length === totalCareerCount;
+
+
   return (
     <div>
       <h2>Packs/Careers List</h2>
@@ -36,6 +42,7 @@ function PacksToggleList({
             checked={selectAllChecked}
             indeterminate={selectAllIndeterminate}
             onChange={onSelectAll}
+            disabled={allCareersDisabled} // Disable if every career is disabled
           />
         }
         label="Select all packs"
@@ -46,6 +53,10 @@ function PacksToggleList({
           const { checked: packChecked, indeterminate: packIndeterminate } =
             getPackCheckboxState(pack);
 
+          const packIsDisabled = pack.careers.every((career) =>
+            disabledCareerIds.includes(career.career_id)
+          );
+
           return (
             <div key={pack.pack_id} style={{ marginBottom: "0.1rem" }}>
               {/* Pack-level checkbox */}
@@ -54,10 +65,15 @@ function PacksToggleList({
                   <Checkbox
                     checked={packChecked}
                     indeterminate={packIndeterminate}
+                    disabled={packIsDisabled}        // <--- disable if all children are disabled
                     onChange={() => onTogglePack(pack)}
                   />
                 }
-                label={pack.pack_name}
+                label={
+                  <span style={packIsDisabled ? { textDecoration: "line-through" } : undefined}>
+                    {pack.pack_name}
+                  </span>
+                }
               />
 
               {/* Indent child careers */}

@@ -57,7 +57,7 @@ function CareerRandomizer({ allSelectedCareers, onCareerChosen }: CareerRandomiz
   return (
     <div>
       <h3>Randomizer</h3>
-      <p>
+      <p style={{ minWidth: "280px" }}>
         Selected career: {randomCareer ? randomCareer.career_name : "None"}
       </p>
       <Button variant='contained' onClick={handleRandomize} disabled={isRandomizing}>
