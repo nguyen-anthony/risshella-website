@@ -90,6 +90,19 @@ export default function CareerLegacy() {
     localStorage.setItem("selectedCareers", JSON.stringify(selectedCareerIds));
   }, [completedCareers, selectedCareerIds]);
 
+  React.useEffect(() => {
+    const savedTab = localStorage.getItem("activeTabIndex");
+    if (savedTab !== null) {
+      try {
+        const parsedTab = JSON.parse(savedTab);
+        if (typeof parsedTab === "number") {
+          setValue(parsedTab);
+        }
+      } catch (error) {
+        console.error("Error parsing saved tab index:", error);
+      }
+    }
+  }, []);
 
 
   // 2) Helper to determine pack's tri-state (checked, unchecked, indeterminate)
@@ -270,9 +283,6 @@ export default function CareerLegacy() {
         const text = event.target?.result as string;
         const data = JSON.parse(text);
 
-        // data should match what we exported:
-        // { completedCareers, generationCount, disabledCareerIds, selectedCareerIds }
-
         // Update state from the imported data, using optional chaining if needed:
         setCompletedCareers(data.completedCareers ?? []);
         setGenerationCount(data.generationCount ?? 1);
@@ -316,15 +326,17 @@ export default function CareerLegacy() {
   }
 
   // Tab handling
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  function handleChange(event: React.SyntheticEvent, newValue: number) {
     setValue(newValue);
-  };
+    localStorage.setItem("activeTabIndex", JSON.stringify(newValue));
+  }
 
   return (
     <div>
       <Navigation />
       <main className={styles.main}>
         <h2>Career Legacy Challenge</h2>
+        <p>Website is being revamped, so things will look a little different for some time :)</p>
         <Box
           sx={{
             width: "100%",

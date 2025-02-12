@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@mui/material";
 
 interface CompletedCareer {
   career_id: string;
@@ -31,7 +32,6 @@ function ProgressTracking({
   return (
     <div>
       <h3>Completed Careers</h3>
-
       {/* List of completed careers */}
       <ul style={{ listStyleType: "none", padding: 0 }}>
         {completedCareers.map((career) => (
@@ -50,13 +50,13 @@ function ProgressTracking({
           style={{ marginBottom: "0.5rem" }}
         />
         <br />
-        <button onClick={onSave}>Save</button>
-        <button onClick={onExport} style={{ marginLeft: "0.5rem" }}>
+        <Button variant='contained' color="success" onClick={onSave}>Save</Button>
+        <Button variant='contained' onClick={onExport} style={{ marginLeft: "0.5rem" }}>
           Export
-        </button>
-        <button onClick={onClear} style={{ marginLeft: "0.5rem" }}>
+        </Button>
+        <Button variant='contained' color="error" onClick={onClear} style={{ marginLeft: "0.5rem" }}>
           Clear
-        </button>
+        </Button>
       </div>
     </div>
   );
