@@ -4,19 +4,14 @@ import Navigation from '../components/Navigation';
 
 
 export default function Home() {
+  const maintenance = true
   return (
     <div>
-      <Navigation/>
+      {!maintenance && <Navigation/>}
       <main className={styles.main}>
         <h1>Under Construction</h1>
         <p>
           Check back soon for more content.
-        </p>
-        <p>
-          For now, check out some of the cool things in the navigation!
-        </p>
-        <p>
-          Placeholder for maybe social media stuff
         </p>
       </main>
       <footer className={styles.footer}>
