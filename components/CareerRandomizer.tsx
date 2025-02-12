@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from '@mui/material';
 
 interface Career {
   career_id: string;
@@ -60,9 +61,9 @@ function CareerRandomizer({ allSelectedCareers }: CareerRandomizerProps) {
       <p>
         Selected career: {randomCareer ? randomCareer.career_name : "None"}
       </p>
-      <button onClick={handleRandomize} disabled={isRandomizing}>
+      <Button variant='contained' onClick={handleRandomize} disabled={isRandomizing}>
         {isRandomizing ? "Randomizing..." : "Randomize!"}
-      </button>
+      </Button>
     </div>
   );
 }
