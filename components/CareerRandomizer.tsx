@@ -43,7 +43,7 @@ function CareerRandomizer({ allSelectedCareers, onCareerChosen }: CareerRandomiz
       setTimeout(() => {
         if (
           currentCareer &&
-          window.confirm(`Do you want to play the "${currentCareer.career_name}" career?`)
+          window.confirm(`Do you want to play the "${currentCareer.career_name}" career? By confirming, this will save your progress to your browser's local storage.`)
         ) {
           // Record the chosen career
           console.log(`User chose: ${currentCareer.career_name}`);

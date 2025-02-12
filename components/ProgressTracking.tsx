@@ -8,25 +8,25 @@ interface CompletedCareer {
 
 interface ProgressTrackingProps {
   completedCareers: CompletedCareer[];       // The list of finished careers
-  // onClear: () => void;                       // Callback to clear the completed list
-  // onSave: () => void;                        // Placeholder callback for "Save"
-  // onExport: () => void;                      // Placeholder callback for "Export"
-  // onFileSelected: (file: File) => void;      // Callback when a file is chosen
+  onClear: () => void;                       // Callback to clear the completed list
+  onSave: () => void;                        // Placeholder callback for "Save"
+  onExport: () => void;                      // Placeholder callback for "Export"
+  onFileSelected: (file: File) => void;      // Callback when a file is chosen
 }
 
 function ProgressTracking({
   completedCareers,
-  // onClear,
-  // onSave,
-  // onExport,
-  // onFileSelected,
+  onClear,
+  onSave,
+  onExport,
+  onFileSelected,
 }: ProgressTrackingProps) {
-  // function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     onFileSelected(file);
-  //   }
-  // }
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) {
+      onFileSelected(file);
+    }
+  }
 
   return (
     <div>
@@ -42,7 +42,7 @@ function ProgressTracking({
       </ul>
 
       {/* File input and buttons */}
-      {/* <div style={{ marginTop: "1rem" }}>
+      <div style={{ marginTop: "1rem" }}>
         <input
           id="fileInput"
           type="file"
@@ -57,7 +57,7 @@ function ProgressTracking({
         <button onClick={onClear} style={{ marginLeft: "0.5rem" }}>
           Clear
         </button>
-      </div> */}
+      </div>
     </div>
   );
 }

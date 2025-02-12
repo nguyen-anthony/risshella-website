@@ -48,25 +48,81 @@ export default function CareerLegacy() {
   const [disabledCareerIds, setDisabledCareerIds] = React.useState<string[]>([]);
 
 
+  React.useEffect(() => {
+    // 1) Restore completedCareers
+    const savedCompleted = localStorage.getItem("completedCareers");
+    if (savedCompleted) {
+      try {
+        const parsedCompleted = JSON.parse(savedCompleted);
+        setCompletedCareers(parsedCompleted);
+
+        // Derive disabledCareerIds from the saved completed careers
+        setDisabledCareerIds(
+          parsedCompleted.map((career: { career_id: string }) => career.career_id)
+        );
+
+        // Optionally, update generationCount to next generation
+        if (parsedCompleted.length > 0) {
+          const maxGen = Math.max(
+            ...parsedCompleted.map((c: { generation: number }) => c.generation)
+          );
+          setGenerationCount(maxGen + 1);
+        }
+      } catch (error) {
+        console.error("Error parsing saved completedCareers:", error);
+      }
+    }
+
+    // 2) Restore selectedCareerIds
+    const savedSelected = localStorage.getItem("selectedCareers");
+    if (savedSelected) {
+      try {
+        const parsedSelected = JSON.parse(savedSelected);
+        setSelectedCareerIds(parsedSelected);
+      } catch (error) {
+        console.error("Error parsing saved selectedCareers:", error);
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem("completedCareers", JSON.stringify(completedCareers));
+    localStorage.setItem("selectedCareers", JSON.stringify(selectedCareerIds));
+  }, [completedCareers, selectedCareerIds]);
+
+
 
   // 2) Helper to determine pack's tri-state (checked, unchecked, indeterminate)
   function getPackCheckboxState(pack: Pack) {
+    // Filter out careers that are disabled
+    const enabledCareers = pack.careers.filter(
+      (career) => !disabledCareerIds.includes(career.career_id)
+    );
+    
+    const totalEnabled = enabledCareers.length;
     const selectedCareers = selectedCareerIds[pack.pack_id] || [];
-    const totalCareers = pack.careers.length;
     const countSelected = selectedCareers.length;
+
+    // If there are no enabled careers, the pack can't be toggled anyway
+    if (totalEnabled === 0) {
+      // Return something that indicates "unchecked" (or you might want to mark it disabled)
+      return { checked: false, indeterminate: false };
+    }
 
     if (countSelected === 0) {
       return { checked: false, indeterminate: false };
-    } else if (countSelected === totalCareers) {
+    } else if (countSelected === totalEnabled) {
       return { checked: true, indeterminate: false };
     } else {
       return { checked: false, indeterminate: true };
     }
   }
 
+
   // 3) Toggle an entire pack
   function handleTogglePack(pack: Pack) {
     const { checked, indeterminate } = getPackCheckboxState(pack);
+
     if (checked || indeterminate) {
       // Unselect all careers in this pack
       setSelectedCareerIds((prev) => {
@@ -75,13 +131,20 @@ export default function CareerLegacy() {
         return newState;
       });
     } else {
-      // Select all careers in this pack
-      setSelectedCareerIds((prev) => ({
-        ...prev,
-        [pack.pack_id]: pack.careers.map((c) => c.career_id),
-      }));
+      // Only select the careers that aren't disabled
+      const enabledCareers = pack.careers.filter(
+        (career) => !disabledCareerIds.includes(career.career_id)
+      );
+      // If there are any enabled careers, select them
+      if (enabledCareers.length > 0) {
+        setSelectedCareerIds((prev) => ({
+          ...prev,
+          [pack.pack_id]: enabledCareers.map((c) => c.career_id),
+        }));
+      }
     }
   }
+
 
   // 4) Toggle an individual career within a pack
   function handleToggleCareer(pack: Pack, careerId: string) {
@@ -151,6 +214,41 @@ export default function CareerLegacy() {
   }
 
 
+   // 4) Clear completed careers
+  function handleClearCompleted() {
+    if (window.confirm('Please use the export button to backup your progress.\n Are you sure you want to clear all saved progress and start over?') ) {
+      setCompletedCareers([]);
+      setDisabledCareerIds([]);
+      setSelectedCareerIds({});
+      setGenerationCount(1);
+      localStorage.removeItem("completedCareers")
+      localStorage.removeItem("selectedCareers")
+    }
+  }
+
+  // 5) Save, Export, and File Selected (placeholders)
+  function handleSave() {
+    alert(
+      "Saving uses local storage on your browser. If you clear your browser's local storage, your progress will be deleted. Highly recommend that you export your data as well!"
+    );
+    // Save the completed careers array as a JSON string in local storage.
+    saveToLocalStorage()
+  }
+
+  function saveToLocalStorage() {
+    localStorage.setItem("completedCareers", JSON.stringify(completedCareers));
+    localStorage.setItem("selectedCareers", JSON.stringify(selectedCareerIds));
+  }
+
+  function handleExport() {
+    alert("Export logic goes here!");
+  }
+
+  function handleFileSelected(file: File) {
+    alert(`File chosen: ${file.name}. Parse logic goes here!`);
+  }
+
+
 
   // 5) Logic for "Select all packs"
   const allPacksCount = PACKS.length;
@@ -163,18 +261,24 @@ export default function CareerLegacy() {
   const selectAllIndeterminate = someSelected;
 
   function handleSelectAll() {
+    // If already all selected, unselect everything
     if (selectAllChecked || selectAllIndeterminate) {
-      // Unselect everything
       setSelectedCareerIds({});
     } else {
-      // Select every pack and all their careers
+      // Select only enabled careers across all packs
       const newCareerState: { [packId: string]: string[] } = {};
       PACKS.forEach((pack) => {
-        newCareerState[pack.pack_id] = pack.careers.map((c) => c.career_id);
+        const enabledCareers = pack.careers.filter(
+          (c) => !disabledCareerIds.includes(c.career_id)
+        );
+        if (enabledCareers.length > 0) {
+          newCareerState[pack.pack_id] = enabledCareers.map((c) => c.career_id);
+        }
       });
       setSelectedCareerIds(newCareerState);
     }
   }
+
 
   // Tab handling
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -229,10 +333,10 @@ export default function CareerLegacy() {
               />
               <ProgressTracking
                 completedCareers={completedCareers}
-                // onClear={handleClearCompleted}
-                // onSave={handleSave}
-                // onExport={handleExport}
-                // onFileSelected={handleFileSelected}
+                onClear={handleClearCompleted}
+                onSave={handleSave}
+                onExport={handleExport}
+                onFileSelected={handleFileSelected}
               />
             </div>
           </CustomTabPanel>
