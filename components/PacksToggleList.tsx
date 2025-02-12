@@ -5,6 +5,7 @@ import { Pack } from "@/constants/packs";
 interface PacksToggleListProps {
   packs: Pack[];
   selectedCareerIds: { [packId: string]: string[] };
+  disabledCareerIds: string[];
   onTogglePack: (pack: Pack) => void;
   onToggleCareer: (pack: Pack, careerId: string) => void;
   onSelectAll: () => void;
@@ -16,6 +17,7 @@ interface PacksToggleListProps {
 function PacksToggleList({
   packs,
   selectedCareerIds,
+  disabledCareerIds,
   onTogglePack,
   onToggleCareer,
   onSelectAll,
@@ -71,6 +73,7 @@ function PacksToggleList({
                           control={
                             <Checkbox
                               checked={careerIsSelected}
+                              disabled={disabledCareerIds.includes(career.career_id)}
                               onChange={() => onToggleCareer(pack, career.career_id)}
                             />
                           }

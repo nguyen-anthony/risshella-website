@@ -8,6 +8,7 @@ import IFrameBox from "@/components/IFrameBox";
 import styles from "@/app/page.module.css";
 import PacksToggleList from "@/components/PacksToggleList";
 import CareerRandomizer from "@/components/CareerRandomizer";
+import ProgressTracking from '@/components/ProgressTracking';
 import { PACKS, Pack } from "@/constants/packs"; // If needed here
 
 interface TabPanelProps {
@@ -38,6 +39,15 @@ export default function CareerLegacy() {
   const [selectedCareerIds, setSelectedCareerIds] = React.useState<{
     [packId: string]: string[];
   }>({});
+  const [completedCareers, setCompletedCareers] = React.useState<{
+    career_id: string;
+    career_name: string;
+    generation: number;
+  }[]>([]);
+  const [generationCount, setGenerationCount] = React.useState(1);
+  const [disabledCareerIds, setDisabledCareerIds] = React.useState<string[]>([]);
+
+
 
   // 2) Helper to determine pack's tri-state (checked, unchecked, indeterminate)
   function getPackCheckboxState(pack: Pack) {
@@ -98,20 +108,48 @@ export default function CareerLegacy() {
   }
 
   function getAllSelectedCareers(): { career_id: string; career_name: string }[] {
-  const allSelected: { career_id: string; career_name: string }[] = [];
+    const allSelected: { career_id: string; career_name: string }[] = [];
 
-  Object.entries(selectedCareerIds).forEach(([packId, careerIds]) => {
-    const pack = PACKS.find((p) => p.pack_id === packId);
-    if (!pack) return;
-    pack.careers.forEach((career) => {
-      if (careerIds.includes(career.career_id)) {
-        allSelected.push(career);
-      }
+    Object.entries(selectedCareerIds).forEach(([packId, careerIds]) => {
+      const pack = PACKS.find((p) => p.pack_id === packId);
+      if (!pack) return;
+      pack.careers.forEach((career) => {
+        if (careerIds.includes(career.career_id)) {
+          allSelected.push(career);
+        }
+      });
     });
-  });
 
-  return allSelected;
-}
+    return allSelected;
+  }
+
+  function handleCareerChosen(careerId: string, careerName: string) {
+    // 1. Add the career to your "completed" list, increment generation, etc.
+    setCompletedCareers((prev) => [
+      ...prev,
+      { career_id: careerId, career_name: careerName, generation: generationCount },
+    ]);
+    setGenerationCount((prev) => prev + 1);
+
+    // 2. Remove it from the "selected" list so it's no longer in the random pool
+    setSelectedCareerIds((prev) => {
+      const newState = { ...prev };
+      for (const packId in newState) {
+        if (newState[packId].includes(careerId)) {
+          newState[packId] = newState[packId].filter((id) => id !== careerId);
+          if (newState[packId].length === 0) {
+            delete newState[packId];
+          }
+          break;
+        }
+      }
+      return newState;
+    });
+
+    // 3. Add this career to the "disabled" list so its checkbox is grayed out
+    setDisabledCareerIds((prev) => [...prev, careerId]);
+  }
+
 
 
   // 5) Logic for "Select all packs"
@@ -175,6 +213,7 @@ export default function CareerLegacy() {
             <PacksToggleList
               packs={PACKS}                      // the data
               selectedCareerIds={selectedCareerIds}
+              disabledCareerIds={disabledCareerIds}
               onTogglePack={handleTogglePack}
               onToggleCareer={handleToggleCareer}
               onSelectAll={handleSelectAll}
@@ -183,7 +222,17 @@ export default function CareerLegacy() {
               selectAllIndeterminate={selectAllIndeterminate}
             />
 
-            <CareerRandomizer allSelectedCareers={getAllSelectedCareers()} />
+            <CareerRandomizer 
+              allSelectedCareers={getAllSelectedCareers()}         
+              onCareerChosen={handleCareerChosen} // pass a callback for final selection
+            />
+            <ProgressTracking
+              completedCareers={completedCareers}
+              // onClear={handleClearCompleted}
+              // onSave={handleSave}
+              // onExport={handleExport}
+              // onFileSelected={handleFileSelected}
+            />
 
 
             {/* 

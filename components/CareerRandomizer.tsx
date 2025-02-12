@@ -9,12 +9,12 @@ interface Career {
 interface CareerRandomizerProps {
   // A list of fully selected careers (each an object with ID and name).
   allSelectedCareers: Career[];
+  onCareerChosen: (careerId: string, careerName: string) => void; // new callback
 }
 
-function CareerRandomizer({ allSelectedCareers }: CareerRandomizerProps) {
+function CareerRandomizer({ allSelectedCareers, onCareerChosen }: CareerRandomizerProps) {
   const [randomCareer, setRandomCareer] = useState<Career | null>(null);
   const [isRandomizing, setIsRandomizing] = useState(false);
-  const [genNum, setGenNum] = useState(1); // Generation counter
 
   function handleRandomize() {
     if (allSelectedCareers.length === 0) {
@@ -47,9 +47,8 @@ function CareerRandomizer({ allSelectedCareers }: CareerRandomizerProps) {
         ) {
           // Record the chosen career
           console.log(`User chose: ${currentCareer.career_name}`);
-          setGenNum((prev) => prev + 1);
           // Additional logic such as disabling the chosen career can be added here.
-          console.log(`${genNum}`)
+          onCareerChosen(currentCareer.career_id, currentCareer.career_name);
         }
       }, 500);
     }, 1500);
