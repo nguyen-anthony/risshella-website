@@ -4,10 +4,9 @@ import Navigation from '../components/Navigation';
 
 
 export default function Home() {
-  const maintenance = true
   return (
     <div>
-      {!maintenance && <Navigation/>}
+      <Navigation/>
       <main className={styles.main}>
         <h1>Under Construction</h1>
         <p>

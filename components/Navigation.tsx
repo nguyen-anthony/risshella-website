@@ -47,7 +47,7 @@ const Navigation: React.FC = () => {
             <MenuItem onClick={handleMenuClose} component="a" href="/Sims4/careerlegacychallenge">
               Career Legacy Challenge
             </MenuItem>
-            <MenuItem onClick={handleMenuClose} component="a" href="/Sims4/llamaslegends">
+            <MenuItem disabled onClick={handleMenuClose} component="a" href="/Sims4/llamaslegends">
               Llamas & Legends
             </MenuItem>
           </Menu>
