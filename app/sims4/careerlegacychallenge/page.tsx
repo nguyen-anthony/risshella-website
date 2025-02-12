@@ -241,14 +241,51 @@ export default function CareerLegacy() {
   }
 
   function handleExport() {
-    alert("Export logic goes here!");
+    // Gather all data in a single object
+    const data = {
+      completedCareers,
+      generationCount,
+      disabledCareerIds,
+      selectedCareerIds,
+    };
+
+    // Convert to JSON string
+    const jsonString = JSON.stringify(data, null, 2); // `null, 2` for pretty-print
+
+    // Create a temporary download link
+    const hiddenElement = document.createElement("a");
+    hiddenElement.href = "data:application/json;charset=utf-8," + encodeURIComponent(jsonString);
+    hiddenElement.target = "_blank";
+    hiddenElement.download = "careerProgress.json"; // or ".txt"
+    hiddenElement.click();
   }
+
+
 
   function handleFileSelected(file: File) {
-    alert(`File chosen: ${file.name}. Parse logic goes here!`);
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const data = JSON.parse(text);
+
+        // data should match what we exported:
+        // { completedCareers, generationCount, disabledCareerIds, selectedCareerIds }
+
+        // Update state from the imported data, using optional chaining if needed:
+        setCompletedCareers(data.completedCareers ?? []);
+        setGenerationCount(data.generationCount ?? 1);
+        setDisabledCareerIds(data.disabledCareerIds ?? []);
+        setSelectedCareerIds(data.selectedCareerIds ?? {});
+      } catch (error) {
+        alert("Error: Unable to parse the file. Make sure it's valid JSON.");
+        console.error(error);
+      }
+    };
+
+    reader.readAsText(file);
   }
-
-
 
   // 5) Logic for "Select all packs"
   const allPacksCount = PACKS.length;
@@ -256,7 +293,6 @@ export default function CareerLegacy() {
   const allSelected = selectedPacksCount === allPacksCount;
   const noneSelected = selectedPacksCount === 0;
   const someSelected = !noneSelected && !allSelected;
-
   const selectAllChecked = allSelected && !someSelected;
   const selectAllIndeterminate = someSelected;
 
@@ -278,7 +314,6 @@ export default function CareerLegacy() {
       setSelectedCareerIds(newCareerState);
     }
   }
-
 
   // Tab handling
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
