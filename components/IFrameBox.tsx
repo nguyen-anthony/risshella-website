@@ -10,8 +10,12 @@ const IFrameBox: React.FC<IFrameBoxProps> = ({ url }) => {
     <Box
       sx={{
         position: "relative",
-        width: "850px",
-        height: "640px",
+        width: { xs: "100%", md: "850px" },
+        height: {
+          xs: "calc(100vh - 220px)", // nearly full screen on mobile
+          md: "calc(100vh - 200px)", // fixed height on desktop
+        },
+        paddingTop: { xs: "75%", md: 0 },
         overflow: "hidden",
         borderRadius: 2,
         boxShadow: 3,
@@ -22,6 +26,9 @@ const IFrameBox: React.FC<IFrameBoxProps> = ({ url }) => {
         src={url}
         title="Example Iframe"
         style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
           width: "100%",
           height: "100%",
           border: "none",
