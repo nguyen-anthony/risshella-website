@@ -7,13 +7,12 @@
   --button-secondary-hover: #f2f2f2;
 
   display: grid;
-  grid-template-rows: 20px 1fr 20px;
-  align-items: center;
-  justify-items: center;
-  min-height: 100svh;
-  padding: 80px;
-  gap: 64px;
-  font-family: var(--font-geist-sans);
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -31,10 +30,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-items: center;
-  padding: 5px;
-  gap: 4px;
-  grid-row-start: 2;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .main ol {
@@ -131,8 +131,15 @@ a.secondary {
 
 @media (max-width: 600px) {
   .page {
-    padding: 32px;
-    padding-bottom: 80px;
+    padding: 0;
+  }
+
+  .main {
+    padding: 16px;
+  }
+
+  .docContent {
+    padding: 0;
   }
 
   .main {
@@ -162,10 +169,165 @@ a.secondary {
     align-items: center;
     justify-content: center;
   }
+
+  .docContent :global(img) {
+    width: auto;
+    height: auto;
+    max-height: 30vh;
+    max-width: 100%;
+  }
+
+  .docContent :global(img:first-of-type) {
+    max-height: 25vh;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   .logo {
     filter: invert();
+  }
+}
+
+.docContent {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Override any fixed widths from Google Docs */
+.docContent :global(*) {
+  max-width: 100% !important;
+  word-break: break-word;
+}
+
+.docContent :global(table) {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1em 0;
+  border-collapse: collapse;
+}
+
+.docContent :global(td),
+.docContent :global(th) {
+  min-width: 100px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.docContent :global(p) {
+  margin: 1rem auto;
+  line-height: 1.6;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.docContent :global(img) {
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 2rem auto;
+  max-height: 70vh;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.docContent :global(img:first-of-type) {
+  margin: 1rem auto 2rem;
+  max-height: 50vh;
+}
+
+.docContent :global(span) {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Style Google Docs generated content */
+.docContent :global(a) {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.docContent :global(a:hover) {
+  text-decoration: underline;
+}
+
+/* Error state */
+.error {
+  color: #dc2626;
+  padding: 1em;
+  margin: 1em 0;
+  border: 1px solid #dc2626;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.retryButton {
+  margin-top: 1em;
+  padding: 0.5em 1em;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  background-color: #b91c1c;
+}
+
+/* Material-UI breakpoints */
+@media (max-width: 900px) {
+  .docContent {
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .main {
+    padding: 16px;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .docContent {
+    padding: 0 16px;
+    overflow-x: hidden;
+  }
+
+  .docContent :global(img) {
+    max-height: 40vh;
+    margin: 1.5rem auto;
+  }
+
+  .docContent :global(img:first-of-type) {
+    max-height: 30vh;
+    margin: 1rem auto 1.5rem;
+  }
+
+  .docContent :global(table) {
+    font-size: 14px;
+  }
+
+  .docContent :global(td),
+  .docContent :global(th) {
+    padding: 6px;
+    min-width: 80px;
   }
 }
