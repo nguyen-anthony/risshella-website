@@ -3,14 +3,14 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/',
+        source: '/:path*',
         has: [
           {
             type: 'host',
             value: 'careerlegacychallenge.risshella.com',
           },
         ],
-        destination: 'https://www.risshella.com/sims4/careerlegacychallenge',
+        destination: 'https://www.risshella.com/sims4/careerlegacychallenge/:path*',
         permanent: true,
       },
     ];
