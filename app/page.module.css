@@ -30,18 +30,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-<<<<<<< HEAD
   justify-items: center;
   padding: 5px;
   gap: 24px;
   grid-row-start: 2;
-=======
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
   box-sizing: border-box;
->>>>>>> d1afef87bb50197e32371ad61d30c0802a27ee40
 }
 
 
