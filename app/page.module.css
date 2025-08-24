@@ -33,9 +33,11 @@
   align-items: center;
   justify-items: center;
   padding: 5px;
-  gap: 4px;
+  gap: 24px;
   grid-row-start: 2;
 }
+
+
 
 .main ol {
   font-family: var(--font-geist-mono);
