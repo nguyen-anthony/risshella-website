@@ -13,8 +13,8 @@ import {
   List,
   ListItem,
   ListItemText,
-  useTheme,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -30,9 +30,7 @@ const Navigation: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
-  // `isMobile` will be true if the viewport width is at or below the "sm" breakpoint
-  const menuBreakpoint = useMediaQuery(theme.breakpoints.down("md"));
-  const socialMediaBreakpoint = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -58,20 +56,19 @@ const Navigation: React.FC = () => {
 
   return (
     <AppBar position="sticky" sx={{ backgroundColor: "black" }}>
-      <Toolbar>
+      <Toolbar sx={{ justifyContent: 'space-between', width: '100%' }}>
         {/* Left side: Title + Conditional Social Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography
             variant="h6"
             component="a"
             href="/"
-            sx={{ ml: 2, textDecoration: "none", color: "inherit" }}
+            sx={{ textDecoration: "none", color: "inherit" }}
           >
             Risshella
           </Typography>
 
-          {/* Only show icons if not on mobile */}
-          {!socialMediaBreakpoint && (
+          {!isMobile && (
             <>
               <IconButton
                 color="inherit"
@@ -132,62 +129,85 @@ const Navigation: React.FC = () => {
         </Box>
 
         {/* Right side: Navigation links or hamburger menu */}
-        {menuBreakpoint ? (
-          <IconButton
-            color="inherit"
-            edge="end"
-            onClick={toggleDrawer}
-            sx={{ marginLeft: "auto" }}
-          >
-            <MenuIcon />
-          </IconButton>
-        ) : (
-          <Box sx={{ display: "flex", gap: 2, marginLeft: "auto" }}>
-            {navItems.map((item) => (
-              <Button key={item.title} color="inherit" href={item.href}>
-                {item.title}
-              </Button>
-            ))}
-            <Button color="inherit" onClick={handleMenuOpen}>
-              Legacy Challenges
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {isMobile ? (
+            <IconButton
+              color="inherit"
+              edge="end"
+              onClick={toggleDrawer}
+              sx={{ 
+                display: 'block',
+                marginLeft: 'auto', // Push to the right
+                '& .MuiSvgIcon-root': {
+                  fontSize: '2rem' // Make the icon bigger
+                }
+              }}
             >
-              {legacyChallenges.map((challenge) => (
-                <MenuItem
-                  key={challenge.title}
-                  onClick={handleMenuClose}
-                  component="a"
-                  href={challenge.href}
-                >
-                  {challenge.title}
-                </MenuItem>
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Box sx={{ display: "flex", gap: 2 }}>
+              {navItems.map((item) => (
+                <Button key={item.title} color="inherit" href={item.href}>
+                  {item.title}
+                </Button>
               ))}
-            </Menu>
-          </Box>
-        )}
+              <Button color="inherit" onClick={handleMenuOpen}>
+                Legacy Challenges
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                {legacyChallenges.map((challenge) => (
+                  <MenuItem
+                    key={challenge.title}
+                    onClick={handleMenuClose}
+                    component="a"
+                    href={challenge.href}
+                  >
+                    {challenge.title}
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
+          )}
+        </Box>
       </Toolbar>
 
       {/* Mobile Drawer */}
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer}>
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer}>
+      <Drawer 
+        anchor="right" 
+        open={drawerOpen} 
+        onClose={toggleDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: '80%',
+            maxWidth: 250,
+            backgroundColor: 'black',
+            color: 'white'
+          },
+        }}
+      >
+        <Box sx={{ width: '100%', pt: 2 }} role="presentation">
           <List>
             {navItems.map((item) => (
-              <ListItem key={item.title} component="a" href={item.href}>
+              <ListItem 
+                key={item.title} 
+                component="a" 
+                href={item.href}
+                onClick={toggleDrawer}
+              >
                 <ListItemText primary={item.title} />
               </ListItem>
             ))}
-            <ListItem onClick={handleMenuOpen}>
-              <ListItemText primary="Legacy Challenges" />
-            </ListItem>
             {legacyChallenges.map((challenge) => (
               <ListItem
                 key={challenge.title}
                 component="a"
                 href={challenge.href}
+                onClick={toggleDrawer}
               >
                 <ListItemText primary={challenge.title} />
               </ListItem>
