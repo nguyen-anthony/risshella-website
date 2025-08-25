@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
 interface Career {
   career_id: string;
@@ -15,6 +15,8 @@ interface CareerRandomizerProps {
 function CareerRandomizer({ allSelectedCareers, onCareerChosen }: CareerRandomizerProps) {
   const [randomCareer, setRandomCareer] = useState<Career | null>(null);
   const [isRandomizing, setIsRandomizing] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingCareer, setPendingCareer] = useState<Career | null>(null);
 
   function handleRandomize() {
     if (allSelectedCareers.length === 0) {
@@ -41,18 +43,27 @@ function CareerRandomizer({ allSelectedCareers, onCareerChosen }: CareerRandomiz
 
       // Optional: add a slight delay before asking for confirmation
       setTimeout(() => {
-        if (
-          currentCareer &&
-          window.confirm(`Do you want to play the "${currentCareer.career_name}" career? By confirming, this will save your progress to your browser's local storage.`)
-        ) {
-          // Record the chosen career
-          console.log(`User chose: ${currentCareer.career_name}`);
-          // Additional logic such as disabling the chosen career can be added here.
-          onCareerChosen(currentCareer.career_id, currentCareer.career_name);
+        if (currentCareer) {
+          setPendingCareer(currentCareer);
+          setShowConfirmModal(true);
         }
       }, 500);
     }, 1500);
   }
+
+  const handleConfirmCareer = () => {
+    if (pendingCareer) {
+      console.log(`User chose: ${pendingCareer.career_name}`);
+      onCareerChosen(pendingCareer.career_id, pendingCareer.career_name);
+    }
+    setShowConfirmModal(false);
+    setPendingCareer(null);
+  };
+
+  const handleCancelCareer = () => {
+    setShowConfirmModal(false);
+    setPendingCareer(null);
+  };
 
   return (
     <div>
@@ -63,6 +74,31 @@ function CareerRandomizer({ allSelectedCareers, onCareerChosen }: CareerRandomiz
       <Button variant='contained' onClick={handleRandomize} disabled={isRandomizing}>
         {isRandomizing ? "Randomizing..." : "Randomize!"}
       </Button>
+
+      {/* Confirmation Modal */}
+      <Dialog
+        open={showConfirmModal}
+        onClose={handleCancelCareer}
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-description"
+      >
+        <DialogTitle id="confirm-dialog-title">
+          Confirm Career Choice
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-dialog-description">
+            Do you want to play the &ldquo;{pendingCareer?.career_name}&rdquo; career? By confirming, this will save your progress to your browser&apos;s local storage.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelCareer} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmCareer} color="primary" variant="contained" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
