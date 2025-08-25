@@ -8,7 +8,6 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useMediaQuery, useTheme } from "@mui/material";
 import Navigation from "@/components/Navigation";
 import IFrameBox from "@/components/IFrameBox";
 import styles from "@/app/page.module.css";
@@ -36,7 +35,7 @@ function CustomTabPanel(props: TabPanelProps) {
       {value === index && (
         <Box
           sx={{
-            p: { xs: 1, sm: 2, md: 3 },
+            p: { xs: 0.5, sm: 1, md: 1.5 },
             width: '100%'
           }}
         >
@@ -49,8 +48,6 @@ function CustomTabPanel(props: TabPanelProps) {
 
 export default function CareerLegacy() {
   const [value, setValue] = React.useState(0);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // 1) Lifted state: which careers are selected
   const [selectedCareerIds, setSelectedCareerIds] = React.useState<{
@@ -361,6 +358,7 @@ export default function CareerLegacy() {
             justifyItems: "center",
             flexDirection: "column",
             alignItems: "center",
+            px: { xs: 1, sm: 2, md: 3 }, // Add horizontal padding instead of constraining content
           }}
         >
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -377,93 +375,73 @@ export default function CareerLegacy() {
 
           {/* Tab Panel 2 */}
           <CustomTabPanel value={value} index={1}>
-            {isMobile ? (
-              /* Mobile Layout - Vertical Stack with Accordions */
-              <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto' }}>
-                {/* Randomizer Section - Always Visible */}
-                <Box sx={{ mb: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Career Randomizer
-                  </Typography>
-                  <CareerRandomizer 
-                    allSelectedCareers={getAllSelectedCareers()}         
-                    onCareerChosen={handleCareerChosen}
-                  />
-                </Box>
-
-                {/* Progress Tracking - Collapsible */}
-                <Accordion>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="progress-tracking-content"
-                    id="progress-tracking-header"
-                  >
-                    <Typography variant="h6">Progress Tracking</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <ProgressTracking
-                      completedCareers={completedCareers}
-                      onClear={handleClearCompleted}
-                      onSave={handleSave}
-                      onExport={handleExport}
-                      onFileSelected={handleFileSelected}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-
-                {/* Pack Selection - Collapsible */}
-                <Accordion>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="pack-selection-content"
-                    id="pack-selection-header"
-                  >
-                    <Typography variant="h6">Select Packs & Careers</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <PacksToggleList
-                      packs={PACKS}
-                      selectedCareerIds={selectedCareerIds}
-                      disabledCareerIds={disabledCareerIds}
-                      onTogglePack={handleTogglePack}
-                      onToggleCareer={handleToggleCareer}
-                      onSelectAll={handleSelectAll}
-                      getPackCheckboxState={getPackCheckboxState}
-                      selectAllChecked={selectAllChecked}
-                      selectAllIndeterminate={selectAllIndeterminate}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-              </Box>
-            ) : (
-              /* Desktop Layout - Original Three Columns */
-              <div style={{ display: "flex", gap: "6rem" }}>
-                <PacksToggleList
-                  packs={PACKS}
-                  selectedCareerIds={selectedCareerIds}
-                  disabledCareerIds={disabledCareerIds}
-                  onTogglePack={handleTogglePack}
-                  onToggleCareer={handleToggleCareer}
-                  onSelectAll={handleSelectAll}
-                  getPackCheckboxState={getPackCheckboxState}
-                  selectAllChecked={selectAllChecked}
-                  selectAllIndeterminate={selectAllIndeterminate}
-                />
-
+            {/* Vertical Stack Layout for All Devices */}
+            <Box sx={{ width: '100%' }}>
+              {/* Randomizer Section - Always Visible */}
+              <Box sx={{ 
+                mb: 2, 
+                p: { xs: 2, sm: 3, md: 4 }, 
+                border: 1, 
+                borderColor: 'divider', 
+                borderRadius: 2,
+                minHeight: 120,
+                width: '100%'
+              }}>
+                <Typography variant="h6" gutterBottom>
+                  Career Randomizer
+                </Typography>
                 <CareerRandomizer 
                   allSelectedCareers={getAllSelectedCareers()}         
                   onCareerChosen={handleCareerChosen}
                 />
-                
-                <ProgressTracking
-                  completedCareers={completedCareers}
-                  onClear={handleClearCompleted}
-                  onSave={handleSave}
-                  onExport={handleExport}
-                  onFileSelected={handleFileSelected}
-                />
-              </div>
-            )}
+              </Box>
+
+              {/* Progress Tracking - Collapsible */}
+              <Accordion sx={{ mb: 1, width: '100%' }}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="progress-tracking-content"
+                  id="progress-tracking-header"
+                  sx={{ minHeight: 56 }}
+                >
+                  <Typography variant="h6">Progress Tracking</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                  <ProgressTracking
+                    completedCareers={completedCareers}
+                    onClear={handleClearCompleted}
+                    onSave={handleSave}
+                    onExport={handleExport}
+                    onFileSelected={handleFileSelected}
+                  />
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Pack Selection - Collapsible */}
+              <Accordion sx={{ width: '100%' }}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="pack-selection-content"
+                  id="pack-selection-header"
+                  sx={{ minHeight: 56 }}
+                >
+                  <Typography variant="h6">Select Packs & Careers</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                  <PacksToggleList
+                    packs={PACKS}
+                    selectedCareerIds={selectedCareerIds}
+                    disabledCareerIds={disabledCareerIds}
+                    onTogglePack={handleTogglePack}
+                    onToggleCareer={handleToggleCareer}
+                    onSelectAll={handleSelectAll}
+                    getPackCheckboxState={getPackCheckboxState}
+                    selectAllChecked={selectAllChecked}
+                    selectAllIndeterminate={selectAllIndeterminate}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </Box>
           </CustomTabPanel>
         </Box>
       </main>
