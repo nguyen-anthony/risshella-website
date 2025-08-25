@@ -355,10 +355,9 @@ export default function CareerLegacy() {
           sx={{
             width: "100%",
             display: "flex",
-            justifyItems: "center",
             flexDirection: "column",
-            alignItems: "center",
-            px: { xs: 1, sm: 2, md: 3 }, // Add horizontal padding instead of constraining content
+            alignItems: "stretch", // Changed from "center" to "stretch" to use full width
+            px: { xs: 1, sm: 2, md: 3, lg: 4 }, // Added lg breakpoint for larger padding
           }}
         >
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>

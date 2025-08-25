@@ -78,7 +78,7 @@ function PacksToggleList({
             : 'All completed';
 
           return (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pack.pack_id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.4 }} key={pack.pack_id}>
               <Card 
                 sx={{ 
                   height: '100%',
