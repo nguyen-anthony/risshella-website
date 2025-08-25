@@ -80,12 +80,14 @@ function PacksToggleList({
           return (
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.4 }} key={pack.pack_id}>
               <Card 
+                onClick={() => !packIsDisabled && onTogglePack(pack)}
                 sx={{ 
                   height: '100%',
                   transition: 'all 0.2s ease-in-out',
                   border: packChecked ? 2 : 1,
                   borderColor: packChecked ? 'primary.main' : 'divider',
                   backgroundColor: packIsDisabled ? 'action.disabledBackground' : 'background.paper',
+                  cursor: packIsDisabled ? 'default' : 'pointer',
                   '&:hover': {
                     elevation: packIsDisabled ? 1 : 4,
                     transform: packIsDisabled ? 'none' : 'translateY(-2px)'
@@ -115,7 +117,10 @@ function PacksToggleList({
                       checked={packChecked}
                       indeterminate={packIndeterminate}
                       disabled={packIsDisabled}
-                      onChange={() => onTogglePack(pack)}
+                      onChange={(e) => {
+                        e.stopPropagation(); // Prevent card click when checkbox is clicked
+                        onTogglePack(pack);
+                      }}
                       color="primary"
                     />
                   }
@@ -132,7 +137,12 @@ function PacksToggleList({
                         <Chip
                           key={career.career_id}
                           label={career.career_name}
-                          onClick={() => !careerIsDisabled && onToggleCareer(pack, career.career_id)}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent card click when chip is clicked
+                            if (!careerIsDisabled) {
+                              onToggleCareer(pack, career.career_id);
+                            }
+                          }}
                           variant={careerIsSelected ? "filled" : "outlined"}
                           color={careerIsSelected ? "primary" : "default"}
                           disabled={careerIsDisabled}
