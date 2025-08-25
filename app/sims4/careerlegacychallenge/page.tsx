@@ -255,9 +255,6 @@ export default function CareerLegacy() {
 
   // 5) Save, Export, and File Selected (placeholders)
   function handleSave() {
-    alert(
-      "Saving uses local storage on your browser. If you clear your browser's local storage, your progress will be deleted. Highly recommend that you export your data as well!"
-    );
     // Save the completed careers array as a JSON string in local storage.
     saveToLocalStorage()
   }
@@ -355,9 +352,10 @@ export default function CareerLegacy() {
           sx={{
             width: "100%",
             display: "flex",
+            justifyItems: "center",
             flexDirection: "column",
-            alignItems: "stretch", // Changed from "center" to "stretch" to use full width
-            px: { xs: 1, sm: 2, md: 3, lg: 4 }, // Added lg breakpoint for larger padding
+            alignItems: "center",
+            px: { xs: 1, sm: 2, md: 3 }, // Add horizontal padding instead of constraining content
           }}
         >
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
