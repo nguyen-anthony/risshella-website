@@ -20,7 +20,7 @@ export default async function VillagerHunt() {
     return (
         <div style={{ padding: 16 }}>
             <h2>Animal Crossing Villager Hunts</h2>
-            <p>Login if you're a creator or a mod</p>
+            <p>Login if you are a creator or a mod</p>
             <LoginWithTwitch returnTo="/villagerhunt" />
 
             <div style={{ marginTop: 24 }}>
