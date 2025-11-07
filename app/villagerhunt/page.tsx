@@ -1,44 +1,39 @@
 import LoginWithTwitch from '@/components/LoginWithTwitch';
+import CreatorsSearchGrid from '@/components/CreatorsSearchGrid';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
-
-type Creator = {
-  twitch_id: number;
-  twitch_username: string;
-};
+import { Alert, Box, Container, Stack, Typography } from '@mui/material';
+import type { Creator } from '@/types/creator';
 
 export default async function VillagerHunt() {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     const { data, error } = await supabase
-    .from('creators')
-    .select('twitch_id, twitch_username');
+        .from('creators')
+        .select('twitch_id, twitch_username, avatar_url');
 
     const creators = (data ?? []) as Creator[];
 
     return (
-        <div style={{ padding: 16 }}>
-            <h2>Animal Crossing Villager Hunts</h2>
-            <p>Login if you are a creator or a mod</p>
-            <LoginWithTwitch returnTo="/villagerhunt" />
+        <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+            <Stack spacing={2} alignItems="center" textAlign="center">
+                <Typography variant="h3" component="h1" fontWeight={700}>
+                    Animal Crossing Villager Hunt!
+                </Typography>
+                <LoginWithTwitch returnTo="/villagerhunt" label="Login with Twitch to start/manage your hunts!"/>
+            </Stack>
 
-            <div style={{ marginTop: 24 }}>
-                <h3>Active Hunts!</h3>
+            <Box sx={{ mt: 4 }}>
+                <Typography variant="h5" component="h2" fontWeight={600} gutterBottom>
+                    Active Hunts!
+                </Typography>
                 {error ? (
-                    <p style={{ color: 'crimson' }}>Error loading creators.</p>
-                    ) : creators.length > 0 ? (
-                    <ul>
-                        {creators.map((c) => (
-                        <li key={c.twitch_id}>
-                            {c.twitch_id} — {c.twitch_username}
-                        </li>
-                        ))}
-                    </ul>
-                    ) : (
-                    <p style={{ color: '#666' }}>No creators found.</p>
-                    )}
-            </div>
-        </div>
+                    <Alert severity="error">Error loading creators.</Alert>
+                ) : (
+                    <CreatorsSearchGrid creators={creators} />
+                )}
+            </Box>
+        </Container>
     );
 }
