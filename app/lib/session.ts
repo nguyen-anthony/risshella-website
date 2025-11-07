@@ -8,6 +8,7 @@ const ALGO = 'sha256';
 export type Session = {
   userId: string;
   login: string;
+  accessToken?: string; // Twitch user access token (scoped)
   exp: number; // epoch seconds
 };
 
