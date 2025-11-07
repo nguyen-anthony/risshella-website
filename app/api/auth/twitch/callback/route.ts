@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const token = await exchangeCodeForToken(code);
-    const user = await getTwitchUser(token.access_token);
+  const token = await exchangeCodeForToken(code);
+  const user = await getTwitchUser(token.access_token);
     if (!user) {
       const dest = new URL('/villagerhunt?auth=failed', origin);
       return NextResponse.redirect(dest);
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
     // Create a short-lived session for now (6 hours)
     const exp = Math.floor(Date.now() / 1000) + 6 * 60 * 60;
-    await setSessionCookie({ userId: user.id, login: user.login, exp });
+  await setSessionCookie({ userId: user.id, login: user.login, accessToken: token.access_token, exp });
 
     const absoluteReturn = /^https?:\/\//i.test(returnPath)
       ? returnPath

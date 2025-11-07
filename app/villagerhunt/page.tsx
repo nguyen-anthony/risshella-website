@@ -4,10 +4,14 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { Alert, Box, Container, Stack, Typography } from '@mui/material';
 import type { Creator } from '@/types/creator';
+import { refreshVillagersIfStale } from '@/app/lib/villagers';
 
 export default async function VillagerHunt() {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
+
+    // Opportunistic refresh of villagers table when stale (>24h). Silently ignores if API key missing.
+    await refreshVillagersIfStale(supabase);
 
     const { data, error } = await supabase
         .from('creators')

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
@@ -17,8 +19,8 @@ export async function GET() {
     { villagers: data ?? [] },
     {
       headers: {
-        // Cache for a day at the edge; clients may still use localStorage for longer
-        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+        // Avoid serving stale lists in the modal; let clients cache in-memory if desired
+        'Cache-Control': 'no-store',
       },
     }
   );

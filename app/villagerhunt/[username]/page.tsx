@@ -1,7 +1,10 @@
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
-import { Alert, Container, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Container, Stack, Typography } from '@mui/material';
+import OwnerHuntControls from '@/components/OwnerHuntControls';
 import EncountersTable from '@/components/EncountersTable';
+import { getSessionFromCookie } from '@/app/lib/session';
+import { getModeratedChannels } from '@/app/lib/twitch';
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -23,6 +26,9 @@ export default async function CreatorHuntPage(props: PageProps) {
   const username = decodeURIComponent(rawUsername);
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+  const session = await getSessionFromCookie();
+  const isOwner = !!session && session.login?.toLowerCase() === username.toLowerCase();
+  let isModerator = false;
 
   // Resolve twitch_id (use search param if provided; otherwise look up by username)
   let twitchId: number | null = null;
@@ -63,13 +69,26 @@ export default async function CreatorHuntPage(props: PageProps) {
     );
   }
 
+  // If not owner, check if user moderates this channel
+  console.log(`Access Token: ${session?.accessToken}`)
+  if (!isOwner && session?.accessToken) {
+    try {
+      const mods = await getModeratedChannels(session.accessToken, session.userId);
+      console.log(`Moderated channels count: ${mods.length}`)
+      isModerator = mods.some((m) => m.broadcaster_id === String(twitchId));
+    } catch {
+      // ignore moderation check errors
+    }
+  }
+
   if (!hunt) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
-        <Stack spacing={1}>
+        <Stack spacing={1} sx={{ mb: 2 }}>
           <Typography variant="h4" fontWeight={700}>{username}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
         </Stack>
+        {(isOwner || isModerator) && <OwnerHuntControls showStart />}
       </Container>
     );
   }
@@ -102,6 +121,9 @@ export default async function CreatorHuntPage(props: PageProps) {
     targetVillagerName = targetRow?.name ?? null;
   }
 
+  console.log(`Session: ${session?.login?.toLowerCase()}`)
+  console.log(`isOwner: ${isOwner}`)
+
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
       <Stack spacing={0.5} sx={{ mb: 2 }}>
@@ -111,6 +133,16 @@ export default async function CreatorHuntPage(props: PageProps) {
           <Typography variant="body2" color="text.secondary">Target: {targetVillagerName}</Typography>
         )}
       </Stack>
+
+      {(isOwner || isModerator) && (
+        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Button variant="outlined" color="error">Abandon Hunt</Button>
+          <Button variant="outlined" color="warning">Pause Hunt</Button>
+          <Button variant="text">View Completed Hunts</Button>
+          <Button variant="text">View Paused Hunts</Button>
+          <Button variant="text">View Abandoned Hunts</Button>
+        </Box>
+      )}
 
       <EncountersTable encounters={encounterList} />
     </Container>
