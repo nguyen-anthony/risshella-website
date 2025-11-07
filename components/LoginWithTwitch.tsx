@@ -12,7 +12,12 @@ function TwitchIcon(props: ComponentProps<typeof SvgIcon>) {
   );
 }
 
-export default function LoginWithTwitch({ returnTo = '/villagerhunt' }: { returnTo?: string }) {
+type LoginWithTwitchProps = {
+  returnTo?: string;
+  label?: string;
+};
+
+export default function LoginWithTwitch({ returnTo = '/villagerhunt', label = 'Login with Twitch' }: LoginWithTwitchProps) {
   const onClick = () => {
     const url = new URL('/api/auth/twitch', window.location.origin);
     if (returnTo) url.searchParams.set('return', returnTo);
@@ -21,7 +26,7 @@ export default function LoginWithTwitch({ returnTo = '/villagerhunt' }: { return
 
   return (
     <Button variant="contained" color="primary" startIcon={<TwitchIcon />} onClick={onClick}>
-      Login with Twitch
+      {label}
     </Button>
   );
 }
