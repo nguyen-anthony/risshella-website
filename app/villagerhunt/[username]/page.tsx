@@ -88,7 +88,7 @@ export default async function CreatorHuntPage(props: PageProps) {
           <Typography variant="h4" fontWeight={700}>{username}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
         </Stack>
-        {(isOwner || isModerator) && <OwnerHuntControls showStart />}
+        {isOwner && <OwnerHuntControls showStart />}
       </Container>
     );
   }
@@ -134,13 +134,18 @@ export default async function CreatorHuntPage(props: PageProps) {
         )}
       </Stack>
 
-      {(isOwner || isModerator) && (
+      {isOwner && (
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           <Button variant="outlined" color="error">Abandon Hunt</Button>
           <Button variant="outlined" color="warning">Pause Hunt</Button>
-          <Button variant="text">View Completed Hunts</Button>
-          <Button variant="text">View Paused Hunts</Button>
-          <Button variant="text">View Abandoned Hunts</Button>
+        </Box>
+      )}
+
+      {(isOwner || isModerator) && (
+        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Button variant="outlined">Add New Encounter</Button>
+          <Button variant="outlined">Update Encounter</Button>
+          <Button variant="outlined">Delete Encounter</Button>
         </Box>
       )}
 
