@@ -9,7 +9,7 @@ type AuthLinkProps = {
 
 export default function AuthLink({ username }: AuthLinkProps) {
   return (
-    <Typography variant="body2" sx={{ mt: 1 }}>
+    <Typography variant="subtitle2" sx={{ mt: 1 }}>
       Are you {username} or their mod?{' '}
       <LoginWithTwitch/>
     </Typography>

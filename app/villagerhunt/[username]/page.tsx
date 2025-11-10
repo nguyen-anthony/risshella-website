@@ -126,13 +126,15 @@ export default async function CreatorHuntPage(props: PageProps) {
 
   // Resolve target villager name for header (single row)
   let targetVillagerName: string | null = null;
+  let targetVillagerImage: string | null = null;
   if (hunt.target_villager_id != null) {
     const { data: targetRow } = await supabase
       .from('villagers')
-      .select('name')
+      .select('name, image_url')
       .eq('villager_id', hunt.target_villager_id)
       .maybeSingle();
     targetVillagerName = targetRow?.name ?? null;
+    targetVillagerImage = targetRow?.image_url ?? null;
   }
 
   return (
@@ -142,7 +144,16 @@ export default async function CreatorHuntPage(props: PageProps) {
         {!session && <AuthLink username={displayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
         {targetVillagerName && (
-          <Typography variant="body2" color="text.secondary">Target: {targetVillagerName}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">Target:</Typography>
+            <Box
+              component="img"
+              src={targetVillagerImage || undefined}
+              alt={targetVillagerName}
+              sx={{ maxWidth: 80, maxHeight: 80, borderRadius: 1 }}
+            />
+            <Typography variant="body2" color="text.secondary">{targetVillagerName}</Typography>
+          </Box>
         )}
       </Stack>
 
