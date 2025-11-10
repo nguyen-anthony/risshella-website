@@ -31,6 +31,7 @@ export default function EncountersTable({ encounters, villagers, isOwner, isMode
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
   const [addModalOpen, setAddModalOpen] = React.useState(false);
 
+
   React.useEffect(() => {
     if (villagers) {
       const mapped: VillagersIndex = {};
