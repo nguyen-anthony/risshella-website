@@ -79,6 +79,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           fullWidth
           value={huntName}
           onChange={(e) => setHuntName(e.target.value)}
+          helperText="Default hunt name will be 'Hunt for {target villager}'"
         />
         <Autocomplete
           loading={loading}
@@ -93,7 +94,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Target Villager" required />}
+          renderInput={(params) => <TextField {...params} label="Target Villager" required helperText="Select the villager you're hunting for"/>}
         />
         <Autocomplete
           multiple
@@ -109,7 +110,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island" />}
+          renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island. Villagers in this list will not be included on generated Bingo cards for your community. You can edit this later." />}
           renderTags={(tagValue) =>
             tagValue.map((option) => (
               <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>

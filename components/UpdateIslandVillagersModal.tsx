@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Typography,
 } from "@mui/material";
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
@@ -72,6 +73,9 @@ export default function UpdateIslandVillagersModal({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Update Island Villagers</DialogTitle>
       <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography variant="body2" component="h1">
+            Villagers in this list will not be included on generated Bingo cards for your community.
+        </Typography>
         <Autocomplete
           multiple
           options={villagers}
