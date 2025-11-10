@@ -7,9 +7,10 @@ import type { Creator } from "@/types/creator";
 
 type Props = {
   creators: Creator[];
+  moderatedUsernames?: string[];
 };
 
-export default function CreatorsSearchGrid({ creators }: Props) {
+export default function CreatorsSearchGrid({ creators, moderatedUsernames = [] }: Props) {
   const [query, setQuery] = React.useState("");
 
   const normalized = (s: string) => s.toLowerCase().trim();
@@ -40,7 +41,7 @@ export default function CreatorsSearchGrid({ creators }: Props) {
         />
       </Stack>
 
-      <CreatorsGrid creators={filtered} emptyMessage={query ? "No matches found." : "No creators found."} />
+      <CreatorsGrid creators={filtered} emptyMessage={query ? "No matches found." : "No creators found."} moderatedUsernames={moderatedUsernames} />
     </Box>
   );
 }
