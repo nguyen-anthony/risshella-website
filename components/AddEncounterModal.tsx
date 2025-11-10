@@ -11,23 +11,35 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Typography,
 } from "@mui/material";
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
 
+import type { EncounterRow } from "@/components/EncountersTable";
+
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreated?: (huntId: number | null) => void;
+  huntId: string;
+  encounters: EncounterRow[];
 };
 
-export default function StartHuntModal({ open, onClose, onCreated }: Props) {
+export default function AddEncounterModal({ open, onClose, huntId, encounters }: Props) {
   const router = useRouter();
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [huntName, setHuntName] = React.useState("");
+  const [islandNumber, setIslandNumber] = React.useState("");
   const [selected, setSelected] = React.useState<Villager | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open) {
+      const maxIsland = encounters.length > 0 ? Math.max(...encounters.map(e => e.island_number)) : 0;
+      setIslandNumber((maxIsland + 1).toString());
+      setSelected(null);
+    }
+  }, [open, encounters]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -35,7 +47,6 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
     (async () => {
       try {
         setLoading(true);
-        // Bust any client-side stale list by preventing HTTP caching; rely on in-memory state only.
         const res = await fetch("/api/villagers/index", { cache: "no-store" });
         if (!res.ok) return;
         const json = await res.json();
@@ -47,23 +58,22 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
     return () => { cancelled = true; };
   }, [open]);
 
-  const handleCreate = async () => {
-    if (!selected) return;
+  const handleAdd = async () => {
+    if (!selected || !islandNumber) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/hunts/create", {
+      const res = await fetch("/api/encounters/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hunt_name: huntName || undefined, target_villager_id: selected.villager_id }),
+        body: JSON.stringify({
+          hunt_id: huntId,
+          island_number: parseInt(islandNumber),
+          villager_id: selected.villager_id
+        }),
       });
-      const json = await res.json().catch(() => null);
       if (res.ok) {
-        onCreated?.(json?.hunt_id ?? null);
         onClose();
-        // Revalidate and re-render the server page so the new ACTIVE hunt appears
-        router.refresh();
-      } else {
-        onCreated?.(null);
+        router.replace(window.location.pathname);
       }
     } finally {
       setSubmitting(false);
@@ -72,13 +82,15 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Start a New Hunt</DialogTitle>
+      <DialogTitle>Add New Encounter</DialogTitle>
       <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
-          label="Hunt Name (optional)"
+          label="Island Number"
+          type="number"
           fullWidth
-          value={huntName}
-          onChange={(e) => setHuntName(e.target.value)}
+          value={islandNumber}
+          onChange={(e) => setIslandNumber(e.target.value)}
+          required
         />
         <Autocomplete
           loading={loading}
@@ -93,13 +105,19 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Target Villager" required />}
+          renderInput={(params) => <TextField {...params} label="Villager" required />}
+          
         />
+        {loading && (
+          <Typography variant="caption" color="text.secondary">
+            Loading villagers list...
+          </Typography>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleCreate} variant="contained" disabled={!selected || submitting}>
-          {submitting ? "Creating..." : "Create Hunt"}
+        <Button onClick={handleAdd} variant="contained" disabled={!selected || !islandNumber || submitting}>
+          {submitting ? "Adding..." : "Add Encounter"}
         </Button>
       </DialogActions>
     </Dialog>
