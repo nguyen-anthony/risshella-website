@@ -1,0 +1,168 @@
+'use client';
+
+import * as React from 'react';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import OwnerHuntControls from '@/components/OwnerHuntControls';
+import EncountersTable from '@/components/EncountersTable';
+import AuthLink from '@/components/AuthLink';
+import { createClient } from '@/utils/supabase/client';
+
+type Hunt = {
+  hunt_id: string;
+  hunt_name: string;
+  target_villager_id: number | null;
+};
+
+type Villager = {
+  villager_id: number;
+  name: string;
+  image_url: string | null;
+};
+
+type Session = {
+  login: string;
+  userId: string;
+  accessToken?: string;
+};
+
+type Props = {
+  initialDisplayName: string;
+  initialTwitchId: number;
+  initialSession: Session | null;
+  initialIsOwner: boolean;
+  initialIsModerator: boolean;
+};
+
+export default function HuntPageWrapper({
+  initialDisplayName,
+  initialTwitchId,
+  initialSession,
+  initialIsOwner,
+  initialIsModerator,
+}: Props) {
+  const [hunt, setHunt] = React.useState<Hunt | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [villagers, setVillagers] = React.useState<Villager[]>([]);
+
+  // Fetch hunt data
+  const fetchHuntData = React.useCallback(async () => {
+    const supabase = createClient();
+
+    // Fetch ACTIVE hunt
+    const { data: huntData, error: huntError } = await supabase
+      .from('hunts')
+      .select('hunt_id, hunt_name, target_villager_id')
+      .eq('twitch_id', initialTwitchId)
+      .eq('hunt_status', 'ACTIVE')
+      .order('hunt_id', { ascending: false })
+      .maybeSingle();
+
+    if (!huntError) {
+      setHunt(huntData);
+    }
+
+    // Fetch villagers for encounter lookup
+    const { data: villagersData } = await supabase
+      .from('villagers')
+      .select('villager_id, name, image_url');
+
+    setVillagers(villagersData || []);
+    setLoading(false);
+  }, [initialTwitchId]);
+
+  // Initial fetch
+  React.useEffect(() => {
+    fetchHuntData();
+  }, [fetchHuntData]);
+
+  // Subscribe to hunt changes
+  React.useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel('hunt_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'hunts',
+          filter: `twitch_id=eq.${initialTwitchId}`,
+        },
+        (payload) => {
+          console.log('Hunt realtime update:', payload);
+          // Refetch hunt data on any change
+          fetchHuntData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [initialTwitchId, fetchHuntData]);
+
+  // Resolve target villager data
+  const [targetVillagerName, targetVillagerImage] = React.useMemo(() => {
+    if (!hunt?.target_villager_id) return [null, null];
+    const villager = villagers.find(v => v.villager_id === hunt.target_villager_id);
+    return [villager?.name || null, villager?.image_url || null];
+  }, [hunt?.target_villager_id, villagers]);
+
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+        <Typography>Loading...</Typography>
+      </Container>
+    );
+  }
+
+  if (!hunt) {
+    return (
+      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+        <Stack spacing={1} sx={{ mb: 2 }}>
+          <Typography variant="h4" fontWeight={700}>{initialDisplayName}</Typography>
+          <Typography variant="h6" color="text.secondary">No active hunt</Typography>
+        </Stack>
+        {initialIsOwner && <OwnerHuntControls showStart />}
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+      <Stack spacing={0.5} sx={{ mb: 2 }}>
+        <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
+        {!initialSession && <AuthLink username={initialDisplayName} />}
+        <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
+        {targetVillagerName && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">Target:</Typography>
+            <Box
+              component="img"
+              src={targetVillagerImage || undefined}
+              alt={targetVillagerName}
+              sx={{ maxWidth: 80, maxHeight: 80, borderRadius: 1 }}
+            />
+            <Typography variant="body2" color="text.secondary">{targetVillagerName}</Typography>
+          </Box>
+        )}
+      </Stack>
+
+      {initialIsOwner && (
+        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
+            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+            <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
+          </form>
+          <form action="/api/hunts/pause" method="post" style={{ display: 'inline' }}>
+            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+            <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
+          </form>
+        </Box>
+      )}
+
+      <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={initialIsModerator} huntId={hunt.hunt_id} />
+    </Container>
+  );
+}
