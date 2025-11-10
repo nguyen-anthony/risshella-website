@@ -17,6 +17,7 @@
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.79.0",
     "googleapis": "^146.0.0",
+    "html2canvas": "^1.4.1",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
