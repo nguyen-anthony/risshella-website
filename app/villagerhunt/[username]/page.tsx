@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Box, Button, Container, Stack, Typography } from '@mui/material';
 import OwnerHuntControls from '@/components/OwnerHuntControls';
-import EncounterControls from '@/components/EncounterControls';
 import EncountersTable from '@/components/EncountersTable';
 import { getSessionFromCookie } from '@/app/lib/session';
 import { getModeratedChannels } from '@/app/lib/twitch';
@@ -150,9 +149,7 @@ export default async function CreatorHuntPage(props: PageProps) {
         </Box>
       )}
 
-      <EncounterControls huntId={hunt.hunt_id} isOwner={isOwner} isModerator={isModerator} encounters={encounterList} />
-
-      <EncountersTable encounters={encounterList} villagers={villagers || []} isOwner={isOwner} isModerator={isModerator} />
+      <EncountersTable encounters={encounterList} villagers={villagers || []} isOwner={isOwner} isModerator={isModerator} huntId={hunt.hunt_id} />
     </Container>
   );
 }
