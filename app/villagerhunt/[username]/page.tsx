@@ -92,23 +92,23 @@ export default async function CreatorHuntPage(props: PageProps) {
     );
   }
 
-  // Fetch encounters for hunt (desc by island_number)
-  const { data: encounters, error: encError } = await supabase
-    .from('encounters')
-    .select('encounter_id, island_number, encountered_at, villager_id')
-    .eq('hunt_id', hunt.hunt_id)
-    .eq('is_deleted', false)
-    .order('island_number', { ascending: false });
+  // Fetch encounters for hunt (desc by island_number) - moved to component
+  // const { data: encounters, error: encError } = await supabase
+  //   .from('encounters')
+  //   .select('encounter_id, island_number, encountered_at, villager_id')
+  //   .eq('hunt_id', hunt.hunt_id)
+  //   .eq('is_deleted', false)
+  //   .order('island_number', { ascending: false });
 
-  if (encError) {
-    return (
-      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
-        <Alert severity="error">Error loading encounters.</Alert>
-      </Container>
-    );
-  }
+  // if (encError) {
+  //   return (
+  //     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+  //       <Alert severity="error">Error loading encounters.</Alert>
+  //     </Container>
+  //   );
+  // }
 
-  const encounterList = encounters ?? [];
+  // const encounterList = encounters ?? [];
 
   // Fetch villagers for encounter lookup
   const { data: villagers } = await supabase
@@ -149,7 +149,7 @@ export default async function CreatorHuntPage(props: PageProps) {
         </Box>
       )}
 
-      <EncountersTable encounters={encounterList} villagers={villagers || []} isOwner={isOwner} isModerator={isModerator} huntId={hunt.hunt_id} />
+      <EncountersTable villagers={villagers || []} isOwner={isOwner} isModerator={isModerator} huntId={hunt.hunt_id} />
     </Container>
   );
 }

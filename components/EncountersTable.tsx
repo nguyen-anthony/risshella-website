@@ -3,6 +3,7 @@ import * as React from "react";
 import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button } from "@mui/material";
 import UpdateDeleteEncounterModal from "@/components/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/AddEncounterModal";
+import { createClient } from '@/utils/supabase/client';
 
 export type EncounterRow = {
   encounter_id: string;
@@ -15,7 +16,6 @@ type Villager = { villager_id: number; name: string; image_url: string | null };
 type VillagersIndex = Record<number, { name: string; image_url: string | null }>;
 
 type Props = {
-  encounters: EncounterRow[];
   villagers?: Villager[];
   isOwner: boolean;
   isModerator: boolean;
@@ -25,11 +25,12 @@ type Props = {
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ encounters, villagers, isOwner, isModerator, huntId }: Props) {
+export default function EncountersTable({ villagers, isOwner, isModerator, huntId }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
   const [addModalOpen, setAddModalOpen] = React.useState(false);
+  const [encounters, setEncounters] = React.useState<EncounterRow[]>([]);
 
 
   React.useEffect(() => {
@@ -76,6 +77,50 @@ export default function EncountersTable({ encounters, villagers, isOwner, isMode
       return () => { cancelled = true; };
     }
   }, [villagers]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch encounters and set up realtime subscription
+  React.useEffect(() => {
+    const supabase = createClient();
+
+    const fetchEncounters = async () => {
+      const { data, error } = await supabase
+        .from('encounters')
+        .select('encounter_id, island_number, encountered_at, villager_id')
+        .eq('hunt_id', huntId)
+        .eq('is_deleted', false)
+        .order('island_number', { ascending: false });
+
+      if (!error && data) {
+        setEncounters(data);
+      }
+    };
+
+    // Initial fetch
+    fetchEncounters();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('encounters_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'encounters',
+          filter: `hunt_id=eq.${huntId}`,
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          // Refetch on any change
+          fetchEncounters();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [huntId]);
 
   const getVillager = (id: number | null) => {
     if (id == null) return { name: "—", image_url: null };
