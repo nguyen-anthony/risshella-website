@@ -7,16 +7,17 @@ import type { Creator } from "@/types/creator";
 
 type Props = {
   creators: Creator[];
+  moderatedUsernames?: string[];
 };
 
-export default function CreatorsSearchGrid({ creators }: Props) {
+export default function CreatorsSearchGrid({ creators, moderatedUsernames = [] }: Props) {
   const [query, setQuery] = React.useState("");
 
   const normalized = (s: string) => s.toLowerCase().trim();
   const filtered = React.useMemo(() => {
     const q = normalized(query);
     if (!q) return creators;
-    return creators.filter((c) => normalized(c.twitch_username).includes(q));
+    return creators.filter((c) => normalized(c.display_name || c.twitch_username).includes(q));
   }, [creators, query]);
 
   return (
@@ -40,7 +41,7 @@ export default function CreatorsSearchGrid({ creators }: Props) {
         />
       </Stack>
 
-      <CreatorsGrid creators={filtered} emptyMessage={query ? "No matches found." : "No creators found."} />
+      <CreatorsGrid creators={filtered} emptyMessage={query ? "No matches found." : "No creators found."} moderatedUsernames={moderatedUsernames} />
     </Box>
   );
 }
