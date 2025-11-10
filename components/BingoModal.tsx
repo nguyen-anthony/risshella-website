@@ -41,6 +41,7 @@ export default function BingoModal({
 }: Props) {
   const [excludedVillagers, setExcludedVillagers] = React.useState<Villager[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
 
   // Load last excluded villagers from localStorage
   React.useEffect(() => {
@@ -67,7 +68,7 @@ export default function BingoModal({
       localStorage.setItem(`bingo_excluded_${huntId}`, JSON.stringify(excludedIds));
 
       // Generate bingo card
-      await generateBingoCard({
+      const imageDataUrl = await generateBingoCard({
         huntId,
         huntName,
         creatorName,
@@ -75,6 +76,8 @@ export default function BingoModal({
         excludedVillagers,
         villagers,
       });
+
+      setBingoCardImage(imageDataUrl);
     } finally {
       setLoading(false);
     }
@@ -87,81 +90,140 @@ export default function BingoModal({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Generate Bingo Card</DialogTitle>
+      <DialogTitle>
+        {bingoCardImage ? 'Your Bingo Card' : 'Generate Bingo Card'}
+      </DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Create a bingo card for this villager hunt. The center square will be free, and other squares will be filled with random villagers.
-        </Typography>
+        {bingoCardImage ? (
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <Box
+              component="img"
+              src={bingoCardImage}
+              alt="Bingo Card"
+              sx={{
+                maxWidth: '100%',
+                maxHeight: '60vh',
+                border: '1px solid #ddd',
+                borderRadius: 1,
+                boxShadow: 2,
+              }}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Right-click the image to save, or use the download button below.
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Create a bingo card for this villager hunt. The center square will be free, and other squares will be filled with random villagers.
+            </Typography>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Exclude villagers already on your island (max 9):
-          </Typography>
-          <Autocomplete
-            multiple
-            options={availableVillagers}
-            value={excludedVillagers}
-            onChange={(_, newValue) => {
-              if (newValue.length <= 9) {
-                setExcludedVillagers(newValue);
-              }
-            }}
-            getOptionLabel={(option) => option.name}
-            renderOption={(props, option) => (
-              <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {option.image_url && (
-                  <Box
-                    component="img"
-                    src={option.image_url}
-                    alt={option.name}
-                    sx={{ width: 24, height: 24, borderRadius: 1 }}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Exclude villagers already on your island (max 9):
+              </Typography>
+              <Autocomplete
+                multiple
+                options={availableVillagers}
+                value={excludedVillagers}
+                onChange={(_, newValue) => {
+                  if (newValue.length <= 9) {
+                    setExcludedVillagers(newValue);
+                  }
+                }}
+                getOptionLabel={(option) => option.name}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {option.image_url && (
+                      <Box
+                        component="img"
+                        src={option.image_url}
+                        alt={option.name}
+                        sx={{ width: 24, height: 24, borderRadius: 1 }}
+                      />
+                    )}
+                    {option.name}
+                  </Box>
+                )}
+                renderTags={(tagValue, getTagProps) =>
+                  tagValue.map((option, index) => {
+                    const { key, ...tagProps } = getTagProps({ index });
+                    return (
+                      <Chip
+                        key={key}
+                        label={option.name}
+                        {...tagProps}
+                        size="small"
+                      />
+                    );
+                  })
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Excluded villagers"
+                    placeholder="Select villagers to exclude..."
                   />
                 )}
-                {option.name}
-              </Box>
-            )}
-            renderTags={(tagValue, getTagProps) =>
-              tagValue.map((option, index) => {
-                const { key, ...tagProps } = getTagProps({ index });
-                return (
-                  <Chip
-                    key={key}
-                    label={option.name}
-                    {...tagProps}
-                    size="small"
-                  />
-                );
-              })
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Excluded villagers"
-                placeholder="Select villagers to exclude..."
               />
-            )}
-          />
-          <Typography variant="caption" color="text.secondary">
-            {excludedVillagers.length}/9 villagers excluded
-          </Typography>
-        </Box>
+              <Typography variant="caption" color="text.secondary">
+                {excludedVillagers.length}/9 villagers excluded
+              </Typography>
+            </Box>
 
-        <Typography variant="body2" color="text.secondary">
-          Available villagers for bingo card: {availableVillagers.length - excludedVillagers.length}
-        </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Available villagers for bingo card: {availableVillagers.length - excludedVillagers.length}
+            </Typography>
+          </>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={handleGenerate}
-          variant="contained"
-          disabled={loading || availableVillagers.length - excludedVillagers.length < 24}
-        >
-          {loading ? 'Generating...' : 'Generate Bingo Card'}
-        </Button>
+        <Button onClick={onClose}>Close</Button>
+        {bingoCardImage ? (
+          <>
+            <Button
+              onClick={() => setBingoCardImage(null)}
+              variant="outlined"
+            >
+              Generate New Card
+            </Button>
+            <Button
+              onClick={() => {
+                const link = document.createElement('a');
+                link.download = `villager-hunt-bingo-${huntId}.png`;
+                link.href = bingoCardImage;
+                link.click();
+              }}
+              variant="contained"
+            >
+              Download PNG
+            </Button>
+          </>
+        ) : (
+          <Button
+            onClick={handleGenerate}
+            variant="contained"
+            disabled={loading || availableVillagers.length - excludedVillagers.length < 24}
+          >
+            {loading ? 'Generating...' : 'Generate Bingo Card'}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
+}
+
+async function preloadImages(urls: string[]): Promise<void> {
+  const promises = urls.map(url => {
+    return new Promise<void>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve();
+      img.onerror = () => resolve(); // Continue even if image fails to load
+      img.src = url;
+    });
+  });
+  await Promise.all(promises);
 }
 
 async function generateBingoCard({
@@ -178,7 +240,7 @@ async function generateBingoCard({
   targetVillager: { villager_id: number; name: string; image_url: string | null } | null;
   excludedVillagers: Villager[];
   villagers: Villager[];
-}) {
+}): Promise<string> {
   // Import html2canvas dynamically
   const html2canvas = (await import('html2canvas')).default;
 
@@ -192,12 +254,20 @@ async function generateBingoCard({
 
   if (availableVillagers.length < 24) {
     alert('Not enough villagers available for bingo card generation.');
-    return;
+    throw new Error('Not enough villagers');
   }
 
   // Shuffle and select 24 villagers
   const shuffled = [...availableVillagers].sort(() => Math.random() - 0.5);
   const bingoVillagers = shuffled.slice(0, 24);
+
+  // Preload all villager images
+  const imageUrls = [
+    targetVillager?.image_url,
+    ...bingoVillagers.map(v => v.image_url).filter(Boolean),
+  ].filter(Boolean) as string[];
+
+  await preloadImages(imageUrls);
 
   // Create bingo card HTML
   const bingoCard = createBingoCardHTML({
@@ -211,18 +281,19 @@ async function generateBingoCard({
   document.body.appendChild(bingoCard);
 
   try {
+    // Wait a bit for images to render
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // Generate canvas
     const canvas = await html2canvas(bingoCard, {
       backgroundColor: '#ffffff',
       scale: 2,
       useCORS: true,
+      allowTaint: true,
     });
 
-    // Download as PNG
-    const link = document.createElement('a');
-    link.download = `villager-hunt-bingo-${huntId}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    // Get data URL
+    const dataUrl = canvas.toDataURL('image/png');
 
     // Store bingo card data in localStorage
     const bingoData = {
@@ -235,6 +306,8 @@ async function generateBingoCard({
       generatedAt: new Date().toISOString(),
     };
     localStorage.setItem(`bingo_card_${huntId}`, JSON.stringify(bingoData));
+
+    return dataUrl;
   } finally {
     document.body.removeChild(bingoCard);
   }
