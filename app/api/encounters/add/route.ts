@@ -65,6 +65,12 @@ export async function POST(request: NextRequest) {
     console.log('Insert result:', { error });
 
     if (error) {
+      // Check if it's a unique constraint violation (duplicate island number)
+      if (error.code === '23505' || error.message?.includes('duplicate key') || error.message?.includes('unique constraint')) {
+        return NextResponse.json({ 
+          error: `An encounter already exists for island ${island_number}` 
+        }, { status: 409 });
+      }
       return NextResponse.json({ error: 'Failed to add encounter' }, { status: 500 });
     }
 

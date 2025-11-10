@@ -32,12 +32,14 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
   const [islandNumber, setIslandNumber] = React.useState("");
   const [selected, setSelected] = React.useState<Villager | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (open) {
       const maxIsland = encounters.length > 0 ? Math.max(...encounters.map(e => e.island_number)) : 0;
       setIslandNumber((maxIsland + 1).toString());
       setSelected(null);
+      setError(null); // Clear error when modal opens
     }
   }, [open, encounters]);
 
@@ -61,6 +63,7 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
   const handleAdd = async () => {
     if (!selected || !islandNumber) return;
     setSubmitting(true);
+    setError(null); // Clear any previous error
     try {
       const res = await fetch("/api/encounters/add", {
         method: "POST",
@@ -74,6 +77,14 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       if (res.ok) {
         onClose();
         router.replace(window.location.pathname);
+      } else {
+        // Try to get error message from response
+        try {
+          const errorData = await res.json();
+          setError(errorData.error || 'Failed to add encounter');
+        } catch {
+          setError('Failed to add encounter');
+        }
       }
     } finally {
       setSubmitting(false);
@@ -84,6 +95,11 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Add New Encounter</DialogTitle>
       <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        {error && (
+          <Typography variant="body2" color="error" sx={{ mb: 1 }}>
+            {error}
+          </Typography>
+        )}
         <TextField
           label="Island Number"
           type="number"
