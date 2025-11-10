@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button } from "@mui/material";
 import UpdateDeleteEncounterModal from "@/components/UpdateDeleteEncounterModal";
+import AddEncounterModal from "@/components/AddEncounterModal";
 
 export type EncounterRow = {
   encounter_id: string;
@@ -18,15 +19,18 @@ type Props = {
   villagers?: Villager[];
   isOwner: boolean;
   isModerator: boolean;
+  huntId: string;
 };
 
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ encounters, villagers, isOwner, isModerator }: Props) {
+export default function EncountersTable({ encounters, villagers, isOwner, isModerator, huntId }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
+  const [addModalOpen, setAddModalOpen] = React.useState(false);
+
 
   React.useEffect(() => {
     if (villagers) {
@@ -91,6 +95,19 @@ export default function EncountersTable({ encounters, villagers, isOwner, isMode
           </TableRow>
         </TableHead>
         <TableBody>
+          {(isOwner || isModerator) && (
+            <TableRow>
+              <TableCell colSpan={(isOwner || isModerator) ? 4 : 3}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => setAddModalOpen(true)}
+                >
+                  Add New Encounter
+                </Button>
+              </TableCell>
+            </TableRow>
+          )}
           {encounters.map((e) => {
             const { name, image_url } = getVillager(e.villager_id);
             return (
@@ -128,6 +145,12 @@ export default function EncountersTable({ encounters, villagers, isOwner, isMode
         onClose={() => setModalOpen(false)}
         encounter={selectedEncounter}
         villagers={villagers || []}
+      />
+      <AddEncounterModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        huntId={huntId}
+        encounters={encounters}
       />
     </TableContainer>
   );
