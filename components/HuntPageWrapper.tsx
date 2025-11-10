@@ -5,13 +5,16 @@ import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import OwnerHuntControls from '@/components/OwnerHuntControls';
 import EncountersTable from '@/components/EncountersTable';
 import AuthLink from '@/components/AuthLink';
-import BingoModal from '@/components/BingoModal';
+import { generateBingoCard } from '@/utils/bingoCardGenerator';
+import UpdateIslandVillagersModal from '@/components/UpdateIslandVillagersModal';
+import BingoCardModal from '@/components/BingoCardModal';
 import { createClient } from '@/utils/supabase/client';
 
 type Hunt = {
   hunt_id: string;
   hunt_name: string;
   target_villager_id: number | null;
+  island_villagers: number[];
 };
 
 type Villager = {
@@ -44,7 +47,10 @@ export default function HuntPageWrapper({
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
-  const [bingoModalOpen, setBingoModalOpen] = React.useState(false);
+  const [generatingBingo, setGeneratingBingo] = React.useState(false);
+  const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
+  const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
+  const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -53,7 +59,7 @@ export default function HuntPageWrapper({
     // Fetch ACTIVE hunt
     const { data: huntData, error: huntError } = await supabase
       .from('hunts')
-      .select('hunt_id, hunt_name, target_villager_id')
+      .select('hunt_id, hunt_name, target_villager_id, island_villagers')
       .eq('twitch_id', initialTwitchId)
       .eq('hunt_status', 'ACTIVE')
       .order('hunt_id', { ascending: false })
@@ -77,32 +83,32 @@ export default function HuntPageWrapper({
     fetchHuntData();
   }, [fetchHuntData]);
 
-  // Subscribe to hunt changes
-  React.useEffect(() => {
-    const supabase = createClient();
+  // Handle bingo card generation
+  const handleGenerateBingoCard = async () => {
+    if (!hunt) return;
 
-    const channel = supabase
-      .channel('hunt_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'hunts',
-          filter: `twitch_id=eq.${initialTwitchId}`,
-        },
-        (payload) => {
-          console.log('Hunt realtime update:', payload);
-          // Refetch hunt data on any change
-          fetchHuntData();
-        }
-      )
-      .subscribe();
+    setGeneratingBingo(true);
+    setBingoCardImage(null); // Clear previous image
+    setBingoCardModalOpen(true);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [initialTwitchId, fetchHuntData]);
+    try {
+      const imageDataUrl = await generateBingoCard({
+        huntId: hunt.hunt_id,
+        huntName: hunt.hunt_name,
+        creatorName: initialDisplayName,
+        targetVillager: hunt.target_villager_id ? villagers.find(v => v.villager_id === hunt.target_villager_id) || null : null,
+        islandVillagers: hunt.island_villagers,
+        villagers,
+      });
+
+      setBingoCardImage(imageDataUrl);
+    } catch (error) {
+      console.error('Failed to generate bingo card:', error);
+      setBingoCardImage(null);
+    } finally {
+      setGeneratingBingo(false);
+    }
+  };
 
   // Resolve target villager data
   const [targetVillagerName, targetVillagerImage] = React.useMemo(() => {
@@ -126,7 +132,7 @@ export default function HuntPageWrapper({
           <Typography variant="h4" fontWeight={700}>{initialDisplayName}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
         </Stack>
-        {initialIsOwner && <OwnerHuntControls showStart />}
+        {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
       </Container>
     );
   }
@@ -153,8 +159,19 @@ export default function HuntPageWrapper({
 
       {initialIsOwner && (
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <Button variant="contained" color="primary" onClick={() => setBingoModalOpen(true)}>
-            Generate Bingo Card
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleGenerateBingoCard}
+            disabled={generatingBingo}
+          >
+            {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => setUpdateIslandModalOpen(true)}
+          >
+            Update Island Villagers
           </Button>
           <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
             <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
@@ -169,15 +186,23 @@ export default function HuntPageWrapper({
 
       <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={initialIsModerator} huntId={hunt.hunt_id} />
 
-      <BingoModal
-        open={bingoModalOpen}
-        onClose={() => setBingoModalOpen(false)}
+      <UpdateIslandVillagersModal
+        open={updateIslandModalOpen}
+        onClose={() => setUpdateIslandModalOpen(false)}
         huntId={hunt.hunt_id}
-        huntName={hunt.hunt_name}
-        creatorName={initialDisplayName}
-        targetVillager={hunt.target_villager_id ? villagers.find(v => v.villager_id === hunt.target_villager_id) || null : null}
+        currentIslandVillagers={hunt.island_villagers}
         villagers={villagers}
+        onUpdated={fetchHuntData}
       />
+
+      <BingoCardModal
+        open={bingoCardModalOpen}
+        onClose={() => setBingoCardModalOpen(false)}
+        onRegenerate={handleGenerateBingoCard}
+        bingoCardImage={bingoCardImage}
+        loading={generatingBingo}
+      />
+
     </Container>
   );
 }

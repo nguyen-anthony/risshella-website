@@ -12,9 +12,15 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as {
     hunt_name?: string;
     target_villager_id?: number;
+    island_villagers?: number[];
   } | null;
   if (!body || typeof body.target_villager_id !== 'number') {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
+  }
+
+  // Validate island_villagers if provided
+  if (body.island_villagers && (!Array.isArray(body.island_villagers) || body.island_villagers.length > 9 || !body.island_villagers.every(v => typeof v === 'number'))) {
+    return NextResponse.json({ error: 'invalid_island_villagers' }, { status: 400 });
   }
 
   const cookieStore = await cookies();
@@ -37,6 +43,7 @@ export async function POST(req: NextRequest) {
     target_villager_id: villagerId,
     hunt_status: 'ACTIVE',
     twitch_id: Number(session.userId),
+    island_villagers: body.island_villagers || [],
   };
 
   const { data, error } = await supabase.from('hunts').insert(insert).select('hunt_id').maybeSingle();
