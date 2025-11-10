@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button } from "@mui/material";
+import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination } from "@mui/material";
 import UpdateDeleteEncounterModal from "@/components/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/AddEncounterModal";
 import { createClient } from '@/utils/supabase/client';
@@ -31,6 +31,14 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [encounters, setEncounters] = React.useState<EncounterRow[]>([]);
+
+  // Sorting state
+  const [orderBy, setOrderBy] = React.useState<'island_number' | 'encountered_at'>('island_number');
+  const [order, setOrder] = React.useState<'asc' | 'desc'>('desc');
+
+  // Pagination state
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
 
 
   React.useEffect(() => {
@@ -128,14 +136,74 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     return { name: v?.name ?? `#${id}`, image_url: v?.image_url ?? null };
   };
 
+  // Sorting function
+  const handleRequestSort = (property: 'island_number' | 'encountered_at') => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  // Pagination functions
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Sort encounters
+  const sortedEncounters = React.useMemo(() => {
+    return [...encounters].sort((a, b) => {
+      let aValue: number | string = a[orderBy];
+      let bValue: number | string = b[orderBy];
+
+      if (orderBy === 'encountered_at') {
+        aValue = new Date(aValue as string).getTime();
+        bValue = new Date(bValue as string).getTime();
+      }
+
+      if (aValue < bValue) {
+        return order === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return order === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [encounters, orderBy, order]);
+
+  // Paginate encounters
+  const paginatedEncounters = React.useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    return sortedEncounters.slice(startIndex, startIndex + rowsPerPage);
+  }, [sortedEncounters, page, rowsPerPage]);
+
   return (
     <TableContainer component={Paper}>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Island</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'island_number'}
+                direction={orderBy === 'island_number' ? order : 'asc'}
+                onClick={() => handleRequestSort('island_number')}
+              >
+                Island
+              </TableSortLabel>
+            </TableCell>
             <TableCell>Villager</TableCell>
-            <TableCell>Encountered</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'encountered_at'}
+                direction={orderBy === 'encountered_at' ? order : 'asc'}
+                onClick={() => handleRequestSort('encountered_at')}
+              >
+                Encountered
+              </TableSortLabel>
+            </TableCell>
             {(isOwner || isModerator) && <TableCell>Actions</TableCell>}
           </TableRow>
         </TableHead>
@@ -153,7 +221,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
               </TableCell>
             </TableRow>
           )}
-          {encounters.map((e) => {
+          {paginatedEncounters.map((e) => {
             const { name, image_url } = getVillager(e.villager_id);
             return (
               <TableRow key={e.encounter_id}>
@@ -184,6 +252,15 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
           })}
         </TableBody>
       </Table>
+      <TablePagination
+        component="div"
+        count={sortedEncounters.length}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+      />
       {/* TODO: Add UpdateDeleteEncounterModal here */}
       <UpdateDeleteEncounterModal
         open={modalOpen}

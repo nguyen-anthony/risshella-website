@@ -118,6 +118,10 @@ export default function BingoModal({
               Create a bingo card for this villager hunt. The center square will be free, and other squares will be filled with random villagers.
             </Typography>
 
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              NOTE: This is not interactive. Save this and use it on your own. This is meant to be fun, so no cheating!
+            </Typography>
+
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Exclude villagers already on your island (max 9):
