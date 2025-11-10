@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
 } from "@mui/material";
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
