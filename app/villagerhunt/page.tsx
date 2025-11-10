@@ -52,7 +52,7 @@ export default async function VillagerHunt() {
                         </form>
                     )
                 ) : (
-                    <LoginWithTwitch returnTo="/villagerhunt" label="Login with Twitch to start/manage your hunts!"/>
+                    <LoginWithTwitch label="Login with Twitch to start/manage your hunts!"/>
                 )}
             </Stack>
 

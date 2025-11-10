@@ -17,10 +17,11 @@ type LoginWithTwitchProps = {
   label?: string;
 };
 
-export default function LoginWithTwitch({ returnTo = '/villagerhunt', label = 'Login with Twitch' }: LoginWithTwitchProps) {
+export default function LoginWithTwitch({ returnTo, label = 'Login with Twitch' }: LoginWithTwitchProps) {
   const onClick = () => {
     const url = new URL('/api/auth/twitch', window.location.origin);
-    if (returnTo) url.searchParams.set('return', returnTo);
+    const effectiveReturnTo = returnTo || window.location.pathname;
+    url.searchParams.set('return', effectiveReturnTo);
     window.location.href = url.toString();
   };
 
