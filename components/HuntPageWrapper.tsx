@@ -5,6 +5,7 @@ import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import OwnerHuntControls from '@/components/OwnerHuntControls';
 import EncountersTable from '@/components/EncountersTable';
 import AuthLink from '@/components/AuthLink';
+import BingoModal from '@/components/BingoModal';
 import { createClient } from '@/utils/supabase/client';
 
 type Hunt = {
@@ -43,6 +44,7 @@ export default function HuntPageWrapper({
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
+  const [bingoModalOpen, setBingoModalOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -151,6 +153,9 @@ export default function HuntPageWrapper({
 
       {initialIsOwner && (
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Button variant="contained" color="primary" onClick={() => setBingoModalOpen(true)}>
+            Generate Bingo Card
+          </Button>
           <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
             <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
             <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
@@ -163,6 +168,16 @@ export default function HuntPageWrapper({
       )}
 
       <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={initialIsModerator} huntId={hunt.hunt_id} />
+
+      <BingoModal
+        open={bingoModalOpen}
+        onClose={() => setBingoModalOpen(false)}
+        huntId={hunt.hunt_id}
+        huntName={hunt.hunt_name}
+        creatorName={initialDisplayName}
+        targetVillager={hunt.target_villager_id ? villagers.find(v => v.villager_id === hunt.target_villager_id) || null : null}
+        villagers={villagers}
+      />
     </Container>
   );
 }
