@@ -19,7 +19,7 @@ export default async function VillagerHunt() {
 
     const { data, error } = await supabase
         .from('creators')
-        .select('twitch_id, twitch_username, avatar_url');
+        .select('twitch_id, twitch_username, display_name, avatar_url');
 
     const creators = (data ?? []) as Creator[];
     const selfCreator = session ? creators.find(c => c.twitch_username.toLowerCase() === session.login.toLowerCase()) : undefined;
@@ -47,7 +47,9 @@ export default async function VillagerHunt() {
                             <CreatorCard creator={selfCreator} statusText="Go to your hunt!" />
                         </Box>
                     ) : (
-                        <Button variant="contained" color="primary">Start your own hunt!</Button>
+                        <form action="/api/creators/create" method="post">
+                            <Button type="submit" variant="contained" color="primary">Start your own hunt!</Button>
+                        </form>
                     )
                 ) : (
                     <LoginWithTwitch returnTo="/villagerhunt" label="Login with Twitch to start/manage your hunts!"/>

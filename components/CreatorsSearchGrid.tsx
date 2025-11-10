@@ -17,7 +17,7 @@ export default function CreatorsSearchGrid({ creators, moderatedUsernames = [] }
   const filtered = React.useMemo(() => {
     const q = normalized(query);
     if (!q) return creators;
-    return creators.filter((c) => normalized(c.twitch_username).includes(q));
+    return creators.filter((c) => normalized(c.display_name || c.twitch_username).includes(q));
   }, [creators, query]);
 
   return (

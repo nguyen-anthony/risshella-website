@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function CreatorCard({ creator, statusText = "Villager hunt in progress", isModerated = false }: Props) {
-  const { twitch_username, avatar_url } = creator;
+  const { twitch_username, display_name, avatar_url } = creator;
 
   return (
     <Card elevation={3} sx={{ height: "100%", ...(isModerated && { backgroundColor: 'rgba(147, 112, 219, 0.1)' }) }}>
@@ -21,10 +21,10 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
         sx={{ height: "100%", alignItems: "stretch" }}
       >
         <CardHeader
-          avatar={<Avatar src={avatar_url ?? undefined} alt={twitch_username} />}
+          avatar={<Avatar src={avatar_url ?? undefined} alt={display_name || twitch_username} />}
           title={
             <Typography variant="subtitle1" fontWeight={600} noWrap>
-              {twitch_username}
+              {display_name || twitch_username}
             </Typography>
           }
           sx={{ pb: 0.5 }}
