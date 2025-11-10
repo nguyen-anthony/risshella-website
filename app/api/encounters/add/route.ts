@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { getSessionFromCookie } from '@/app/lib/session';
+import { getModeratedChannels } from '@/app/lib/twitch';
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check if the hunt belongs to the user
+    // Check if the hunt belongs to the user or they are a moderator
     const { data: hunt, error: huntError } = await supabase
       .from('hunts')
       .select('twitch_id')
@@ -31,7 +32,23 @@ export async function POST(request: NextRequest) {
 
     console.log('Hunt check:', { hunt, huntError, huntTwitchId: hunt?.twitch_id, sessionUserIdParsed: parseInt(session.userId) });
 
-    if (huntError || !hunt || hunt.twitch_id !== parseInt(session.userId)) {
+    if (huntError || !hunt) {
+      return NextResponse.json({ error: 'Hunt not found' }, { status: 404 });
+    }
+
+    const isOwner = hunt.twitch_id === parseInt(session.userId);
+    let isModerator = false;
+    if (!isOwner && session.accessToken) {
+      try {
+        const mods = await getModeratedChannels(session.accessToken, session.userId);
+        isModerator = mods.some((m) => m.broadcaster_id === String(hunt.twitch_id));
+        console.log('Moderator check:', { isModerator, modsCount: mods.length });
+      } catch (err) {
+        console.log('Moderator check error:', err);
+      }
+    }
+
+    if (!isOwner && !isModerator) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
