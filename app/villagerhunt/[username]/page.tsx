@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Box, Button, Container, Stack, Typography } from '@mui/material';
 import OwnerHuntControls from '@/components/OwnerHuntControls';
+import EncounterControls from '@/components/EncounterControls';
 import EncountersTable from '@/components/EncountersTable';
 import { getSessionFromCookie } from '@/app/lib/session';
 import { getModeratedChannels } from '@/app/lib/twitch';
@@ -12,7 +13,7 @@ type PageProps = {
 };
 
 type Hunt = {
-  hunt_id: number;
+  hunt_id: string;
   hunt_name: string;
   target_villager_id: number | null;
 };
@@ -70,7 +71,6 @@ export default async function CreatorHuntPage(props: PageProps) {
   }
 
   // If not owner, check if user moderates this channel
-  console.log(`Access Token: ${session?.accessToken}`)
   if (!isOwner && session?.accessToken) {
     try {
       const mods = await getModeratedChannels(session.accessToken, session.userId);
@@ -88,7 +88,7 @@ export default async function CreatorHuntPage(props: PageProps) {
           <Typography variant="h4" fontWeight={700}>{username}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
         </Stack>
-        {(isOwner || isModerator) && <OwnerHuntControls showStart />}
+        {isOwner && <OwnerHuntControls showStart />}
       </Container>
     );
   }
@@ -96,8 +96,9 @@ export default async function CreatorHuntPage(props: PageProps) {
   // Fetch encounters for hunt (desc by island_number)
   const { data: encounters, error: encError } = await supabase
     .from('encounters')
-    .select('island_number, encountered_at, villager_id')
+    .select('encounter_id, island_number, encountered_at, villager_id')
     .eq('hunt_id', hunt.hunt_id)
+    .eq('is_deleted', false)
     .order('island_number', { ascending: false });
 
   if (encError) {
@@ -110,6 +111,11 @@ export default async function CreatorHuntPage(props: PageProps) {
 
   const encounterList = encounters ?? [];
 
+  // Fetch villagers for encounter lookup
+  const { data: villagers } = await supabase
+    .from('villagers')
+    .select('villager_id, name, image_url');
+
   // Resolve target villager name for header (single row)
   let targetVillagerName: string | null = null;
   if (hunt.target_villager_id != null) {
@@ -121,9 +127,6 @@ export default async function CreatorHuntPage(props: PageProps) {
     targetVillagerName = targetRow?.name ?? null;
   }
 
-  console.log(`Session: ${session?.login?.toLowerCase()}`)
-  console.log(`isOwner: ${isOwner}`)
-
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
       <Stack spacing={0.5} sx={{ mb: 2 }}>
@@ -134,17 +137,22 @@ export default async function CreatorHuntPage(props: PageProps) {
         )}
       </Stack>
 
-      {(isOwner || isModerator) && (
+      {isOwner && (
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <Button variant="outlined" color="error">Abandon Hunt</Button>
-          <Button variant="outlined" color="warning">Pause Hunt</Button>
-          <Button variant="text">View Completed Hunts</Button>
-          <Button variant="text">View Paused Hunts</Button>
-          <Button variant="text">View Abandoned Hunts</Button>
+          <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
+            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+            <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
+          </form>
+          <form action="/api/hunts/pause" method="post" style={{ display: 'inline' }}>
+            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+            <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
+          </form>
         </Box>
       )}
 
-      <EncountersTable encounters={encounterList} />
+      <EncounterControls huntId={hunt.hunt_id} isOwner={isOwner} isModerator={isModerator} encounters={encounterList} />
+
+      <EncountersTable encounters={encounterList} villagers={villagers || []} isOwner={isOwner} isModerator={isModerator} />
     </Container>
   );
 }
