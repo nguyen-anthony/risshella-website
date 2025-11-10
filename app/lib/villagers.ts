@@ -32,7 +32,7 @@ export async function refreshVillagersIfStale(supabase: SupabaseClient): Promise
     const USER_AGENT = process.env.NOOKIPEDIA_USER_AGENT || '';
     if (!API_KEY) return { refreshed: false, reason: 'missing_api_key' };
 
-    const res = await fetch('https://api.nookipedia.com/villagers', {
+    const res = await fetch('https://api.nookipedia.com/villagers?game=NH', {
       headers: {
         'X-API-KEY': API_KEY,
         'Accept': 'application/json',
