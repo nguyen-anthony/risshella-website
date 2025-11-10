@@ -136,8 +136,14 @@ export default async function CreatorHuntPage(props: PageProps) {
 
       {isOwner && (
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <Button variant="outlined" color="error">Abandon Hunt</Button>
-          <Button variant="outlined" color="warning">Pause Hunt</Button>
+          <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
+            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+            <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
+          </form>
+          <form action="/api/hunts/pause" method="post" style={{ display: 'inline' }}>
+            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+            <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
+          </form>
         </Box>
       )}
 
