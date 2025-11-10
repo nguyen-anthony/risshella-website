@@ -21,8 +21,6 @@ export default function EncounterControls({ huntId, isOwner, isModerator, encoun
     <>
       <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         <Button variant="outlined" onClick={() => setAddOpen(true)}>Add New Encounter</Button>
-        <Button variant="outlined">Update Encounter</Button>
-        <Button variant="outlined">Delete Encounter</Button>
       </Box>
       <AddEncounterModal open={addOpen} onClose={() => setAddOpen(false)} huntId={huntId} encounters={encounters} />
     </>

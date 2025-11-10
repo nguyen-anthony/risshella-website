@@ -98,6 +98,7 @@ export default async function CreatorHuntPage(props: PageProps) {
     .from('encounters')
     .select('encounter_id, island_number, encountered_at, villager_id')
     .eq('hunt_id', hunt.hunt_id)
+    .eq('is_deleted', false)
     .order('island_number', { ascending: false });
 
   if (encError) {
@@ -151,7 +152,7 @@ export default async function CreatorHuntPage(props: PageProps) {
 
       <EncounterControls huntId={hunt.hunt_id} isOwner={isOwner} isModerator={isModerator} encounters={encounterList} />
 
-      <EncountersTable encounters={encounterList} villagers={villagers || []} />
+      <EncountersTable encounters={encounterList} villagers={villagers || []} isOwner={isOwner} isModerator={isModerator} />
     </Container>
   );
 }

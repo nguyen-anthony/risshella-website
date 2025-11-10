@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
-import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from "@mui/material";
+import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button } from "@mui/material";
+import UpdateDeleteEncounterModal from "@/components/UpdateDeleteEncounterModal";
 
 export type EncounterRow = {
   encounter_id: string;
@@ -15,13 +16,17 @@ type VillagersIndex = Record<number, { name: string; image_url: string | null }>
 type Props = {
   encounters: EncounterRow[];
   villagers?: Villager[];
+  isOwner: boolean;
+  isModerator: boolean;
 };
 
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ encounters, villagers }: Props) {
+export default function EncountersTable({ encounters, villagers, isOwner, isModerator }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
 
   React.useEffect(() => {
     if (villagers) {
@@ -82,6 +87,7 @@ export default function EncountersTable({ encounters, villagers }: Props) {
             <TableCell>Island</TableCell>
             <TableCell>Villager</TableCell>
             <TableCell>Encountered</TableCell>
+            {(isOwner || isModerator) && <TableCell>Actions</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -97,11 +103,32 @@ export default function EncountersTable({ encounters, villagers }: Props) {
                   </Box>
                 </TableCell>
                 <TableCell>{new Date(e.encountered_at).toLocaleString()}</TableCell>
+                {(isOwner || isModerator) && (
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedEncounter(e);
+                        setModalOpen(true);
+                      }}
+                    >
+                      Update/Delete
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
+      {/* TODO: Add UpdateDeleteEncounterModal here */}
+      <UpdateDeleteEncounterModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        encounter={selectedEncounter}
+        villagers={villagers || []}
+      />
     </TableContainer>
   );
 }
