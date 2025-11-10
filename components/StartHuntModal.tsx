@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
   Avatar,
   Autocomplete,
@@ -18,15 +17,15 @@ type Villager = { villager_id: number; name: string; image_url: string | null };
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreated?: (huntId: number | null) => void;
+  onCreated?: () => void;
 };
 
 export default function StartHuntModal({ open, onClose, onCreated }: Props) {
-  const router = useRouter();
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [huntName, setHuntName] = React.useState("");
   const [selected, setSelected] = React.useState<Villager | null>(null);
+  const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
   const [submitting, setSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -54,16 +53,17 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
       const res = await fetch("/api/hunts/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hunt_name: huntName || undefined, target_villager_id: selected.villager_id }),
+        body: JSON.stringify({
+          hunt_name: huntName || undefined,
+          target_villager_id: selected.villager_id,
+          island_villagers: islandVillagers.map(v => v.villager_id)
+        }),
       });
-      const json = await res.json().catch(() => null);
       if (res.ok) {
-        onCreated?.(json?.hunt_id ?? null);
+        onCreated?.();
         onClose();
-        // Revalidate and re-render the server page so the new ACTIVE hunt appears
-        router.refresh();
       } else {
-        onCreated?.(null);
+        // Handle error
       }
     } finally {
       setSubmitting(false);
@@ -79,6 +79,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           fullWidth
           value={huntName}
           onChange={(e) => setHuntName(e.target.value)}
+          helperText="Default hunt name will be 'Hunt for {target villager}'"
         />
         <Autocomplete
           loading={loading}
@@ -93,7 +94,31 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Target Villager" required />}
+          renderInput={(params) => <TextField {...params} label="Target Villager" required helperText="Select the villager you're hunting for"/>}
+        />
+        <Autocomplete
+          multiple
+          loading={loading}
+          options={villagers.filter(v => !selected || v.villager_id !== selected.villager_id)}
+          getOptionKey={(option) => option.villager_id}
+          getOptionLabel={(v) => v.name}
+          value={islandVillagers}
+          onChange={(_, v) => setIslandVillagers(v.slice(0, 9))} // Limit to 9 villagers
+          renderOption={(props, option) => (
+            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
+              {option.name}
+            </Box>
+          )}
+          renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island. Villagers in this list will not be included on generated Bingo cards for your community. You can edit this later." />}
+          renderTags={(tagValue) =>
+            tagValue.map((option) => (
+              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
+                {option.name}
+              </Box>
+            ))
+          }
         />
       </DialogContent>
       <DialogActions>

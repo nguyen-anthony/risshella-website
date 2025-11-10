@@ -5,9 +5,10 @@ import StartHuntModal from "@/components/StartHuntModal";
 
 type Props = {
   showStart?: boolean;
+  onHuntCreated?: () => void;
 };
 
-export default function OwnerHuntControls({ showStart = false }: Props) {
+export default function OwnerHuntControls({ showStart = false, onHuntCreated }: Props) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -17,7 +18,7 @@ export default function OwnerHuntControls({ showStart = false }: Props) {
           <Button variant="contained" onClick={() => setOpen(true)}>Start New Hunt</Button>
         )}
       </Box>
-      <StartHuntModal open={open} onClose={() => setOpen(false)} />
+      <StartHuntModal open={open} onClose={() => setOpen(false)} onCreated={onHuntCreated} />
     </>
   );
 }
