@@ -5,9 +5,10 @@ import type { Creator } from "@/types/creator";
 
 type Props = {
   creator: Creator;
+  statusText?: string;
 };
 
-export default function CreatorCard({ creator }: Props) {
+export default function CreatorCard({ creator, statusText = "Villager hunt in progress" }: Props) {
   const { twitch_username, avatar_url } = creator;
 
   return (
@@ -30,7 +31,7 @@ export default function CreatorCard({ creator }: Props) {
         <CardContent sx={{ pt: 0.5 }}>
           {/* Placeholder for extra details later (game, island, status, etc.) */}
           <Typography variant="body2" color="text.secondary">
-            Villager hunt in progress
+            {statusText}
           </Typography>
         </CardContent>
       </CardActionArea>
