@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, description } = await request.json();
+    const { type, shortDescription, description } = await request.json();
 
-    if (!type || !description) {
-      return NextResponse.json({ error: 'Missing type or description' }, { status: 400 });
+    if (!type || !shortDescription || !description) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     if (!['issue', 'feature'].includes(type)) {
       return NextResponse.json({ error: 'Invalid type. Must be "issue" or "feature"' }, { status: 400 });
+    }
+
+    if (shortDescription.length > 50) {
+      return NextResponse.json({ error: 'Short description must be 50 characters or less' }, { status: 400 });
     }
 
     const token = process.env.GITHUB_ACCESS_TOKEN;
@@ -17,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'GitHub token not configured' }, { status: 500 });
     }
 
-    const title = type === 'issue' ? `🐛 Bug Report` : `✨ Feature Request`;
+    const title = `${type === 'issue' ? '🐛 Bug Report' : '✨ Feature Request'}: ${shortDescription}`;
     const body = `**Type:** ${type === 'issue' ? 'Bug Report' : 'Feature Request'}
 
 **Description:**

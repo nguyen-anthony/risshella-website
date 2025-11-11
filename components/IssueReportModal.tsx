@@ -24,13 +24,14 @@ interface IssueReportModalProps {
 
 export default function IssueReportModal({ open, onClose }: IssueReportModalProps) {
   const [type, setType] = React.useState<'issue' | 'feature'>('issue');
+  const [shortDescription, setShortDescription] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
 
   const handleSubmit = async () => {
-    if (!description.trim()) return;
+    if (!shortDescription.trim() || !description.trim()) return;
 
     setSubmitting(true);
     setError(null);
@@ -41,13 +42,18 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type, description: description.trim() }),
+        body: JSON.stringify({ 
+          type, 
+          shortDescription: shortDescription.trim(),
+          description: description.trim() 
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         setSuccess(true);
+        setShortDescription('');
         setDescription('');
         setTimeout(() => {
           setSuccess(false);
@@ -65,6 +71,7 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
 
   const handleClose = () => {
     if (!submitting) {
+      setShortDescription('');
       setDescription('');
       setError(null);
       setSuccess(false);
@@ -91,10 +98,21 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
 
           <TextField
             fullWidth
+            label="Short Description"
+            placeholder={`${type === 'issue' ? 'Bug Report' : 'Feature Request'}: Brief summary (max 50 chars)`}
+            value={shortDescription}
+            onChange={(e) => setShortDescription(e.target.value.slice(0, 50))}
+            disabled={submitting}
+            helperText={`${shortDescription.length}/50 characters`}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
             multiline
             rows={4}
-            label="Description"
-            placeholder={`Describe the ${type === 'issue' ? 'issue' : 'feature request'} in detail...`}
+            label="Detailed Description"
+            placeholder={`Provide more details about the ${type === 'issue' ? 'issue' : 'feature request'}...`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={submitting}
@@ -120,7 +138,7 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={!description.trim() || submitting || success}
+          disabled={!shortDescription.trim() || !description.trim() || submitting || success}
           startIcon={submitting ? <CircularProgress size={16} /> : null}
         >
           {submitting ? 'Submitting...' : 'Submit'}
