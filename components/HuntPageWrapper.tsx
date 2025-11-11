@@ -1,7 +1,16 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import HelpIcon from '@mui/icons-material/Help';
+import CloseIcon from '@mui/icons-material/Close';
+import CasinoIcon from '@mui/icons-material/Casino';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PauseIcon from '@mui/icons-material/Pause';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove'
+import SortIcon from '@mui/icons-material/Sort';
 import OwnerHuntControls from '@/components/OwnerHuntControls';
 import EncountersTable from '@/components/EncountersTable';
 import AuthLink from '@/components/AuthLink';
@@ -51,6 +60,7 @@ export default function HuntPageWrapper({
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
   const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
   const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
+  const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -148,6 +158,23 @@ export default function HuntPageWrapper({
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
+      {/* Help Button for authenticated owners/moderators */}
+      {(initialIsOwner || initialIsModerator) && initialSession && (
+        <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
+          <IconButton
+            onClick={() => setInstructionsDrawerOpen(true)}
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'white',
+              '&:hover': { bgcolor: 'primary.dark' },
+              boxShadow: 3
+            }}
+            size="large"
+          >
+            <HelpIcon />
+          </IconButton>
+        </Box>
+      )}
       <Stack spacing={0.5} sx={{ mb: 2 }}>
         <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
         {!initialSession && <AuthLink username={initialDisplayName} />}
@@ -172,7 +199,7 @@ export default function HuntPageWrapper({
         )}
       </Stack>
 
-      {initialIsOwner && (
+      
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           <Button
             variant="contained"
@@ -182,22 +209,26 @@ export default function HuntPageWrapper({
           >
             {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
           </Button>
-          <Button
-            variant="outlined"
-            onClick={() => setUpdateIslandModalOpen(true)}
-          >
-            Update Island Villagers
-          </Button>
-          <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
-            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
-            <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
-          </form>
-          <form action="/api/hunts/pause" method="post" style={{ display: 'inline' }}>
-            <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
-            <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
-          </form>
+          {initialIsOwner && (
+            <>
+              <Button
+                variant="outlined"
+                onClick={() => setUpdateIslandModalOpen(true)}
+              >
+                Update Island Villagers
+              </Button>
+              <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
+                <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+                <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
+              </form>
+              <form action="/api/hunts/pause" method="post" style={{ display: 'inline' }}>
+                <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+                <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
+              </form>
+            </>
+          )}
         </Box>
-      )}
+
 
       <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={initialIsModerator} huntId={hunt.hunt_id} />
 
@@ -217,6 +248,142 @@ export default function HuntPageWrapper({
         bingoCardImage={bingoCardImage}
         loading={generatingBingo}
       />
+
+      {/* Instructions Drawer */}
+      <Drawer
+        anchor="right"
+        open={instructionsDrawerOpen}
+        onClose={() => setInstructionsDrawerOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '90vw', sm: '400px' },
+            p: 2
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="h6" fontWeight={600}>
+            Hunt Controls Guide
+          </Typography>
+          <IconButton onClick={() => setInstructionsDrawerOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
+
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          This guide explains all the controls available for managing your villager hunt.
+        </Typography>
+
+        <List>
+          <ListItem>
+            <ListItemIcon>
+              <CasinoIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Generate Bingo Card"
+              secondary="Creates a bingo card for your community to play along. Automatically excludes your dreamies and island villagers."
+            />
+          </ListItem>
+          
+          {initialIsOwner && (
+            <>
+              <ListItem>
+                <ListItemIcon>
+                  <EditIcon color="primary" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Update Island Villagers"
+                  secondary="Modify which villagers are currently on your island. These will be excluded from bingo cards."
+                />
+              </ListItem>
+
+              <ListItem>
+                <ListItemIcon>
+                  <DeleteIcon color="error" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Abandon Hunt"
+                  secondary="Permanently end this hunt. This action cannot be undone."
+                />
+              </ListItem>
+
+              <ListItem>
+                <ListItemIcon>
+                  <PauseIcon color="warning" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Pause Hunt"
+                  secondary="Temporarily pause the hunt. You can resume it later."
+                />
+              </ListItem>
+            </>
+          )}
+        </List>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+          Encounters Table
+        </Typography>
+
+        <List>
+          {(initialIsModerator || initialIsOwner) && (
+            <>
+              <ListItem>
+                <ListItemIcon>
+                  <AddIcon color="success" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Add Encounter"
+                  secondary="Log a new villager encounter. Select the villager and island number"
+                />
+              </ListItem>
+
+              <ListItem>
+                <ListItemIcon>
+                  <RemoveIcon color="success" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Update / Delete Encounter"
+                  secondary="Update or delete an existing counter"
+                />
+              </ListItem>
+            </>
+          )}
+
+          {/* <ListItem>
+            <ListItemIcon>
+              <SearchIcon color="action" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Search & Filter"
+              secondary="Use the search box to find specific encounters by villager name or notes."
+            />
+          </ListItem> */}
+
+          <ListItem>
+            <ListItemIcon>
+              <SortIcon color="action" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Sort Columns"
+              secondary="Click column headers to sort by island number, date, villager name, or status."
+            />
+          </ListItem>
+        </List>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="body2" color="text.secondary">
+          <strong>Pro Tips:</strong><br/>
+          • Bingo cards are generated randomly each time<br/>
+          • Island villagers are automatically excluded from bingo cards<br/>
+          • All timestamps are in your local timezone<br/>
+          • Moderators can add encounters but cannot modify hunt settings
+        </Typography>
+      </Drawer>
 
     </Container>
   );
