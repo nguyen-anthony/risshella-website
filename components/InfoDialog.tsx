@@ -87,7 +87,7 @@ export default function InfoDialog({ open, onClose }: InfoDialogProps) {
               How to report issues/request features?
             </Typography>
             <Typography variant="body2" component="div" sx={{ pl: 2 }}>
-                TBD
+                There&apos;s a feedback button on the bottom right of your screen
             </Typography>
           </Box>
         </Stack>
