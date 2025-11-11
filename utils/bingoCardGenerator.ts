@@ -39,13 +39,13 @@ async function waitForImagesToLoad(container: HTMLElement): Promise<void> {
 function createBingoCardHTML({
   huntName,
   creatorName,
-  targetVillager,
+  targetVillagers,
   bingoVillagers,
   imageUrlMap,
 }: {
   huntName: string;
   creatorName: string;
-  targetVillager: { name: string; image_url: string | null } | null;
+  targetVillagers: { name: string; image_url: string | null }[];
   bingoVillagers: Villager[];
   imageUrlMap: Record<string, string>;
 }) {
@@ -77,29 +77,46 @@ function createBingoCardHTML({
     <strong>Creator:</strong> ${creatorName}
   `;
 
-  if (targetVillager) {
+  if (targetVillagers.length > 0) {
     const targetInfo = document.createElement('div');
     targetInfo.style.display = 'flex';
-    targetInfo.style.alignItems = 'center';
-    targetInfo.style.gap = '10px';
+    targetInfo.style.flexDirection = 'column';
+    targetInfo.style.gap = '8px';
     targetInfo.style.fontSize = '16px';
 
     const targetLabel = document.createElement('strong');
-    targetLabel.textContent = 'Target:';
-
-    const targetImg = document.createElement('img');
-    targetImg.src = imageUrlMap[targetVillager.image_url || ''] || targetVillager.image_url || '';
-    targetImg.alt = targetVillager.name;
-    targetImg.style.width = '32px';
-    targetImg.style.height = '32px';
-    targetImg.style.borderRadius = '4px';
-
-    const targetName = document.createElement('span');
-    targetName.textContent = targetVillager.name;
+    targetLabel.textContent = 'Dreamies:';
 
     targetInfo.appendChild(targetLabel);
-    targetInfo.appendChild(targetImg);
-    targetInfo.appendChild(targetName);
+
+    const dreamiesContainer = document.createElement('div');
+    dreamiesContainer.style.display = 'flex';
+    dreamiesContainer.style.flexWrap = 'wrap';
+    dreamiesContainer.style.gap = '8px';
+
+    targetVillagers.forEach(villager => {
+      const villagerDiv = document.createElement('div');
+      villagerDiv.style.display = 'flex';
+      villagerDiv.style.alignItems = 'center';
+      villagerDiv.style.gap = '4px';
+
+      const villagerImg = document.createElement('img');
+      villagerImg.src = imageUrlMap[villager.image_url || ''] || villager.image_url || '';
+      villagerImg.alt = villager.name;
+      villagerImg.style.width = '24px';
+      villagerImg.style.height = '24px';
+      villagerImg.style.borderRadius = '4px';
+
+      const villagerName = document.createElement('span');
+      villagerName.textContent = villager.name;
+      villagerName.style.fontSize = '14px';
+
+      villagerDiv.appendChild(villagerImg);
+      villagerDiv.appendChild(villagerName);
+      dreamiesContainer.appendChild(villagerDiv);
+    });
+
+    targetInfo.appendChild(dreamiesContainer);
     huntInfo.appendChild(targetInfo);
   }
 
@@ -188,22 +205,22 @@ export async function generateBingoCard({
   huntId,
   huntName,
   creatorName,
-  targetVillager,
+  targetVillagers,
   islandVillagers,
   villagers,
 }: {
   huntId: string;
   huntName: string;
   creatorName: string;
-  targetVillager: { villager_id: number; name: string; image_url: string | null } | null;
+  targetVillagers: { villager_id: number; name: string; image_url: string | null }[];
   islandVillagers: number[];
   villagers: Villager[];
 }): Promise<string> {
   // Get available villagers (exclude target and island villagers)
   const excludedIds = new Set([
-    targetVillager?.villager_id,
+    ...targetVillagers.map(v => v.villager_id),
     ...islandVillagers,
-  ].filter(Boolean));
+  ]);
 
   const availableVillagers = villagers.filter(v => !excludedIds.has(v.villager_id));
 
@@ -218,7 +235,7 @@ export async function generateBingoCard({
 
   // Preload all villager images and convert to data URLs or proxy URLs
   const imageUrls = [
-    targetVillager?.image_url,
+    ...targetVillagers.map(v => v.image_url).filter(Boolean),
     ...bingoVillagers.map(v => v.image_url).filter(Boolean),
   ].filter(Boolean) as string[];
 
@@ -228,7 +245,7 @@ export async function generateBingoCard({
   const bingoCard = createBingoCardHTML({
     huntName,
     creatorName,
-    targetVillager,
+    targetVillagers,
     bingoVillagers,
     imageUrlMap,
   });
@@ -255,7 +272,7 @@ export async function generateBingoCard({
       huntId,
       huntName,
       creatorName,
-      targetVillager,
+      targetVillagers,
       islandVillagerIds: islandVillagers,
       bingoVillagerIds: bingoVillagers.map(v => v.villager_id),
       generatedAt: new Date().toISOString(),
