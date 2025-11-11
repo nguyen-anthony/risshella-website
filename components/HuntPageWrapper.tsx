@@ -74,7 +74,11 @@ export default function HuntPageWrapper({
       .from('villagers')
       .select('villager_id, name, image_url');
 
-    setVillagers(villagersData || []);
+    // Exclude villagers that require additional purchases (not part of base game)
+    const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
+    const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+
+    setVillagers(filteredVillagers);
     setLoading(false);
   }, [initialTwitchId]);
 
