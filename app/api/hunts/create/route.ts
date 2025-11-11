@@ -11,10 +11,10 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null) as {
     hunt_name?: string;
-    target_villager_id?: number;
+    target_villager_id?: number[];
     island_villagers?: number[];
   } | null;
-  if (!body || typeof body.target_villager_id !== 'number') {
+  if (!body || !Array.isArray(body.target_villager_id) || body.target_villager_id.length === 0) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
@@ -26,21 +26,25 @@ export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const villagerId = body.target_villager_id;
-  // If hunt_name not provided, fetch villager name for default
+  const villagerIds = body.target_villager_id;
+  // If hunt_name not provided, fetch villager names for default
   let finalName = body.hunt_name?.trim();
   if (!finalName) {
-    const { data: v } = await supabase
+    const { data: villagers } = await supabase
       .from('villagers')
       .select('name')
-      .eq('villager_id', villagerId)
-      .maybeSingle();
-    finalName = v?.name ? `Hunt for ${v.name}` : 'Villager Hunt';
+      .in('villager_id', villagerIds);
+    if (villagers && villagers.length > 0) {
+      const names = villagers.map(v => v.name).join(', ');
+      finalName = villagers.length === 1 ? `Hunt for ${names}` : `Hunt for ${names}`;
+    } else {
+      finalName = 'Villager Hunt';
+    }
   }
 
   const insert = {
     hunt_name: finalName,
-    target_villager_id: villagerId,
+    target_villager_id: villagerIds,
     hunt_status: 'ACTIVE',
     twitch_id: Number(session.userId),
     island_villagers: body.island_villagers || [],

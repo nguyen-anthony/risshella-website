@@ -13,7 +13,7 @@ import { createClient } from '@/utils/supabase/client';
 type Hunt = {
   hunt_id: string;
   hunt_name: string;
-  target_villager_id: number | null;
+  target_villager_id: number[];
   island_villagers: number[];
 };
 
@@ -96,7 +96,7 @@ export default function HuntPageWrapper({
         huntId: hunt.hunt_id,
         huntName: hunt.hunt_name,
         creatorName: initialDisplayName,
-        targetVillager: hunt.target_villager_id ? villagers.find(v => v.villager_id === hunt.target_villager_id) || null : null,
+        targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
         villagers,
       });
@@ -110,11 +110,16 @@ export default function HuntPageWrapper({
     }
   };
 
-  // Resolve target villager data
-  const [targetVillagerName, targetVillagerImage] = React.useMemo(() => {
-    if (!hunt?.target_villager_id) return [null, null];
-    const villager = villagers.find(v => v.villager_id === hunt.target_villager_id);
-    return [villager?.name || null, villager?.image_url || null];
+  // Resolve target villagers data
+  const [targetVillagers, setTargetVillagers] = React.useState<Villager[]>([]);
+
+  React.useEffect(() => {
+    if (!hunt?.target_villager_id || hunt.target_villager_id.length === 0) {
+      setTargetVillagers([]);
+      return;
+    }
+    const targetVillagersData = villagers.filter(v => hunt.target_villager_id.includes(v.villager_id));
+    setTargetVillagers(targetVillagersData);
   }, [hunt?.target_villager_id, villagers]);
 
   if (loading) {
@@ -143,16 +148,22 @@ export default function HuntPageWrapper({
         <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
-        {targetVillagerName && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">Target:</Typography>
-            <Box
-              component="img"
-              src={targetVillagerImage || undefined}
-              alt={targetVillagerName}
-              sx={{ maxWidth: 80, maxHeight: 80, borderRadius: 1 }}
-            />
-            <Typography variant="body2" color="text.secondary">{targetVillagerName}</Typography>
+        {targetVillagers.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {targetVillagers.map((villager) => (
+                <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    component="img"
+                    src={villager.image_url || undefined}
+                    alt={villager.name}
+                    sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
+                  />
+                  <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
+                </Box>
+              ))}
+            </Box>
           </Box>
         )}
       </Stack>

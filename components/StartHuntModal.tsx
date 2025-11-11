@@ -24,7 +24,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [huntName, setHuntName] = React.useState("");
-  const [selected, setSelected] = React.useState<Villager | null>(null);
+  const [selected, setSelected] = React.useState<Villager[]>([]);
   const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -47,7 +47,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
   }, [open]);
 
   const handleCreate = async () => {
-    if (!selected) return;
+    if (!selected.length) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/hunts/create", {
@@ -55,7 +55,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hunt_name: huntName || undefined,
-          target_villager_id: selected.villager_id,
+          target_villager_id: selected.map(v => v.villager_id),
           island_villagers: islandVillagers.map(v => v.villager_id)
         }),
       });
@@ -79,9 +79,10 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           fullWidth
           value={huntName}
           onChange={(e) => setHuntName(e.target.value)}
-          helperText="Default hunt name will be 'Hunt for {target villager}'"
+          helperText="Default hunt name will be 'Hunt for {dreamie villagers}'"
         />
         <Autocomplete
+          multiple
           loading={loading}
           options={villagers}
           getOptionKey={(option) => option.villager_id}
@@ -94,12 +95,20 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Target Villager" required helperText="Select the villager you're hunting for"/>}
+          renderInput={(params) => <TextField {...params} label="Dreamie List" required helperText="Select the villagers you're hunting for"/>}
+          renderTags={(tagValue) =>
+            tagValue.map((option) => (
+              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
+                {option.name}
+              </Box>
+            ))
+          }
         />
         <Autocomplete
           multiple
           loading={loading}
-          options={villagers.filter(v => !selected || v.villager_id !== selected.villager_id)}
+          options={villagers.filter(v => !selected.some(s => s.villager_id === v.villager_id))}
           getOptionKey={(option) => option.villager_id}
           getOptionLabel={(v) => v.name}
           value={islandVillagers}
@@ -123,7 +132,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleCreate} variant="contained" disabled={!selected || submitting}>
+        <Button onClick={handleCreate} variant="contained" disabled={!selected.length || submitting}>
           {submitting ? "Creating..." : "Create Hunt"}
         </Button>
       </DialogActions>
