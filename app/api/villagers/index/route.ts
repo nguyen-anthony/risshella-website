@@ -15,8 +15,12 @@ export async function GET() {
     return NextResponse.json({ villagers: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
   }
 
+  // Exclude villagers that require additional purchases (not part of base game)
+  const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
+  const filteredVillagers = (data ?? []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+
   return NextResponse.json(
-    { villagers: data ?? [] },
+    { villagers: filteredVillagers },
     {
       headers: {
         // Avoid serving stale lists in the modal; let clients cache in-memory if desired
