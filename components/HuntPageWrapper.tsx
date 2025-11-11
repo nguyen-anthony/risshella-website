@@ -97,6 +97,33 @@ export default function HuntPageWrapper({
     fetchHuntData();
   }, [fetchHuntData]);
 
+  // Set up real-time subscription for hunt changes
+  React.useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel('hunts_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'hunts',
+          filter: `twitch_id=eq.${initialTwitchId}`,
+        },
+        (payload) => {
+          console.log('Hunt realtime update:', payload);
+          // Refetch hunt data on any change to hunts for this creator
+          fetchHuntData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [initialTwitchId, fetchHuntData]);
+
   // Handle bingo card generation
   const handleGenerateBingoCard = async () => {
     if (!hunt) return;
