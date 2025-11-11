@@ -15,7 +15,36 @@ type PageData = {
 };
 
 export default function VillagerHuntClient({ data }: { data: PageData }) {
-  const [infoDialogOpen, setInfoDialogOpen] = React.useState(true);
+  // Check if user has recently seen the info dialog
+  const getInfoDialogExpiry = () => {
+    if (typeof window === 'undefined') return null;
+    const stored = localStorage.getItem('infoDialogExpiry');
+    return stored ? new Date(stored) : null;
+  };
+
+  const setInfoDialogExpiry = (days: number = 30) => {
+    if (typeof window === 'undefined') return;
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + days);
+    localStorage.setItem('infoDialogExpiry', expiry.toISOString());
+  };
+
+  const [infoDialogOpen, setInfoDialogOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const shouldShow = () => {
+      const expiry = getInfoDialogExpiry();
+      if (!expiry) return true;
+      return new Date() > expiry;
+    };
+    
+    setInfoDialogOpen(shouldShow());
+  }, []);
+
+  const handleInfoDialogClose = () => {
+    setInfoDialogOpen(false);
+    setInfoDialogExpiry(30); // Don't show again for 30 days
+  };
 
   const { creators, session, error } = data;
   const selfCreator = session ? creators.find(c => c.twitch_username.toLowerCase() === session.login.toLowerCase()) : undefined;
@@ -55,7 +84,7 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
         </Box>
       </Container>
 
-      <InfoDialog open={infoDialogOpen} onClose={() => setInfoDialogOpen(false)} />
+      <InfoDialog open={infoDialogOpen} onClose={handleInfoDialogClose} />
     </>
   );
 }
