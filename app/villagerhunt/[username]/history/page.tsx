@@ -2,9 +2,12 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container, Typography, Box, Stack, Card, CardContent } from '@mui/material';
 import Link from 'next/link';
+import HuntStatusFilter from '@/components/HuntStatusFilter';
+import ResumeButton from '@/components/ResumeButton';
 
 type PageProps = {
   params: Promise<{ username: string }>;
+  searchParams?: Promise<{ status?: string }>;
 };
 
 type Villager = {
@@ -14,8 +17,10 @@ type Villager = {
 };
 
 export default async function HuntHistoryPage(props: PageProps) {
-  const { params } = props;
+  const { params, searchParams } = props;
   const { username: rawUsername } = await params;
+  const sp = searchParams ? await searchParams : {};
+  const statusFilter = sp.status;
   const username = decodeURIComponent(rawUsername);
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
@@ -54,6 +59,9 @@ export default async function HuntHistoryPage(props: PageProps) {
     );
   }
 
+  // Filter hunts by status if specified
+  const filteredHunts = statusFilter ? hunts?.filter(hunt => hunt.hunt_status === statusFilter) : hunts;
+
   // Fetch villagers for dreamie lookup
   const { data: villagersData } = await supabase
     .from('villagers')
@@ -69,12 +77,15 @@ export default async function HuntHistoryPage(props: PageProps) {
       <Stack spacing={2}>
         <Box>
           <Typography variant="h4" fontWeight={700}>{displayName} - Hunt History</Typography>
-          <Link href={`/villagerhunt/${encodeURIComponent(username)}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-            Back to Current Hunt
-          </Link>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
+            <HuntStatusFilter />
+            <Link href={`/villagerhunt/${encodeURIComponent(username)}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+              Back to Current Hunt
+            </Link>
+          </Box>
         </Box>
-        {hunts && hunts.length > 0 ? (
-          hunts.map((hunt) => {
+        {filteredHunts && filteredHunts.length > 0 ? (
+          filteredHunts.map((hunt) => {
             const dreamies = hunt.target_villager_id.map((id: number) => villagersMap[id]).filter(Boolean);
             return (
               <Link key={hunt.hunt_id} href={`/villagerhunt/${encodeURIComponent(username)}/history/${hunt.hunt_id}`} style={{ textDecoration: 'none' }}>
@@ -105,6 +116,9 @@ export default async function HuntHistoryPage(props: PageProps) {
                           </Box>
                         )}
                       </Box>
+                      {hunt.hunt_status === 'PAUSED' && (
+                        <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={twitchId} />
+                      )}
                     </Box>
                   </CardContent>
                 </Card>
