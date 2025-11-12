@@ -65,7 +65,7 @@ export default function ResumeButton({ huntId, huntName, twitchId }: Props) {
   };
 
   return (
-    <>
+    <div data-resume-button>
       <Button
         variant="contained"
         color="success"
@@ -91,6 +91,6 @@ export default function ResumeButton({ huntId, huntName, twitchId }: Props) {
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   );
 }

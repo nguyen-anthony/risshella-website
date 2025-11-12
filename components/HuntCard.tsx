@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import ResumeButtonWrapper from './ResumeButtonWrapper';
+import ResumeButton from './ResumeButton';
 
 type Villager = {
   villager_id: number;
@@ -69,9 +69,7 @@ export default function HuntCard({ hunt, username, twitchId, villagersMap }: Pro
             )}
           </Box>
           {hunt.hunt_status === 'PAUSED' && (
-            <div data-resume-button>
-              <ResumeButtonWrapper huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={twitchId} />
-            </div>
+            <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={twitchId} />
           )}
         </Box>
       </CardContent>
