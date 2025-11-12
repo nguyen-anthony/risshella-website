@@ -16,9 +16,6 @@ export default async function VillagerHunt() {
   const supabase = createClient(cookieStore);
   const session = await getSessionFromCookie();
 
-  // Opportunistic refresh of villagers table when stale (>24h). Silently ignores if API key missing.
-  await refreshVillagersIfStale(supabase);
-
   const { data, error } = await supabase
     .from('creators')
     .select('twitch_id, twitch_username, display_name, avatar_url');
