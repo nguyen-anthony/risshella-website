@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -44,6 +45,7 @@ type Props = {
   initialSession: Session | null;
   initialIsOwner: boolean;
   initialIsModerator: boolean;
+  initialUsername: string;
 };
 
 export default function HuntPageWrapper({
@@ -52,6 +54,7 @@ export default function HuntPageWrapper({
   initialSession,
   initialIsOwner,
   initialIsModerator,
+  initialUsername,
 }: Props) {
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -191,6 +194,9 @@ export default function HuntPageWrapper({
         <Stack spacing={1} sx={{ mb: 2 }}>
           <Typography variant="h4" fontWeight={700}>{initialDisplayName}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
+          <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+            View Hunt History
+          </Link>
         </Stack>
         {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
       </Container>
@@ -220,6 +226,9 @@ export default function HuntPageWrapper({
         <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
+        <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+          View Hunt History
+        </Link>
         {targetVillagers.length > 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>

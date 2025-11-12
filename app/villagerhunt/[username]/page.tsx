@@ -71,6 +71,7 @@ export default async function CreatorHuntPage(props: PageProps) {
       initialSession={session}
       initialIsOwner={isOwner}
       initialIsModerator={isModerator}
+      initialUsername={username}
     />
   );
 }

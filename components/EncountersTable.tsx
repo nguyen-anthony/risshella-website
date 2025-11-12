@@ -263,7 +263,6 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[10, 25, 50, 100]}
       />
-      {/* TODO: Add UpdateDeleteEncounterModal here */}
       <UpdateDeleteEncounterModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
