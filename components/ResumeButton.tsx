@@ -15,7 +15,8 @@ export default function ResumeButton({ huntId, huntName, twitchId }: Props) {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [activeHuntName, setActiveHuntName] = React.useState<string | null>(null);
 
-  const handleResumeClick = async () => {
+  const handleResumeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     const supabase = createClient();
 
     // Check for active hunt

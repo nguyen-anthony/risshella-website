@@ -106,9 +106,6 @@ export default async function HuntHistoryPage(props: PageProps) {
                           </Box>
                         )}
                       </Box>
-                      {hunt.hunt_status === 'PAUSED' && (
-                        <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={twitchId} />
-                      )}
                     </Box>
                   </CardContent>
                 </Card>
