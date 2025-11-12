@@ -103,8 +103,10 @@ function createBingoCardHTML({
       const villagerImg = document.createElement('img');
       villagerImg.src = imageUrlMap[villager.image_url || ''] || villager.image_url || '';
       villagerImg.alt = villager.name;
-      villagerImg.style.width = '24px';
-      villagerImg.style.height = '24px';
+      villagerImg.style.width = 'auto';
+      villagerImg.style.height = 'auto';
+      villagerImg.style.maxWidth = '24px';
+      villagerImg.style.maxHeight = '24px';
       villagerImg.style.borderRadius = '4px';
 
       const villagerName = document.createElement('span');
@@ -178,8 +180,10 @@ function createBingoCardHTML({
         const img = document.createElement('img');
         img.src = imageUrlMap[villager.image_url] || villager.image_url;
         img.alt = villager.name;
-        img.style.width = '48px';
-        img.style.height = '48px';
+        img.style.width = 'auto';
+        img.style.height = 'auto';
+        img.style.maxWidth = '48px';
+        img.style.maxHeight = '48px';
         img.style.borderRadius = '4px';
         img.style.marginBottom = '4px';
         cell.appendChild(img);
