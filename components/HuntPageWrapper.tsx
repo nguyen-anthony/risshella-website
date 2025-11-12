@@ -165,6 +165,18 @@ export default function HuntPageWrapper({
     setTargetVillagers(targetVillagersData);
   }, [hunt?.target_villager_id, villagers]);
 
+  // Resolve island villagers data
+  const [islandVillagersData, setIslandVillagersData] = React.useState<Villager[]>([]);
+
+  React.useEffect(() => {
+    if (!hunt?.island_villagers || hunt.island_villagers.length === 0) {
+      setIslandVillagersData([]);
+      return;
+    }
+    const islandVillagersFiltered = villagers.filter(v => hunt.island_villagers.includes(v.villager_id));
+    setIslandVillagersData(islandVillagersFiltered);
+  }, [hunt?.island_villagers, villagers]);
+
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
@@ -213,6 +225,24 @@ export default function HuntPageWrapper({
             <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {targetVillagers.map((villager) => (
+                <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    component="img"
+                    src={villager.image_url || undefined}
+                    alt={villager.name}
+                    sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
+                  />
+                  <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+        {islandVillagersData.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">Current Island Villagers:</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {islandVillagersData.map((villager) => (
                 <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box
                     component="img"
