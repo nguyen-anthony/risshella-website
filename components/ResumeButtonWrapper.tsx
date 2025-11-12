@@ -11,7 +11,11 @@ type Props = {
 
 export default function ResumeButtonWrapper({ huntId, huntName, twitchId }: Props) {
   return (
-    <div onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+    <div 
+      onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+      data-resume-button
+    >
       <ResumeButton huntId={huntId} huntName={huntName} twitchId={twitchId} />
     </div>
   );
