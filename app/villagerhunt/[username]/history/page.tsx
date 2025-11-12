@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container, Typography, Box, Stack, Card, CardContent } from '@mui/material';
 import Link from 'next/link';
-import ResumeButton from '@/components/ResumeButton';
 
 type PageProps = {
   params: Promise<{ username: string }>;
