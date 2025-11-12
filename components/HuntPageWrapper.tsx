@@ -252,6 +252,10 @@ export default function HuntPageWrapper({
                 <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
                 <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
               </form>
+              <form action="/api/hunts/complete" method="post" style={{ display: 'inline' }}>
+                <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
+                <Button type="submit" variant="outlined" color="primary">Complete Hunt</Button>
+              </form>
             </>
           )}
         </Box>
