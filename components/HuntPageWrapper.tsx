@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -61,6 +61,8 @@ export default function HuntPageWrapper({
   const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
   const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
+  const [selectedStatus, setSelectedStatus] = React.useState<string>('');
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -236,6 +238,8 @@ export default function HuntPageWrapper({
           >
             {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
           </Button>
+        </Box>
+        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {initialIsOwner && (
             <>
               <Button
@@ -244,18 +248,47 @@ export default function HuntPageWrapper({
               >
                 Update Island Villagers
               </Button>
-              <form action="/api/hunts/abandon" method="post" style={{ display: 'inline' }}>
-                <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
-                <Button type="submit" variant="outlined" color="error">Abandon Hunt</Button>
-              </form>
-              <form action="/api/hunts/pause" method="post" style={{ display: 'inline' }}>
-                <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
-                <Button type="submit" variant="outlined" color="warning">Pause Hunt</Button>
-              </form>
-              <form action="/api/hunts/complete" method="post" style={{ display: 'inline' }}>
-                <input type="hidden" name="hunt_id" value={hunt.hunt_id} />
-                <Button type="submit" variant="outlined" color="primary">Complete Hunt</Button>
-              </form>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Change Status</InputLabel>
+                <Select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  label="Change Status"
+                >
+                  <MenuItem value="complete">Complete</MenuItem>
+                  <MenuItem value="pause">Pause</MenuItem>
+                  <MenuItem value="abandon">Abandon</MenuItem>
+                </Select>
+              </FormControl>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => {
+                  if (!selectedStatus) return;
+                  const form = document.createElement('form');
+                  form.method = 'post';
+                  form.action = `/api/hunts/${selectedStatus}`;
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = 'hunt_id';
+                  input.value = hunt.hunt_id;
+                  form.appendChild(input);
+                  document.body.appendChild(form);
+                  form.submit();
+                }}
+                disabled={!selectedStatus}
+              >
+                Change Status
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                size="large"
+                onClick={() => setDeleteModalOpen(true)}
+                sx={{ fontWeight: 'bold' }}
+              >
+                Delete Hunt
+              </Button>
             </>
           )}
         </Box>
@@ -279,6 +312,43 @@ export default function HuntPageWrapper({
         bingoCardImage={bingoCardImage}
         loading={generatingBingo}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+      >
+        <DialogTitle>Delete Hunt</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this hunt?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Deleted hunts will not show up in your history. Consider changing the status to paused or abandoned instead if you want to see it in your history.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteModalOpen(false)}>No</Button>
+          <Button
+            onClick={() => {
+              const form = document.createElement('form');
+              form.method = 'post';
+              form.action = '/api/hunts/delete';
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'hunt_id';
+              input.value = hunt.hunt_id;
+              form.appendChild(input);
+              document.body.appendChild(form);
+              form.submit();
+            }}
+            color="error"
+            variant="contained"
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Instructions Drawer */}
       <Drawer
@@ -342,11 +412,31 @@ export default function HuntPageWrapper({
 
               <ListItem>
                 <ListItemIcon>
+                  <DeleteIcon color="error" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Delete Hunt"
+                  secondary="Permanently delete this hunt. This action cannot be undone and the hunt will not appear in history."
+                />
+              </ListItem>
+
+              <ListItem>
+                <ListItemIcon>
                   <PauseIcon color="warning" />
                 </ListItemIcon>
                 <ListItemText
                   primary="Pause Hunt"
                   secondary="Temporarily pause the hunt. You can resume it later."
+                />
+              </ListItem>
+
+              <ListItem>
+                <ListItemIcon>
+                  <AddIcon color="success" />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Complete Hunt"
+                  secondary="Mark the hunt as completed. This ends the hunt successfully."
                 />
               </ListItem>
             </>
