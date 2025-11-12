@@ -59,6 +59,9 @@ export default function BingoCardModal({
                 boxShadow: 2,
               }}
             />
+            <Typography variant="body1" color="warning" sx={{ mt: 2 }}>
+              Please download/save this image. This bingo card will NOT save!
+            </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
               Right-click the image to save, or use the download button below.
             </Typography>
