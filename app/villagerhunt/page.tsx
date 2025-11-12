@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
-import { refreshVillagersIfStale } from '@/app/lib/villagers';
 import { getSessionFromCookie } from '@/app/lib/session';
 import VillagerHuntClient from '@/components/VillagerHuntClient';
 
