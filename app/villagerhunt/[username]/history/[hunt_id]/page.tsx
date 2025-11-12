@@ -3,6 +3,8 @@ import { createClient } from '@/utils/supabase/server';
 import { Alert, Container, Typography, Box, Stack } from '@mui/material';
 import Link from 'next/link';
 import EncountersTable from '@/components/EncountersTable';
+import { getSessionFromCookie } from '@/app/lib/session';
+import ResumeButton from '@/components/ResumeButton';
 
 type PageProps = {
   params: Promise<{ username: string; hunt_id: string }>;
@@ -14,11 +16,13 @@ export default async function HuntDetailPage(props: PageProps) {
   const username = decodeURIComponent(rawUsername);
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+  const session = await getSessionFromCookie();
+  const isOwner = session && session.login.toLowerCase() === username.toLowerCase();
 
   // Fetch hunt by hunt_id
   const { data: hunt, error: huntError } = await supabase
     .from('hunts')
-    .select('hunt_id, hunt_name, target_villager_id, twitch_id')
+    .select('hunt_id, hunt_name, target_villager_id, twitch_id, hunt_status')
     .eq('hunt_id', hunt_id)
     .maybeSingle();
 
@@ -77,6 +81,9 @@ export default async function HuntDetailPage(props: PageProps) {
               ))}
             </Box>
           </Box>
+        )}
+        {isOwner && hunt.hunt_status === 'PAUSED' && (
+          <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={hunt.twitch_id} />
         )}
         <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
       </Stack>
