@@ -250,7 +250,11 @@ export async function generateBingoCard({
     imageUrlMap,
   });
 
-  // Temporarily add to DOM
+  // Temporarily add to DOM (hidden off-screen to prevent flash)
+  bingoCard.style.position = 'fixed';
+  bingoCard.style.left = '-9999px';
+  bingoCard.style.top = '-9999px';
+  bingoCard.style.zIndex = '-1';
   document.body.appendChild(bingoCard);
 
   try {
