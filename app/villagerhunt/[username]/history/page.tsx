@@ -41,7 +41,7 @@ export default async function HuntHistoryPage(props: PageProps) {
   // Fetch non-active hunts
   const { data: hunts, error } = await supabase
     .from('hunts')
-    .select('hunt_id, hunt_name, target_villager_id, hunt_status, start_ts')
+    .select('hunt_id, hunt_name, target_villager_id, hunt_status, start_ts, complete_ts')
     .eq('twitch_id', twitchId)
     .neq('hunt_status', 'ACTIVE')
     .order('start_ts', { ascending: false });
@@ -82,7 +82,7 @@ export default async function HuntHistoryPage(props: PageProps) {
                   <CardContent>
                     <Typography variant="h6">{hunt.hunt_name}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Status: {hunt.hunt_status} | Started: {new Date(hunt.start_ts).toLocaleDateString()}
+                      Status: {hunt.hunt_status} { hunt.complete_ts ? `| Completed: ${new Date(hunt.complete_ts).toLocaleDateString()}` : ''}
                     </Typography>
                     {dreamies.length > 0 && (
                       <Box sx={{ mt: 1 }}>

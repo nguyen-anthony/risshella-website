@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   // Update hunt to ABANDONED
   const { error: updateError } = await supabase
     .from('hunts')
-    .update({ hunt_status: 'ABANDONED' })
+    .update({ hunt_status: 'ABANDONED', complete_ts: new Date().toISOString() })
     .eq('hunt_id', huntId);
 
   if (updateError) {
