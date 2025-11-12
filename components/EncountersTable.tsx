@@ -20,12 +20,13 @@ type Props = {
   isOwner: boolean;
   isModerator: boolean;
   huntId: string;
+  targetVillagerIds?: number[];
 };
 
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ villagers, isOwner, isModerator, huntId }: Props) {
+export default function EncountersTable({ villagers, isOwner, isModerator, huntId, targetVillagerIds }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
@@ -223,8 +224,9 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
           )}
           {paginatedEncounters.map((e) => {
             const { name, image_url } = getVillager(e.villager_id);
+            const isDreamie = targetVillagerIds?.includes(e.villager_id || 0) || false;
             return (
-              <TableRow key={e.encounter_id}>
+              <TableRow key={e.encounter_id} sx={{ bgcolor: isDreamie ? 'success.light' : 'inherit' }}>
                 <TableCell>{e.island_number}</TableCell>
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
