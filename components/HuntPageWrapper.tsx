@@ -248,20 +248,20 @@ export default function HuntPageWrapper({
               >
                 Update Island Villagers
               </Button>
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
                 <InputLabel>Change Status</InputLabel>
                 <Select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   label="Change Status"
                 >
-                  <MenuItem value="complete">Complete</MenuItem>
-                  <MenuItem value="pause">Pause</MenuItem>
-                  <MenuItem value="abandon">Abandon</MenuItem>
+                  <MenuItem value="complete">Completed</MenuItem>
+                  <MenuItem value="pause">Paused</MenuItem>
+                  <MenuItem value="abandon">Abandoned</MenuItem>
                 </Select>
               </FormControl>
               <Button
-                variant="outlined"
+                variant="contained"
                 color="primary"
                 onClick={() => {
                   if (!selectedStatus) return;
