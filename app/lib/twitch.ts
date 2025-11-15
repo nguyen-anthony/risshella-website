@@ -71,6 +71,7 @@ export async function getTwitchUser(accessToken: string) {
 export async function getModeratedChannels(accessToken: string, userId: string) {
   const url = new URL(`${TWITCH_API}/moderation/channels`);
   url.searchParams.set('user_id', userId);
+  url.searchParams.set('first', '100')
   const res = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${accessToken}`,
