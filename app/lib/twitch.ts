@@ -69,24 +69,48 @@ export async function getTwitchUser(accessToken: string) {
 }
 
 export async function getModeratedChannels(accessToken: string, userId: string) {
-  const url = new URL(`${TWITCH_API}/moderation/channels`);
-  url.searchParams.set('user_id', userId);
-  url.searchParams.set('first', '100')
-  const res = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Client-Id': process.env.TWITCH_CLIENT_ID!,
-    },
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error(`Failed to fetch moderated channels: ${res.status} ${txt}`);
-  }
-  const data = await res.json();
-  return (data?.data ?? []) as Array<{
+  const allChannels: Array<{
     broadcaster_id: string;
     broadcaster_login: string;
     broadcaster_name: string;
-  }>;
+  }> = [];
+
+  let cursor: string | undefined = undefined;
+  let pageCount = 0;
+  const maxPages = 10;
+
+  do {
+    if (pageCount >= maxPages) {
+      console.warn(`Reached maximum page limit (${maxPages}) for moderated channels. Some channels may not be included.`);
+      break;
+    }
+
+    const url = new URL(`${TWITCH_API}/moderation/channels`);
+    url.searchParams.set('user_id', userId);
+    url.searchParams.set('first', '100');
+    if (cursor) {
+      url.searchParams.set('after', cursor);
+    }
+
+    const res = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Client-Id': process.env.TWITCH_CLIENT_ID!,
+      },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error(`Failed to fetch moderated channels: ${res.status} ${txt}`);
+    }
+
+    const data = await res.json();
+    allChannels.push(...(data?.data ?? []));
+
+    cursor = data?.pagination?.cursor;
+    pageCount++;
+  } while (cursor);
+
+  return allChannels;
 }
