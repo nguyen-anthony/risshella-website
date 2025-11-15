@@ -18,6 +18,7 @@ import AuthLink from '@/components/AuthLink';
 import { generateBingoCard } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/UpdateIslandVillagersModal';
 import BingoCardModal from '@/components/BingoCardModal';
+import HuntStatisticsModal from '@/components/HuntStatisticsModal';
 import { createClient } from '@/utils/supabase/client';
 
 type Hunt = {
@@ -66,6 +67,7 @@ export default function HuntPageWrapper({
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<string>('');
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -154,6 +156,11 @@ export default function HuntPageWrapper({
     } finally {
       setGeneratingBingo(false);
     }
+  };
+
+  // Handle hunt statistics modal
+  const handleHuntStats = () => {
+    setHuntStatsModalOpen(true);
   };
 
   // Resolve target villagers data
@@ -276,6 +283,13 @@ export default function HuntPageWrapper({
             disabled={generatingBingo}
           >
             {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleHuntStats}
+          >
+            {'Hunt Statistics'}
           </Button>
         </Box>
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -544,6 +558,27 @@ export default function HuntPageWrapper({
           • Moderators can add encounters but cannot modify hunt settings
         </Typography>
       </Drawer>
+
+      {/* Modals */}
+      <UpdateIslandVillagersModal
+        open={updateIslandModalOpen}
+        onClose={() => setUpdateIslandModalOpen(false)}
+        huntId={hunt?.hunt_id || ''}
+        currentIslandVillagers={hunt?.island_villagers || []}
+        villagers={villagers}
+        onUpdated={fetchHuntData}
+      />
+      <BingoCardModal
+        open={bingoCardModalOpen}
+        onClose={() => setBingoCardModalOpen(false)}
+        bingoCardImage={bingoCardImage}
+        loading={generatingBingo}
+      />
+      <HuntStatisticsModal
+        open={huntStatsModalOpen}
+        onClose={() => setHuntStatsModalOpen(false)}
+        huntId={hunt?.hunt_id || ''}
+      />
 
     </Container>
   );
