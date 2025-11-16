@@ -40,3 +40,18 @@ a {
     color-scheme: dark;
   }
 }
+
+@font-face {
+font-family: 'MADE Tommy Soft';
+font-style: normal;
+font-weight: normal;
+src: local('MADE Tommy Soft'), url('MADE_Tommy_Soft_Bold_Outline.otf') format('opentype');
+}
+
+
+@font-face {
+font-family: 'MADE Tommy Soft';
+font-style: normal;
+font-weight: normal;
+src: local('MADE Tommy Soft'), url('/Loucos Lyne - thesimssansboldsc.woff') format('opentype');
+}
