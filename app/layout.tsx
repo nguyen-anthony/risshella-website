@@ -6,6 +6,7 @@ import { CacheProvider } from "@emotion/react";
 import createEmotionCache from "@/utils/createEmotionCache";
 import theme from "@/utils/theme";
 import IssueReportButton from "@/components/IssueReportButton";
+import { usePathname } from "next/navigation";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -14,6 +15,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isOverlay = pathname.includes('/overlay');
+
   return (
     <html lang="en">
       <body>
@@ -21,7 +25,7 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             {children}
-            <IssueReportButton />
+            {!isOverlay && <IssueReportButton />}
           </ThemeProvider>
         </CacheProvider>
       </body>
