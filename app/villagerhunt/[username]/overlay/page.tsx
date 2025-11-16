@@ -230,7 +230,7 @@ export default function OverlayPage({ params }: PageProps) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  backgroundColor: 'transparent',
+                  backgroundColor: 'rgba(53, 141, 248, 0.5)',
                   borderRadius: '8px',
                   p: 2,
                   border: '2px solid white',
