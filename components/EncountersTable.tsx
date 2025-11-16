@@ -1,6 +1,8 @@
 "use client";
 import * as React from "react";
-import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination } from "@mui/material";
+import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination, TextField, InputAdornment, IconButton } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import UpdateDeleteEncounterModal from "@/components/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/AddEncounterModal";
 import { createClient } from '@/utils/supabase/client';
@@ -40,6 +42,10 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
   // Pagination state
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [showFilter, setShowFilter] = React.useState(false);
 
 
   React.useEffect(() => {
@@ -156,7 +162,20 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
 
   // Sort encounters
   const sortedEncounters = React.useMemo(() => {
-    return [...encounters].sort((a, b) => {
+    // First filter by search term
+    let filtered = [...encounters];
+    if (searchTerm.trim() && index) {
+      const term = searchTerm.toLowerCase().trim();
+      filtered = encounters.filter(encounter => {
+        if (encounter.villager_id == null) return false;
+        const villager = index[encounter.villager_id];
+        const name = villager?.name ?? `#${encounter.villager_id}`;
+        return name.toLowerCase().includes(term);
+      });
+    }
+
+    // Then sort
+    return filtered.sort((a, b) => {
       let aValue: number | string = a[orderBy];
       let bValue: number | string = b[orderBy];
 
@@ -173,7 +192,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
       }
       return 0;
     });
-  }, [encounters, orderBy, order]);
+  }, [encounters, orderBy, order, searchTerm, index]);
 
   // Paginate encounters
   const paginatedEncounters = React.useMemo(() => {
@@ -195,7 +214,15 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
                 Island
               </TableSortLabel>
             </TableCell>
-            <TableCell>Villager</TableCell>
+            <TableCell>Villager
+              <IconButton
+                size="small"
+                onClick={() => setShowFilter(!showFilter)}
+                sx={{ ml: 1 }}
+              >
+                <FilterListIcon />
+              </IconButton>
+            </TableCell>
             <TableCell>
               <TableSortLabel
                 active={orderBy === 'encountered_at'}
@@ -208,6 +235,30 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
             {(isOwner || isModerator) && <TableCell>Actions</TableCell>}
           </TableRow>
         </TableHead>
+        {showFilter && (
+          <TableRow>
+            <TableCell colSpan={(isOwner || isModerator) ? 4 : 3}>
+              <TextField
+                fullWidth
+                size="small"
+                variant="outlined"
+                placeholder="Search villagers..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPage(0); // Reset to first page when searching
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </TableCell>
+          </TableRow>
+        )}
         <TableBody>
           {(isOwner || isModerator) && (
             <TableRow>
