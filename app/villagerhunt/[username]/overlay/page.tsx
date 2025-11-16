@@ -15,6 +15,7 @@ const tommySoftFont = localFont({
 interface Hunt {
   hunt_id: string;
   hunt_name: string;
+  hunt_status?: string;
 }
 
 interface Encounter {
@@ -63,33 +64,86 @@ export default function OverlayPage({ params }: PageProps) {
         .eq('hunt_status', 'ACTIVE')
         .maybeSingle();
 
-      if (!huntData) return;
+      if (huntData) {
+        setHunt(huntData);
+        setHuntName(huntData.hunt_name || 'Hunt');
 
-      setHunt(huntData);
-      setHuntName(huntData.hunt_name || 'Hunt');
+        // Get the 3 most recent encounters
+        const { data: encountersData } = await supabase
+          .from('encounters')
+          .select('encounter_id, island_number, encountered_at, villager_id')
+          .eq('hunt_id', huntData.hunt_id)
+          .eq('is_deleted', false)
+          .order('encountered_at', { ascending: false })
+          .limit(3);
 
-      // Get the 3 most recent encounters
-      const { data: encountersData } = await supabase
-        .from('encounters')
-        .select('encounter_id, island_number, encountered_at, villager_id')
-        .eq('hunt_id', huntData.hunt_id)
-        .eq('is_deleted', false)
-        .order('encountered_at', { ascending: false })
-        .limit(3);
+        if (encountersData) {
+          setEncounters(encountersData);
 
-      if (encountersData) {
-        setEncounters(encountersData);
-
-        // Get villager data
-        const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
-        if (villagerIds.length > 0) {
-          const { data: villagersData } = await supabase
-            .from('villagers')
-            .select('villager_id, name, image_url')
-            .in('villager_id', villagerIds);
-          setVillagers(villagersData || []);
+          // Get villager data
+          const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
+          if (villagerIds.length > 0) {
+            const { data: villagersData } = await supabase
+              .from('villagers')
+              .select('villager_id, name, image_url')
+              .in('villager_id', villagerIds);
+            setVillagers(villagersData || []);
+          }
         }
       }
+
+      // Subscribe to hunt status changes
+      const huntsChannel = supabase
+        .channel('hunts-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'hunts',
+            filter: `twitch_id=eq.${creator.twitch_id}`,
+          },
+          async (payload) => {
+            const newHunt = payload.new as Hunt;
+            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              if (newHunt.hunt_status === 'ACTIVE') {
+                setHunt(newHunt);
+                setHuntName(newHunt.hunt_name || 'Hunt');
+                // Fetch encounters for the new active hunt
+                const { data: encountersData } = await supabase
+                  .from('encounters')
+                  .select('encounter_id, island_number, encountered_at, villager_id')
+                  .eq('hunt_id', newHunt.hunt_id)
+                  .eq('is_deleted', false)
+                  .order('encountered_at', { ascending: false })
+                  .limit(3);
+                if (encountersData) {
+                  setEncounters(encountersData);
+                  const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
+                  if (villagerIds.length > 0) {
+                    const { data: villagersData } = await supabase
+                      .from('villagers')
+                      .select('villager_id, name, image_url')
+                      .in('villager_id', villagerIds);
+                    setVillagers(villagersData || []);
+                  }
+                } else {
+                  setEncounters([]);
+                  setVillagers([]);
+                }
+              } else if (newHunt.hunt_status === 'COMPLETED' || newHunt.hunt_status === 'PAUSED') {
+                setHunt(null);
+                setEncounters([]);
+                setVillagers([]);
+              }
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(huntsChannel);
+      };
     };
 
     fetchData();
@@ -156,7 +210,7 @@ export default function OverlayPage({ params }: PageProps) {
           textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
           WebkitTextStroke: '1px black'
         }}>
-          {hunt === null ? 'Loading...' : 'No active hunt'}
+          {hunt === null ? 'Loading...' : 'No Active Hunt'}
         </Typography>
       </Box>
     );
