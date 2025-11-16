@@ -44,6 +44,14 @@ export default function Home() {
               >
                 Llamas Legends Legacy
               </Button>
+              <Button 
+                variant="contained" 
+                size="large"
+                onClick={() => router.push('/villagerhunt')}
+                sx={{ minWidth: 250 }}
+              >
+                Animal Crossing Villager Hunt
+              </Button>
             </Stack>
           </Stack>
         </Stack>
