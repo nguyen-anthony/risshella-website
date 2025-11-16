@@ -12,6 +12,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove'
 import SortIcon from '@mui/icons-material/Sort';
+import SearchIcon from '@mui/icons-material/Search';
 import OwnerHuntControls from '@/components/OwnerHuntControls';
 import EncountersTable from '@/components/EncountersTable';
 import AuthLink from '@/components/AuthLink';
@@ -527,15 +528,15 @@ export default function HuntPageWrapper({
             </>
           )}
 
-          {/* <ListItem>
+          <ListItem>
             <ListItemIcon>
               <SearchIcon color="action" />
             </ListItemIcon>
             <ListItemText
               primary="Search & Filter"
-              secondary="Use the search box to find specific encounters by villager name or notes."
+              secondary="Click the filter icon next to 'Villager' to show a search box and find specific villagers by name."
             />
-          </ListItem> */}
+          </ListItem>
 
           <ListItem>
             <ListItemIcon>
