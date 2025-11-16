@@ -33,6 +33,7 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
   const [selected, setSelected] = React.useState<Villager | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const villagerInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (open) {
@@ -40,6 +41,11 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       setIslandNumber((maxIsland + 1).toString());
       setSelected(null);
       setError(null); // Clear error when modal opens
+      
+      // Focus the villager input after a short delay to ensure the modal is fully rendered
+      setTimeout(() => {
+        villagerInputRef.current?.focus();
+      }, 100);
     }
   }, [open, encounters]);
 
@@ -121,7 +127,7 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Villager" required />}
+          renderInput={(params) => <TextField {...params} inputRef={villagerInputRef} label="Villager" required />}
           
         />
         {loading && (
