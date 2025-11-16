@@ -7,6 +7,7 @@ import createEmotionCache from "@/utils/createEmotionCache";
 import theme from "@/utils/theme";
 import IssueReportButton from "@/components/IssueReportButton";
 import { usePathname } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -26,6 +27,7 @@ export default function RootLayout({
             <CssBaseline />
             {children}
             {!isOverlay && <IssueReportButton />}
+            <Analytics />
           </ThemeProvider>
         </CacheProvider>
       </body>
