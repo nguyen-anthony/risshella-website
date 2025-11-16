@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
-import { getSessionFromCookie } from '@/app/lib/session';
-import { getModeratedChannels } from '../../lib/twitch';
+import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
+import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
 import HuntPageWrapper from '@/components/HuntPageWrapper';
 
 type PageProps = {
@@ -55,6 +55,20 @@ export default async function CreatorHuntPage(props: PageProps) {
 
   // If not owner, check if user moderates this channel
   if (!isOwner && session?.accessToken) {
+    // Refresh token if expired
+    if (session.exp < Date.now() / 1000 && session.refreshToken) {
+      try {
+        const newToken = await refreshAccessToken(session.refreshToken);
+        session.accessToken = newToken.access_token;
+        session.refreshToken = newToken.refresh_token;
+        session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
+        await setSessionCookie(session);
+      } catch (error) {
+        console.error('Failed to refresh token:', error);
+        // If refresh fails, clear session or ignore
+      }
+    }
+
     try {
       const mods = await getModeratedChannels(session.accessToken, session.userId);
       console.log(`Moderated channels count: ${mods.length}`)

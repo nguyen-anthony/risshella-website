@@ -9,6 +9,7 @@ export type Session = {
   userId: string;
   login: string;
   accessToken?: string; // Twitch user access token (scoped)
+  refreshToken?: string; // Twitch refresh token
   exp: number; // epoch seconds
 };
 
