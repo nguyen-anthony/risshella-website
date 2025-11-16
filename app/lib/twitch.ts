@@ -50,6 +50,33 @@ export async function exchangeCodeForToken(code: string) {
   }>;
 }
 
+export async function refreshAccessToken(refreshToken: string) {
+  const body = new URLSearchParams({
+    client_id: process.env.TWITCH_CLIENT_ID!,
+    client_secret: process.env.TWITCH_CLIENT_SECRET!,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token',
+  });
+
+  const res = await fetch(`${TWITCH_AUTH}/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`Failed to refresh token: ${res.status} ${txt}`);
+  }
+  return res.json() as Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    scope: string[];
+    token_type: 'bearer';
+  }>;
+}
+
 export async function getTwitchUser(accessToken: string) {
   const res = await fetch(`${TWITCH_API}/users`, {
     headers: {

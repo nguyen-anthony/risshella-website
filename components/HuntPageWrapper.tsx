@@ -69,41 +69,61 @@ export default function HuntPageWrapper({
   const [selectedStatus, setSelectedStatus] = React.useState<string>('');
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
+  const [isModerator, setIsModerator] = React.useState(initialIsModerator);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
     const supabase = createClient();
 
-    // Fetch ACTIVE hunt
-    const { data: huntData, error: huntError } = await supabase
-      .from('hunts')
-      .select('hunt_id, hunt_name, target_villager_id, island_villagers')
-      .eq('twitch_id', initialTwitchId)
-      .eq('hunt_status', 'ACTIVE')
-      .order('hunt_id', { ascending: false })
-      .maybeSingle();
+    try {
+      // Fetch ACTIVE hunt
+      const { data: huntData, error: huntError } = await supabase
+        .from('hunts')
+        .select('hunt_id, hunt_name, target_villager_id, island_villagers')
+        .eq('twitch_id', initialTwitchId)
+        .eq('hunt_status', 'ACTIVE')
+        .order('hunt_id', { ascending: false })
+        .maybeSingle();
 
-    if (!huntError) {
-      setHunt(huntData);
+      if (!huntError) {
+        setHunt(huntData);
+      }
+
+      // Fetch villagers for encounter lookup
+      const { data: villagersData } = await supabase
+        .from('villagers')
+        .select('villager_id, name, image_url');
+
+      // Exclude villagers that require additional purchases (not part of base game)
+      const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
+      const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+
+      setVillagers(filteredVillagers);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching hunt data:', error);
+      // If 401, perhaps set a flag to show login
+      if (error instanceof Error && error.message.includes('401')) {
+        // Handle auth error, e.g., redirect to login
+        window.location.href = '/auth'; // or show a login button
+      }
+      setLoading(false);
     }
-
-    // Fetch villagers for encounter lookup
-    const { data: villagersData } = await supabase
-      .from('villagers')
-      .select('villager_id, name, image_url');
-
-    // Exclude villagers that require additional purchases (not part of base game)
-    const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
-    const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
-
-    setVillagers(filteredVillagers);
-    setLoading(false);
   }, [initialTwitchId]);
 
   // Initial fetch
   React.useEffect(() => {
     fetchHuntData();
   }, [fetchHuntData]);
+
+  // Check moderator status client-side
+  React.useEffect(() => {
+    if (initialIsOwner || !initialSession) return;
+    fetch(`/api/moderator/${initialTwitchId}`)
+      .then(res => res.json())
+      .then(data => setIsModerator(data.isModerator))
+      .catch(() => setIsModerator(false));
+  }, [initialIsOwner, initialSession, initialTwitchId]);
 
   // Set up real-time subscription for hunt changes
   React.useEffect(() => {
@@ -214,7 +234,7 @@ export default function HuntPageWrapper({
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
       {/* Help Button for authenticated owners/moderators */}
-      {(initialIsOwner || initialIsModerator) && initialSession && (
+      {(initialIsOwner || isModerator) && initialSession && (
         <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
           <IconButton
             onClick={() => setInstructionsDrawerOpen(true)}
@@ -348,7 +368,7 @@ export default function HuntPageWrapper({
         </Box>
 
 
-      <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={initialIsModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
+      <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
 
       <UpdateIslandVillagersModal
         open={updateIslandModalOpen}
@@ -504,7 +524,7 @@ export default function HuntPageWrapper({
         </Typography>
 
         <List>
-          {(initialIsModerator || initialIsOwner) && (
+          {(isModerator || initialIsOwner) && (
             <>
               <ListItem>
                 <ListItemIcon>
