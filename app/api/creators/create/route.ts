@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createServiceClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { getSessionFromCookie } from '@/app/lib/session';
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createServiceClient(cookieStore);
   const session = await getSessionFromCookie();
 
   if (!session || !session.accessToken) {
