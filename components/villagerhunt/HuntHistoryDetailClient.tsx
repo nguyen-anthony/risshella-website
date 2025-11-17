@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import EncountersTable from '@/components/EncountersTable';
-import HuntStatisticsModal from '@/components/HuntStatisticsModal';
-import ResumeButton from '@/components/ResumeButton';
+import EncountersTable from '@/components/villagerhunt/EncountersTable';
+import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
+import ResumeButton from '@/components/villagerhunt/ResumeButton';
 
 type Villager = {
   villager_id: number;

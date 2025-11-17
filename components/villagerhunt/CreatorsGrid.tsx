@@ -1,7 +1,7 @@
 import * as React from "react";
 import Grid from "@mui/material/Grid2";
 import { Box, Typography } from "@mui/material";
-import CreatorCard from "@/components/CreatorCard";
+import CreatorCard from "@/components/villagerhunt/CreatorCard";
 import type { Creator } from "@/types/creator";
 
 type Props = {

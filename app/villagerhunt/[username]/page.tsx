@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
 import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
 import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
-import HuntPageWrapper from '@/components/HuntPageWrapper';
+import HuntPageWrapper from '@/components/villagerhunt/HuntPageWrapper';
 
 type PageProps = {
   params: Promise<{ username: string }>;

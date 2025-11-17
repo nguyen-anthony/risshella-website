@@ -5,7 +5,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
 import createEmotionCache from "@/utils/createEmotionCache";
 import theme from "@/utils/theme";
-import IssueReportButton from "@/components/IssueReportButton";
+import IssueReportButton from "@/components/common/IssueReportButton";
 import { usePathname } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 

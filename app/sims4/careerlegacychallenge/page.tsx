@@ -8,12 +8,12 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Navigation from "@/components/Navigation";
-import IFrameBox from "@/components/IFrameBox";
+import Navigation from "@/components/common/Navigation";
+import IFrameBox from "@/components/common/IFrameBox";
 import styles from "@/app/page.module.css";
-import PacksToggleList from "@/components/PacksToggleList";
-import CareerRandomizer from "@/components/CareerRandomizer";
-import ProgressTracking from '@/components/ProgressTracking';
+import PacksToggleList from "@/components/careerlegacychallenge/PacksToggleList";
+import CareerRandomizer from "@/components/careerlegacychallenge/CareerRandomizer";
+import ProgressTracking from '@/components/careerlegacychallenge/ProgressTracking';
 import { PACKS, Pack } from "@/constants/packs"; // If needed here
 
 interface TabPanelProps {

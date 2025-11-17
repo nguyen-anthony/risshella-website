@@ -1,7 +1,7 @@
 // app/about.tsx
 'use client'
 import * as React from 'react';
-import Navigation from '@/components/Navigation';
+import Navigation from '@/components/common/Navigation';
 import styles from '@/app/page.module.css';
 import { useEffect, useState } from 'react';
 

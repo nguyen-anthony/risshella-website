@@ -2,8 +2,8 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container, Typography, Box, Stack } from '@mui/material';
 import Link from 'next/link';
-import HuntStatusFilter from '@/components/HuntStatusFilter';
-import HuntCard from '@/components/HuntCard';
+import HuntStatusFilter from '@/components/villagerhunt/HuntStatusFilter';
+import HuntCard from '@/components/villagerhunt/HuntCard';
 
 type PageProps = {
   params: Promise<{ username: string }>;

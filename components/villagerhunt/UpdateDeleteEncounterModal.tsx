@@ -15,7 +15,7 @@ import {
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
 
-import type { EncounterRow } from "@/components/EncountersTable";
+import type { EncounterRow } from "@/components/villagerhunt/EncountersTable";
 
 type Props = {
   open: boolean;

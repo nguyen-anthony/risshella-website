@@ -2,7 +2,7 @@
 import * as React from "react";
 import { Box, Stack, TextField, InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import CreatorsGrid from "@/components/CreatorsGrid";
+import CreatorsGrid from "@/components/villagerhunt/CreatorsGrid";
 import type { Creator } from "@/types/creator";
 
 type Props = {

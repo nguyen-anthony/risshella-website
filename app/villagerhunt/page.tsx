@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
 import { getSessionFromCookie } from '@/app/lib/session';
-import VillagerHuntClient from '@/components/VillagerHuntClient';
+import VillagerHuntClient from '@/components/villagerhunt/VillagerHuntClient';
 
 type PageData = {
   creators: Creator[];

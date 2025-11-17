@@ -1,7 +1,7 @@
 'use client';
 
 import { Typography } from '@mui/material';
-import LoginWithTwitch from './LoginWithTwitch';
+import LoginWithTwitch from '../common/LoginWithTwitch';
 
 type AuthLinkProps = {
   username: string;
