@@ -3,7 +3,7 @@ import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import Navigation from "@/components/Navigation";
+import Navigation from "@/components/common/Navigation";
 import IFrameBox from "@/components/IFrameBox";
 import styles from "@/app/page.module.css";
 

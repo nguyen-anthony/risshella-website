@@ -2,7 +2,7 @@
 
 import styles from "./page.module.css";
 import * as React from 'react';
-import Navigation from '../components/Navigation';
+import Navigation from '../components/common/Navigation';
 import { Typography, Button, Stack, Container } from '@mui/material';
 import { useRouter } from 'next/navigation';
 

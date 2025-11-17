@@ -1,6 +1,6 @@
 // app/about.tsx
 import * as React from 'react';
-import Navigation from '@/components/Navigation';
+import Navigation from '@/components/common/Navigation';
 import styles from '../page.module.css';
 
 export default function About() {
