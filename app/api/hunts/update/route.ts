@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createClient } from '@/utils/supabase/server';
+import { createServiceClient } from '@/utils/supabase/server';
 import { getSessionFromCookie } from '@/app/lib/session';
 
 export async function POST(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createServiceClient(cookieStore);
 
   // Verify the user owns this hunt
   const { data: hunt } = await supabase
