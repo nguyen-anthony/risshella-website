@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
 import { getSessionFromCookie } from '@/app/lib/session';
-import HuntHistoryDetailClient from '@/components/HuntHistoryDetailClient';
+import HuntHistoryDetailClient from '@/components/villagerhunt/HuntHistoryDetailClient';
 
 type PageProps = {
   params: Promise<{ username: string; hunt_id: string }>;

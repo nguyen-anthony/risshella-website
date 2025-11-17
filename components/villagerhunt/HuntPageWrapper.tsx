@@ -13,13 +13,13 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove'
 import SortIcon from '@mui/icons-material/Sort';
 import SearchIcon from '@mui/icons-material/Search';
-import OwnerHuntControls from '@/components/OwnerHuntControls';
-import EncountersTable from '@/components/EncountersTable';
-import AuthLink from '@/components/AuthLink';
+import OwnerHuntControls from '@/components/villagerhunt/OwnerHuntControls';
+import EncountersTable from '@/components/villagerhunt/EncountersTable';
+import AuthLink from '@/components/villagerhunt/AuthLink';
 import { generateBingoCard } from '@/utils/bingoCardGenerator';
-import UpdateIslandVillagersModal from '@/components/UpdateIslandVillagersModal';
-import BingoCardModal from '@/components/BingoCardModal';
-import HuntStatisticsModal from '@/components/HuntStatisticsModal';
+import UpdateIslandVillagersModal from '@/components/villagerhunt/UpdateIslandVillagersModal';
+import BingoCardModal from '@/components/villagerhunt/BingoCardModal';
+import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import { createClient } from '@/utils/supabase/client';
 
 type Hunt = {
