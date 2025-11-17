@@ -1,0 +1,18 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - "v*"   # only deploy when tag like v1.2.0 is pushed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Production
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
