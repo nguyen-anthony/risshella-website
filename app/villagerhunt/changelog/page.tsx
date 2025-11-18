@@ -36,7 +36,7 @@ export default function ChangelogPage() {
 
       <Box sx={{ mt: 3 }}>
         {/* Most recent changelog - expanded by default */}
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               November 18, 2025 - v0.2.0
