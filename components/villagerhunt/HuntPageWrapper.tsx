@@ -264,9 +264,14 @@ export default function HuntPageWrapper({
         <Stack spacing={1} sx={{ mb: 2 }}>
           <Typography variant="h4" fontWeight={700}>{initialDisplayName}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
-          <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-            View Hunt History
-          </Link>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+              Home
+            </Link>
+            <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+              View Hunt History
+            </Link>
+          </Box>
         </Stack>
         {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
       </Container>
@@ -312,9 +317,14 @@ export default function HuntPageWrapper({
         </Box>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
-        <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-          View Hunt History
-        </Link>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+            Home
+          </Link>
+          <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+            View Hunt History
+          </Link>
+        </Box>
         {targetVillagers.length > 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
