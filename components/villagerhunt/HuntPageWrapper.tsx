@@ -19,6 +19,7 @@ import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import AuthLink from '@/components/villagerhunt/AuthLink';
 import { generateBingoCard } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/UpdateIslandVillagersModal';
+import UpdateTargetVillagersModal from '@/components/villagerhunt/UpdateTargetVillagersModal';
 import BingoCardModal from '@/components/villagerhunt/BingoCardModal';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import { createClient } from '@/utils/supabase/client';
@@ -64,6 +65,7 @@ export default function HuntPageWrapper({
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
+  const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
   const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
   const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
@@ -331,6 +333,15 @@ export default function HuntPageWrapper({
         onUpdated={fetchHuntData}
       />
 
+      <UpdateTargetVillagersModal
+        open={updateTargetModalOpen}
+        onClose={() => setUpdateTargetModalOpen(false)}
+        huntId={hunt.hunt_id}
+        currentTargetVillagers={hunt.target_villager_id}
+        villagers={villagers}
+        onUpdated={fetchHuntData}
+      />
+
       <BingoCardModal
         open={bingoCardModalOpen}
         onClose={() => setBingoCardModalOpen(false)}
@@ -557,6 +568,7 @@ export default function HuntPageWrapper({
         <DialogTitle>Hunt Settings</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
             <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
             <FormControl variant="outlined" size="small">
               <InputLabel>Update Hunt Status</InputLabel>

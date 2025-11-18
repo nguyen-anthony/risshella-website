@@ -12,15 +12,28 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as {
     hunt_id?: string;
     island_villagers?: number[];
+    target_villager_id?: number[];
   } | null;
 
-  if (!body || typeof body.hunt_id !== 'string' || !Array.isArray(body.island_villagers)) {
+  if (!body || typeof body.hunt_id !== 'string') {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
-  // Validate island_villagers
-  if (body.island_villagers.some(v => typeof v !== 'number') || body.island_villagers.length > 9) {
+  const hasIslandVillagers = Array.isArray(body.island_villagers);
+  const hasTargetVillagers = Array.isArray(body.target_villager_id);
+
+  if (!hasIslandVillagers && !hasTargetVillagers) {
+    return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
+  }
+
+  // Validate island_villagers if provided
+  if (hasIslandVillagers && (body.island_villagers!.some(v => typeof v !== 'number') || body.island_villagers!.length > 9)) {
     return NextResponse.json({ error: 'invalid_island_villagers' }, { status: 400 });
+  }
+
+  // Validate target_villager_id if provided
+  if (hasTargetVillagers && body.target_villager_id!.some(v => typeof v !== 'number')) {
+    return NextResponse.json({ error: 'invalid_target_villager_id' }, { status: 400 });
   }
 
   const cookieStore = await cookies();
@@ -39,9 +52,17 @@ export async function POST(req: NextRequest) {
   }
 
   // Update the hunt
+  const updateData: { island_villagers?: number[]; target_villager_id?: number[] } = {};
+  if (hasIslandVillagers) {
+    updateData.island_villagers = body.island_villagers;
+  }
+  if (hasTargetVillagers) {
+    updateData.target_villager_id = body.target_villager_id;
+  }
+
   const { error } = await supabase
     .from('hunts')
-    .update({ island_villagers: body.island_villagers })
+    .update(updateData)
     .eq('hunt_id', body.hunt_id);
 
   if (error) {
