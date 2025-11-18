@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -302,16 +302,20 @@ export default function HuntPageWrapper({
           <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
           {initialIsOwner && (
             <>
-              <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isPublic}
-                    onChange={handlePublicToggle}
-                  />
-                }
-                label={isPublic ? "Public" : "Private"}
-              />
+              <Tooltip title="Hunt Settings">
+                <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
+              </Tooltip>
+              <Tooltip title="Determines if you want your name on the landing page or not">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isPublic}
+                      onChange={handlePublicToggle}
+                    />
+                  }
+                  label={isPublic ? "Public" : "Private"}
+                />
+              </Tooltip>
             </>
           )}
         </Box>
