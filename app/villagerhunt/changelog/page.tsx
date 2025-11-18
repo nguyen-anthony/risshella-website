@@ -36,7 +36,39 @@ export default function ChangelogPage() {
 
       <Box sx={{ mt: 3 }}>
         {/* Most recent changelog - expanded by default */}
-        <Accordion defaultExpanded>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
+              November 18, 2025 - v0.2.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Improved pie chart statistics representation"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Moved feature requests/bug reports to a public Trello board - https://trello.com/b/XUeuFFbu/acnh-villager-hunt"/>
+              </ListItem>
+            </List>
+
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Removed Changelog notification from overlay page"/>
+              </ListItem>
+            </List>
+
+            
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               November 17, 2025 - v0.1.0

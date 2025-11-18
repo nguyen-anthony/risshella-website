@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Box, Link, Typography } from '@mui/material';
 import { usePathname } from 'next/navigation';
 
-const LATEST_CHANGELOG_DATE = new Date('2025-11-17');
+const LATEST_CHANGELOG_DATE = new Date('2025-11-18');
 
 export default function ChangelogNotification() {
   const pathname = usePathname();
