@@ -13,6 +13,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove'
 import SortIcon from '@mui/icons-material/Sort';
 import SearchIcon from '@mui/icons-material/Search';
+import SettingsIcon from '@mui/icons-material/Settings';
 import OwnerHuntControls from '@/components/villagerhunt/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import AuthLink from '@/components/villagerhunt/AuthLink';
@@ -70,6 +71,7 @@ export default function HuntPageWrapper({
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
   const [isModerator, setIsModerator] = React.useState(initialIsModerator);
+  const [settingsModalOpen, setSettingsModalOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -251,7 +253,10 @@ export default function HuntPageWrapper({
         </Box>
       )}
       <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
+          {initialIsOwner && <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>}
+        </Box>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
         <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
@@ -312,59 +317,6 @@ export default function HuntPageWrapper({
           >
             {'Hunt Statistics'}
           </Button>
-        </Box>
-        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {initialIsOwner && (
-            <>
-              <Button
-                variant="outlined"
-                onClick={() => setUpdateIslandModalOpen(true)}
-              >
-                Update Island Villagers
-              </Button>
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
-                <InputLabel>Change Status</InputLabel>
-                <Select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  label="Change Status"
-                >
-                  <MenuItem value="complete">Completed</MenuItem>
-                  <MenuItem value="pause">Paused</MenuItem>
-                  <MenuItem value="abandon">Abandoned</MenuItem>
-                </Select>
-              </FormControl>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (!selectedStatus) return;
-                  const form = document.createElement('form');
-                  form.method = 'post';
-                  form.action = `/api/hunts/${selectedStatus}`;
-                  const input = document.createElement('input');
-                  input.type = 'hidden';
-                  input.name = 'hunt_id';
-                  input.value = hunt.hunt_id;
-                  form.appendChild(input);
-                  document.body.appendChild(form);
-                  form.submit();
-                }}
-                disabled={!selectedStatus}
-              >
-                Change Status
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                size="large"
-                onClick={() => setDeleteModalOpen(true)}
-                sx={{ fontWeight: 'bold' }}
-              >
-                Delete Hunt
-              </Button>
-            </>
-          )}
         </Box>
 
 
@@ -600,6 +552,28 @@ export default function HuntPageWrapper({
         onClose={() => setHuntStatsModalOpen(false)}
         huntId={hunt?.hunt_id || ''}
       />
+
+      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)}>
+        <DialogTitle>Hunt Settings</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
+            <FormControl variant="outlined" size="small">
+              <InputLabel>Update Hunt Status</InputLabel>
+              <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
+                <MenuItem value="complete">Completed</MenuItem>
+                <MenuItem value="pause">Paused</MenuItem>
+                <MenuItem value="abandon">Abandoned</MenuItem>
+              </Select>
+            </FormControl>
+            <Button variant="contained" color="primary" onClick={() => { if (!selectedStatus) return; const form = document.createElement('form'); form.method = 'post'; form.action = `/api/hunts/${selectedStatus}`; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }} disabled={!selectedStatus}>Change Status</Button>
+            <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSettingsModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
     </Container>
   );
