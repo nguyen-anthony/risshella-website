@@ -3,6 +3,11 @@ import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
 import { getSessionFromCookie } from '@/app/lib/session';
 import VillagerHuntClient from '@/components/villagerhunt/VillagerHuntClient';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "ACNH Villager Hunt",
+};
 
 type PageData = {
   creators: Creator[];

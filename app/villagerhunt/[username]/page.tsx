@@ -4,6 +4,7 @@ import { Alert, Container } from '@mui/material';
 import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
 import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
 import HuntPageWrapper from '@/components/villagerhunt/HuntPageWrapper';
+import type { Metadata } from 'next';
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -17,6 +18,37 @@ type ModeratedChannel = {
 };
 
 // Encounters are passed to a client component; keeping type local there.
+
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const { params, searchParams } = props;
+  const { username: rawUsername } = await params;
+  const username = decodeURIComponent(rawUsername);
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const sp = searchParams ? await searchParams : undefined;
+  const viaParam = sp?.id ? Number.parseInt(sp.id, 10) : NaN;
+  let displayName = username;
+
+  if (!Number.isNaN(viaParam)) {
+    const { data: creatorRow } = await supabase
+      .from('creators')
+      .select('display_name')
+      .eq('twitch_id', viaParam)
+      .maybeSingle();
+    displayName = creatorRow?.display_name ?? username;
+  } else {
+    const { data: creatorRow } = await supabase
+      .from('creators')
+      .select('display_name')
+      .ilike('twitch_username', username)
+      .maybeSingle();
+    displayName = creatorRow?.display_name ?? username;
+  }
+
+  return {
+    title: `${displayName} - Villager Hunt`,
+  };
+}
 
 export default async function CreatorHuntPage(props: PageProps) {
   const { params, searchParams } = props;
