@@ -197,7 +197,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {speciesData
+                        {[...speciesData]
                           .sort((a, b) => b.value - a.value)
                           .map((row) => {
                             const total = speciesData.reduce((sum, item) => sum + item.value, 0);
@@ -266,7 +266,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {personalityData
+                        {[...personalityData]
                           .sort((a, b) => b.value - a.value)
                           .map((row) => {
                             const total = personalityData.reduce((sum, item) => sum + item.value, 0);
