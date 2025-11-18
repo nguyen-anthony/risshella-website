@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -615,7 +615,7 @@ export default function HuntPageWrapper({
         huntId={hunt?.hunt_id || ''}
       />
 
-      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)}>
+      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '500px' } }}>
         <DialogTitle>Hunt Settings</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -631,6 +631,12 @@ export default function HuntPageWrapper({
             </FormControl>
             <Button variant="contained" color="primary" onClick={() => { if (!selectedStatus) return; const form = document.createElement('form'); form.method = 'post'; form.action = `/api/hunts/${selectedStatus}`; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }} disabled={!selectedStatus}>Change Status</Button>
             <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+            <TextField 
+              disabled
+              fullWidth
+              value={`${window.location.href.replace(/\/$/, '')}/overlay`}
+              helperText="Overlay: Set this URL as a browser source in OBS"
+            />
           </Box>
         </DialogContent>
         <DialogActions>
