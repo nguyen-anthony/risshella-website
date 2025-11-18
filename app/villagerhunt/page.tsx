@@ -20,12 +20,37 @@ export default async function VillagerHunt() {
   const supabase = createClient(cookieStore);
   const session = await getSessionFromCookie();
 
-  const { data, error } = await supabase
+  // Get all public creators
+  const { data: publicCreators, error: publicError } = await supabase
     .from('creators')
     .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
+    .eq('is_public', true)
     .order('created_at', { ascending: true });
 
-  const creators = (data ?? []) as Creator[];
+  let creators = (publicCreators ?? []) as Creator[];
+  let error = publicError;
+
+  // If user is authenticated, also fetch their creator record (even if private)
+  if (session) {
+    const { data: userCreator, error: userError } = await supabase
+      .from('creators')
+      .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
+      .eq('twitch_username', session.login)
+      .single();
+
+    if (userCreator && !error) {
+      // Add user creator to the list if not already included (in case they are public)
+      const userExists = creators.some(c => c.twitch_id === userCreator.twitch_id);
+      if (!userExists) {
+        creators = [userCreator, ...creators];
+      }
+    }
+
+    // Use user error if public query succeeded but user query failed
+    if (!error && userError && userError.code !== 'PGRST116') { // PGRST116 is "not found"
+      error = userError;
+    }
+  }
 
   const pageData: PageData = {
     creators,
