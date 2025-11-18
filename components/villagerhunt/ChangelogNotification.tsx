@@ -32,7 +32,7 @@ export default function ChangelogNotification() {
     setShowNotification(false);
   };
 
-  if (!showNotification || pathname === '/villagerhunt/changelog') return null;
+  if (!showNotification || pathname === '/villagerhunt/changelog' || pathname.includes('/overlay')) return null;
 
   return (
     <Box
