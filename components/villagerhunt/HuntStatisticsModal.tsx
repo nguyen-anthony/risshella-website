@@ -56,6 +56,8 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
   const [speciesData, setSpeciesData] = React.useState<ChartData[]>([]);
   const [personalityData, setPersonalityData] = React.useState<ChartData[]>([]);
   const [topVillagers, setTopVillagers] = React.useState<VillagerStat[]>([]);
+  const [hoveredSpecies, setHoveredSpecies] = React.useState<string | null>(null);
+  const [hoveredPersonality, setHoveredPersonality] = React.useState<string | null>(null);
 
   const fetchStatistics = React.useCallback(async () => {
     setLoading(true);
@@ -161,26 +163,65 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
             {/* Species Distribution */}
             <Typography variant="h6" sx={{ mb: 2 }}>Species Distribution</Typography>
             {speciesData.length > 0 ? (
-              <Box sx={{ height: 300, mb: 4 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={speciesData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {speciesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+              <Box sx={{ display: 'flex', gap: 4, mb: 4 }}>
+                <Box sx={{ height: 300, flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={speciesData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        onMouseEnter={(_, index) => setHoveredSpecies(speciesData[index]?.name || null)}
+                        onMouseLeave={() => setHoveredSpecies(null)}
+                      >
+                        {speciesData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+                <Box sx={{ flex: 1, maxHeight: 300, overflow: 'auto' }}>
+                  <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                    <Table stickyHeader size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Species</TableCell>
+                          <TableCell align="right">Count</TableCell>
+                          <TableCell align="right">Percentage</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {speciesData
+                          .sort((a, b) => b.value - a.value)
+                          .map((row) => {
+                            const total = speciesData.reduce((sum, item) => sum + item.value, 0);
+                            const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
+                            return (
+                              <TableRow 
+                                key={row.name}
+                                sx={{
+                                  backgroundColor: hoveredSpecies === row.name ? 'rgba(0, 136, 254, 0.1)' : 'inherit',
+                                  '&:hover': {
+                                    backgroundColor: hoveredSpecies === row.name ? 'rgba(0, 136, 254, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                                  },
+                                }}
+                              >
+                                <TableCell>{row.name}</TableCell>
+                                <TableCell align="right">{row.value}</TableCell>
+                                <TableCell align="right">{percentage}%</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
@@ -191,26 +232,65 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
             {/* Personality Distribution */}
             <Typography variant="h6" sx={{ mb: 2 }}>Personality Distribution</Typography>
             {personalityData.length > 0 ? (
-              <Box sx={{ height: 300, mb: 4 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={personalityData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {personalityData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+              <Box sx={{ display: 'flex', gap: 4, mb: 4 }}>
+                <Box sx={{ height: 300, flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={personalityData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        onMouseEnter={(_, index) => setHoveredPersonality(personalityData[index]?.name || null)}
+                        onMouseLeave={() => setHoveredPersonality(null)}
+                      >
+                        {personalityData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+                <Box sx={{ flex: 1, maxHeight: 300, overflow: 'auto' }}>
+                  <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                    <Table stickyHeader size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Personality</TableCell>
+                          <TableCell align="right">Count</TableCell>
+                          <TableCell align="right">Percentage</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {personalityData
+                          .sort((a, b) => b.value - a.value)
+                          .map((row) => {
+                            const total = personalityData.reduce((sum, item) => sum + item.value, 0);
+                            const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
+                            return (
+                              <TableRow 
+                                key={row.name}
+                                sx={{
+                                  backgroundColor: hoveredPersonality === row.name ? 'rgba(0, 136, 254, 0.1)' : 'inherit',
+                                  '&:hover': {
+                                    backgroundColor: hoveredPersonality === row.name ? 'rgba(0, 136, 254, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                                  },
+                                }}
+                              >
+                                <TableCell>{row.name}</TableCell>
+                                <TableCell align="right">{row.value}</TableCell>
+                                <TableCell align="right">{percentage}%</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
