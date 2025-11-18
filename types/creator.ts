@@ -3,4 +3,5 @@ export type Creator = {
   twitch_username: string;
   display_name: string;
   avatar_url: string | null;
+  is_public: boolean;
 };
