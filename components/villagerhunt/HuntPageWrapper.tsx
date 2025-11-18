@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -74,6 +74,7 @@ export default function HuntPageWrapper({
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
   const [isModerator, setIsModerator] = React.useState(initialIsModerator);
   const [settingsModalOpen, setSettingsModalOpen] = React.useState(false);
+  const [isPublic, setIsPublic] = React.useState<boolean>(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -128,6 +129,22 @@ export default function HuntPageWrapper({
       .then(data => setIsModerator(data.isModerator))
       .catch(() => setIsModerator(false));
   }, [initialIsOwner, initialSession, initialTwitchId]);
+
+  // Fetch creator public status
+  React.useEffect(() => {
+    const fetchCreatorData = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('creators')
+        .select('is_public')
+        .eq('twitch_id', initialTwitchId)
+        .maybeSingle();
+      if (data) {
+        setIsPublic(data.is_public ?? false);
+      }
+    };
+    fetchCreatorData();
+  }, [initialTwitchId]);
 
   // Set up real-time subscription for hunt changes
   React.useEffect(() => {
@@ -186,6 +203,27 @@ export default function HuntPageWrapper({
   // Handle hunt statistics modal
   const handleHuntStats = () => {
     setHuntStatsModalOpen(true);
+  };
+
+  // Handle public/private toggle
+  const handlePublicToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+    const previousValue = isPublic;
+    setIsPublic(newValue);
+    try {
+      const res = await fetch('/api/creators/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_public: newValue }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update');
+      }
+    } catch (error) {
+      console.error('Failed to update public status:', error);
+      // Revert on error
+      setIsPublic(previousValue);
+    }
   };
 
   // Resolve target villagers data
@@ -257,7 +295,20 @@ export default function HuntPageWrapper({
       <Stack spacing={0.5} sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
-          {initialIsOwner && <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>}
+          {initialIsOwner && (
+            <>
+              <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPublic}
+                    onChange={handlePublicToggle}
+                  />
+                }
+                label={isPublic ? "Public" : "Private"}
+              />
+            </>
+          )}
         </Box>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
