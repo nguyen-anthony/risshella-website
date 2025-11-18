@@ -68,7 +68,8 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
       const { data: encounters, error: encountersError } = await supabase
         .from('encounters')
         .select('villager_id')
-        .eq('hunt_id', huntId);
+        .eq('hunt_id', huntId)
+        .eq('is_deleted', false);
 
       if (encountersError) {
         console.error('Error fetching encounters:', encountersError);
