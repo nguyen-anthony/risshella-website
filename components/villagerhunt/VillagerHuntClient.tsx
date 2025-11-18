@@ -48,7 +48,7 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
 
   const { creators, session, error } = data;
   const selfCreator = session ? creators.find(c => c.twitch_username.toLowerCase() === session.login.toLowerCase()) : undefined;
-  const creatorsForGrid = selfCreator ? creators.filter(c => c.twitch_id !== selfCreator.twitch_id).filter(c => c.is_public == true) : creators;
+  const creatorsForGrid = selfCreator ? creators.filter(c => c.twitch_id !== selfCreator.twitch_id).filter(c => c.is_public == true) : creators.filter(c => c.is_public == true);
 
   return (
     <>
