@@ -16,13 +16,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Short description must be 50 characters or less' }, { status: 400 });
     }
 
-    const token = process.env.GITHUB_ACCESS_TOKEN;
-    if (!token) {
-      return NextResponse.json({ error: 'GitHub token not configured' }, { status: 500 });
+    const apiKey = process.env.TRELLO_API_KEY;
+    const token = process.env.TRELLO_TOKEN;
+    const listId = process.env.TRELLO_LIST_ID;
+
+    if (!apiKey || !token || !listId) {
+      return NextResponse.json({ error: 'Trello API not configured' }, { status: 500 });
     }
 
-    const title = `${type === 'issue' ? '🐛 Bug Report' : '✨ Feature Request'}: ${shortDescription}`;
-    const body = `**Type:** ${type === 'issue' ? 'Bug Report' : 'Feature Request'}
+    const name = `${type === 'issue' ? '🐛 Bug Report' : '✨ Feature Request'}: ${shortDescription}`;
+    const desc = `**Type:** ${type === 'issue' ? 'Bug Report' : 'Feature Request'}
 
 **Description:**
 ${description}
@@ -30,31 +33,32 @@ ${description}
 ---
 *Reported via risshella-website*`;
 
-    const response = await fetch('https://api.github.com/repos/nguyen-anthony/risshella-website/issues', {
+    const params = new URLSearchParams({
+      key: apiKey,
+      token: token,
+      idList: listId,
+      name: name,
+      desc: desc,
+      pos: 'top', // Add new cards to the top of the list
+    });
+
+    const response = await fetch(`https://api.trello.com/1/cards?${params}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'risshella-website/1.0',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        title,
-        body,
-        labels: [type === 'issue' ? 'bug' : 'enhancement'],
-      }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('GitHub API error:', error);
-      return NextResponse.json({ error: 'Failed to create issue' }, { status: 500 });
+      console.error('Trello API error:', error);
+      return NextResponse.json({ error: 'Failed to create card' }, { status: 500 });
     }
 
-    const issue = await response.json();
-    return NextResponse.json({ success: true, issueNumber: issue.number });
+    const card = await response.json();
+    return NextResponse.json({ success: true, cardId: card.id, cardUrl: card.url });
   } catch (error) {
-    console.error('Error creating issue:', error);
+    console.error('Error creating card:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

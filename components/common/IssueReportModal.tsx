@@ -15,6 +15,8 @@ import {
   Box,
   Alert,
   CircularProgress,
+  DialogContentText,
+  Link,
 } from "@mui/material";
 
 interface IssueReportModalProps {
@@ -81,8 +83,9 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Report Issue or Request Feature</DialogTitle>
+      <DialogTitle>Report Issue or Request Feature for Villager Hunt</DialogTitle>
       <DialogContent>
+        <DialogContentText>Before submitting a report, check the <Link href={`https://trello.com/b/XUeuFFbu/acnh-villager-hunt`}>Trello board</Link> to see if it exists.</DialogContentText>
         <Box sx={{ pt: 1 }}>
           <FormControl component="fieldset" sx={{ mb: 3 }}>
             <FormLabel component="legend">Type</FormLabel>
@@ -126,7 +129,7 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
 
           {success && (
             <Alert severity="success" sx={{ mt: 2 }}>
-              Thank you! Your {type === 'issue' ? 'bug report' : 'feature request'} has been submitted successfully.
+              Thank you! Your {type === 'issue' ? 'bug report' : 'feature request'} has been added to our Trello board.
             </Alert>
           )}
         </Box>
