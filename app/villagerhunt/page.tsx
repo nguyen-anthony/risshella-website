@@ -17,7 +17,8 @@ export default async function VillagerHunt() {
 
   const { data, error } = await supabase
     .from('creators')
-    .select('twitch_id, twitch_username, display_name, avatar_url');
+    .select('twitch_id, twitch_username, display_name, avatar_url')
+    .order('created_at', { ascending: true });
 
   const creators = (data ?? []) as Creator[];
 
