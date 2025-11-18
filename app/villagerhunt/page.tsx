@@ -3,6 +3,11 @@ import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
 import { getSessionFromCookie } from '@/app/lib/session';
 import VillagerHuntClient from '@/components/villagerhunt/VillagerHuntClient';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "ACNH Villager Hunt",
+};
 
 type PageData = {
   creators: Creator[];
@@ -17,7 +22,9 @@ export default async function VillagerHunt() {
 
   const { data, error } = await supabase
     .from('creators')
-    .select('twitch_id, twitch_username, display_name, avatar_url');
+    .select('twitch_id, twitch_username, display_name, avatar_url')
+    .eq('is_public', true)
+    .order('created_at', { ascending: true });
 
   const creators = (data ?? []) as Creator[];
 

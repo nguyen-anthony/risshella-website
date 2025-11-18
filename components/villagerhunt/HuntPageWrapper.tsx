@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -13,11 +13,13 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove'
 import SortIcon from '@mui/icons-material/Sort';
 import SearchIcon from '@mui/icons-material/Search';
+import SettingsIcon from '@mui/icons-material/Settings';
 import OwnerHuntControls from '@/components/villagerhunt/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import AuthLink from '@/components/villagerhunt/AuthLink';
 import { generateBingoCard } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/UpdateIslandVillagersModal';
+import UpdateTargetVillagersModal from '@/components/villagerhunt/UpdateTargetVillagersModal';
 import BingoCardModal from '@/components/villagerhunt/BingoCardModal';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import { createClient } from '@/utils/supabase/client';
@@ -63,6 +65,7 @@ export default function HuntPageWrapper({
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
+  const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
   const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
   const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
@@ -70,6 +73,8 @@ export default function HuntPageWrapper({
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
   const [isModerator, setIsModerator] = React.useState(initialIsModerator);
+  const [settingsModalOpen, setSettingsModalOpen] = React.useState(false);
+  const [isPublic, setIsPublic] = React.useState<boolean>(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -124,6 +129,22 @@ export default function HuntPageWrapper({
       .then(data => setIsModerator(data.isModerator))
       .catch(() => setIsModerator(false));
   }, [initialIsOwner, initialSession, initialTwitchId]);
+
+  // Fetch creator public status
+  React.useEffect(() => {
+    const fetchCreatorData = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('creators')
+        .select('is_public')
+        .eq('twitch_id', initialTwitchId)
+        .maybeSingle();
+      if (data) {
+        setIsPublic(data.is_public ?? false);
+      }
+    };
+    fetchCreatorData();
+  }, [initialTwitchId]);
 
   // Set up real-time subscription for hunt changes
   React.useEffect(() => {
@@ -184,6 +205,27 @@ export default function HuntPageWrapper({
     setHuntStatsModalOpen(true);
   };
 
+  // Handle public/private toggle
+  const handlePublicToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+    const previousValue = isPublic;
+    setIsPublic(newValue);
+    try {
+      const res = await fetch('/api/creators/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_public: newValue }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update');
+      }
+    } catch (error) {
+      console.error('Failed to update public status:', error);
+      // Revert on error
+      setIsPublic(previousValue);
+    }
+  };
+
   // Resolve target villagers data
   const [targetVillagers, setTargetVillagers] = React.useState<Villager[]>([]);
 
@@ -222,9 +264,14 @@ export default function HuntPageWrapper({
         <Stack spacing={1} sx={{ mb: 2 }}>
           <Typography variant="h4" fontWeight={700}>{initialDisplayName}</Typography>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
-          <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-            View Hunt History
-          </Link>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+              Home
+            </Link>
+            <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+              View Hunt History
+            </Link>
+          </Box>
         </Stack>
         {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
       </Container>
@@ -251,12 +298,37 @@ export default function HuntPageWrapper({
         </Box>
       )}
       <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
+          {initialIsOwner && (
+            <>
+              <Tooltip title="Hunt Settings">
+                <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
+              </Tooltip>
+              <Tooltip title="Determines if you want your name on the landing page or not">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isPublic}
+                      onChange={handlePublicToggle}
+                    />
+                  }
+                  label={isPublic ? "Public" : "Private"}
+                />
+              </Tooltip>
+            </>
+          )}
+        </Box>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
-        <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-          View Hunt History
-        </Link>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+            Home
+          </Link>
+          <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+            View Hunt History
+          </Link>
+        </Box>
         {targetVillagers.length > 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
@@ -313,59 +385,6 @@ export default function HuntPageWrapper({
             {'Hunt Statistics'}
           </Button>
         </Box>
-        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {initialIsOwner && (
-            <>
-              <Button
-                variant="outlined"
-                onClick={() => setUpdateIslandModalOpen(true)}
-              >
-                Update Island Villagers
-              </Button>
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
-                <InputLabel>Change Status</InputLabel>
-                <Select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  label="Change Status"
-                >
-                  <MenuItem value="complete">Completed</MenuItem>
-                  <MenuItem value="pause">Paused</MenuItem>
-                  <MenuItem value="abandon">Abandoned</MenuItem>
-                </Select>
-              </FormControl>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (!selectedStatus) return;
-                  const form = document.createElement('form');
-                  form.method = 'post';
-                  form.action = `/api/hunts/${selectedStatus}`;
-                  const input = document.createElement('input');
-                  input.type = 'hidden';
-                  input.name = 'hunt_id';
-                  input.value = hunt.hunt_id;
-                  form.appendChild(input);
-                  document.body.appendChild(form);
-                  form.submit();
-                }}
-                disabled={!selectedStatus}
-              >
-                Change Status
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                size="large"
-                onClick={() => setDeleteModalOpen(true)}
-                sx={{ fontWeight: 'bold' }}
-              >
-                Delete Hunt
-              </Button>
-            </>
-          )}
-        </Box>
 
 
       <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
@@ -375,6 +394,15 @@ export default function HuntPageWrapper({
         onClose={() => setUpdateIslandModalOpen(false)}
         huntId={hunt.hunt_id}
         currentIslandVillagers={hunt.island_villagers}
+        villagers={villagers}
+        onUpdated={fetchHuntData}
+      />
+
+      <UpdateTargetVillagersModal
+        open={updateTargetModalOpen}
+        onClose={() => setUpdateTargetModalOpen(false)}
+        huntId={hunt.hunt_id}
+        currentTargetVillagers={hunt.target_villager_id}
         villagers={villagers}
         onUpdated={fetchHuntData}
       />
@@ -600,6 +628,35 @@ export default function HuntPageWrapper({
         onClose={() => setHuntStatsModalOpen(false)}
         huntId={hunt?.hunt_id || ''}
       />
+
+      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '500px' } }}>
+        <DialogTitle>Hunt Settings</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
+            <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
+            <FormControl variant="outlined" size="small">
+              <InputLabel>Update Hunt Status</InputLabel>
+              <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
+                <MenuItem value="complete">Completed</MenuItem>
+                <MenuItem value="pause">Paused</MenuItem>
+                <MenuItem value="abandon">Abandoned</MenuItem>
+              </Select>
+            </FormControl>
+            <Button variant="contained" color="primary" onClick={() => { if (!selectedStatus) return; const form = document.createElement('form'); form.method = 'post'; form.action = `/api/hunts/${selectedStatus}`; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }} disabled={!selectedStatus}>Change Status</Button>
+            <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+            <TextField 
+              disabled
+              fullWidth
+              value={`${window.location.href.replace(/\/$/, '')}/overlay`}
+              helperText="Overlay: Set this URL as a browser source in OBS"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSettingsModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
     </Container>
   );
