@@ -13,6 +13,7 @@ type PageData = {
   creators: Creator[];
   session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
   error?: Error | null;
+  activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number }[];
 };
 
 export default async function VillagerHunt() {
@@ -52,10 +53,17 @@ export default async function VillagerHunt() {
     }
   }
 
+  // Get active hunts
+  const { data: activeHunts } = await supabase
+    .from('hunts')
+    .select('hunt_id, hunt_name, twitch_id')
+    .eq('hunt_status', 'ACTIVE');
+
   const pageData: PageData = {
     creators,
     session,
     error,
+    activeHunts: activeHunts || [],
   };
 
   return <VillagerHuntClient data={pageData} />;
