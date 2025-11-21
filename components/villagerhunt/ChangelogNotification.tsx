@@ -1,6 +1,7 @@
 "use client";
 import * as React from 'react';
-import { Box, Link, Typography } from '@mui/material';
+import { Box, Link, Typography, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { usePathname } from 'next/navigation';
 
 const LATEST_CHANGELOG_DATE = new Date('2025-11-18');
@@ -28,6 +29,11 @@ export default function ChangelogNotification() {
   }, [pathname]);
 
   const handleLinkClick = () => {
+    localStorage.setItem('lastChangelogView', new Date().toISOString());
+    setShowNotification(false);
+  };
+
+  const handleClose = () => {
     localStorage.setItem('lastChangelogView', new Date().toISOString());
     setShowNotification(false);
   };
@@ -82,7 +88,19 @@ export default function ChangelogNotification() {
           },
         }}
       >
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+        <IconButton
+          onClick={handleClose}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 4,
+            right: 4,
+            padding: 0.5,
+          }}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+        <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2 }}>
           Hey there! There&apos;s new stuff in the{' '}
           <Link
             href="/villagerhunt/changelog"
