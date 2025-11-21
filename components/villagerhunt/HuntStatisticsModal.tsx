@@ -58,6 +58,10 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
   const [topVillagers, setTopVillagers] = React.useState<VillagerStat[]>([]);
   const [hoveredSpecies, setHoveredSpecies] = React.useState<string | null>(null);
   const [hoveredPersonality, setHoveredPersonality] = React.useState<string | null>(null);
+  const [uniqueVillagersCount, setUniqueVillagersCount] = React.useState(0);
+  const [repeatVillagersCount, setRepeatVillagersCount] = React.useState(0);
+  const [totalUniqueSeen, setTotalUniqueSeen] = React.useState(0);
+  const [totalVillagersInGame, setTotalVillagersInGame] = React.useState(0);
 
   const fetchStatistics = React.useCallback(async () => {
     setLoading(true);
@@ -80,6 +84,10 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
         setSpeciesData([]);
         setPersonalityData([]);
         setTopVillagers([]);
+        setUniqueVillagersCount(0);
+        setRepeatVillagersCount(0);
+        setTotalUniqueSeen(0);
+        setTotalVillagersInGame(0);
         return;
       }
 
@@ -88,6 +96,20 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
       encounters.forEach((encounter: Encounter) => {
         villagerCounts[encounter.villager_id] = (villagerCounts[encounter.villager_id] || 0) + 1;
       });
+
+      // Calculate villager statistics
+      const uniqueVillagers = Object.values(villagerCounts).filter(count => count === 1).length;
+      const repeatVillagers = Object.values(villagerCounts).filter(count => count > 1).length;
+      const totalUnique = Object.keys(villagerCounts).length;
+
+      // Fetch total villagers in game
+      const { count: totalVillagers, error: totalError } = await supabase
+        .from('villagers')
+        .select('*', { count: 'exact', head: true });
+
+      if (totalError) {
+        console.error('Error fetching total villagers:', totalError);
+      }
 
       // Fetch villager data for all encountered villagers
       const villagerIds = Object.keys(villagerCounts).map(id => parseInt(id));
@@ -138,6 +160,10 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
       setSpeciesData(speciesChartData);
       setPersonalityData(personalityChartData);
       setTopVillagers(top5Villagers);
+      setUniqueVillagersCount(uniqueVillagers);
+      setRepeatVillagersCount(repeatVillagers);
+      setTotalUniqueSeen(totalUnique);
+      setTotalVillagersInGame(totalVillagers || 0);
     } catch (error) {
       console.error('Error fetching statistics:', error);
     } finally {
@@ -161,6 +187,28 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
           </Box>
         ) : (
           <Box sx={{ mt: 2 }}>
+            {/* Summary Statistics */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>Hunt Summary</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary">{uniqueVillagersCount}</Typography>
+                  <Typography variant="body2" color="text.secondary">Unique Villagers Seen</Typography>
+                  <Typography variant="caption">(Encountered exactly once)</Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="secondary">{repeatVillagersCount}</Typography>
+                  <Typography variant="body2" color="text.secondary">Repeat Villagers Seen</Typography>
+                  <Typography variant="caption">(Encountered more than once)</Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="success.main">{totalUniqueSeen}</Typography>
+                  <Typography variant="body2" color="text.secondary">Total Unique Villagers Seen</Typography>
+                  <Typography variant="caption">Out of {totalVillagersInGame} total villagers</Typography>
+                </Paper>
+              </Box>
+            </Box>
+
             {/* Species Distribution */}
             <Typography variant="h6" sx={{ mb: 2 }}>Species Distribution</Typography>
             {speciesData.length > 0 ? (
