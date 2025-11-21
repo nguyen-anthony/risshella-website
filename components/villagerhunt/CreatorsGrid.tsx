@@ -22,7 +22,6 @@ export default function CreatorsGrid({ creators, emptyMessage = "No creators fou
 
   return (
     <Grid container spacing={2} sx={{ mt: 1 }}>
-      {console.log(`Active hunts:`, activeHunts)}
       {creators.map((c) => {
         const isModerated = moderatedUsernames.includes(c.twitch_username.toLowerCase());
         const activeHunt = activeHunts.find(h => h.twitch_id === c.twitch_id);
