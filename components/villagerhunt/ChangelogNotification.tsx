@@ -96,6 +96,7 @@ export default function ChangelogNotification() {
             top: 4,
             right: 4,
             padding: 0.5,
+            color: 'black',
           }}
         >
           <CloseIcon fontSize="small" />
