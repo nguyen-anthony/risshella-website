@@ -62,6 +62,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
   const [repeatVillagersCount, setRepeatVillagersCount] = React.useState(0);
   const [totalUniqueSeen, setTotalUniqueSeen] = React.useState(0);
   const [totalVillagersInGame, setTotalVillagersInGame] = React.useState(0);
+  const [speciesStats, setSpeciesStats] = React.useState<Array<{species: string, found: number, total: number}>>([]);
 
   const fetchStatistics = React.useCallback(async () => {
     setLoading(true);
@@ -88,6 +89,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
         setRepeatVillagersCount(0);
         setTotalUniqueSeen(0);
         setTotalVillagersInGame(0);
+        setSpeciesStats([]);
         return;
       }
 
@@ -111,6 +113,22 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
         console.error('Error fetching total villagers:', totalError);
       }
 
+      // Fetch all distinct species and their counts
+      const { data: allSpeciesData, error: speciesError } = await supabase
+        .from('villagers')
+        .select('species')
+        .order('species');
+
+      if (speciesError) {
+        console.error('Error fetching species:', speciesError);
+      }
+
+      // Get unique species and their total counts
+      const speciesTotals: Record<string, number> = {};
+      allSpeciesData?.forEach((row: { species: string }) => {
+        speciesTotals[row.species] = (speciesTotals[row.species] || 0) + 1;
+      });
+
       // Fetch villager data for all encountered villagers
       const villagerIds = Object.keys(villagerCounts).map(id => parseInt(id));
       const { data: villagers, error: villagersError } = await supabase
@@ -122,6 +140,12 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
         console.error('Error fetching villagers:', villagersError);
         return;
       }
+
+      // Calculate species stats (found vs total)
+      const speciesStatsData = Object.entries(speciesTotals).map(([species, total]) => {
+        const found = villagers?.filter(v => v.species === species).length || 0;
+        return { species, found, total };
+      }).sort((a, b) => a.species.localeCompare(b.species));
 
       // Build statistics
       const speciesCount: Record<string, number> = {};
@@ -164,6 +188,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
       setRepeatVillagersCount(repeatVillagers);
       setTotalUniqueSeen(totalUnique);
       setTotalVillagersInGame(totalVillagers || 0);
+      setSpeciesStats(speciesStatsData);
     } catch (error) {
       console.error('Error fetching statistics:', error);
     } finally {
@@ -209,8 +234,42 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
               </Box>
             </Box>
 
+            {/* Species Stats */}
+            <Typography variant="h6" sx={{ mb: 2 }}>Species Stats</Typography>
+            {speciesStats.length > 0 ? (
+              <Box sx={{ mb: 4 }}>
+                <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Species</TableCell>
+                        <TableCell align="right">Found</TableCell>
+                        <TableCell align="right">Total</TableCell>
+                        <TableCell align="right">Progress</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {speciesStats.map((stat) => (
+                        <TableRow key={stat.species}>
+                          <TableCell>{stat.species}</TableCell>
+                          <TableCell align="right">{stat.found}</TableCell>
+                          <TableCell align="right">{stat.total}</TableCell>
+                          <TableCell align="right">
+                            {stat.found}/{stat.total}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                No species data available.
+              </Typography>
+            )}
+
             {/* Species Distribution */}
-            <Typography variant="h6" sx={{ mb: 2 }}>Species Distribution</Typography>
             {speciesData.length > 0 ? (
               <Box sx={{ display: 'flex', gap: 4, mb: 4 }}>
                 <Box sx={{ height: 300, flex: 1 }}>
