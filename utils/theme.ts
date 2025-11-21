@@ -2,8 +2,9 @@
 'use client'
 import { createTheme } from "@mui/material";
 
-const theme = createTheme({
+export const createAppTheme = (mode: 'light' | 'dark') => createTheme({
   palette: {
+    mode,
     primary: {
       main: "#9c27b0", // Purple
     },
@@ -12,5 +13,7 @@ const theme = createTheme({
     },
   },
 });
+
+const theme = createAppTheme('light');
 
 export default theme;

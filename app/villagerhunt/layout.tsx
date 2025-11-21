@@ -1,5 +1,6 @@
 "use client";
 import ChangelogNotification from '@/components/villagerhunt/ChangelogNotification';
+import Navigation from '@/components/common/Navigation';
 
 export default function VillagerHuntLayout({
   children,
@@ -8,6 +9,7 @@ export default function VillagerHuntLayout({
 }) {
   return (
     <>
+      <Navigation />
       {children}
       <ChangelogNotification />
     </>

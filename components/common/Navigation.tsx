@@ -17,6 +17,8 @@ import {
   useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 import {
   SiInstagram,
   SiX,
@@ -25,12 +27,14 @@ import {
   SiBluesky,
   SiTiktok,
 } from "react-icons/si";
+import { useThemeMode } from "@/utils/ThemeContext";
 
 const Navigation: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { mode, toggleMode } = useThemeMode();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -46,7 +50,7 @@ const Navigation: React.FC = () => {
 
   const navItems = [
     { title: "Home", href: "/" },
-    { title: "About Me", href: "/about" },
+    // { title: "About Me", href: "/about" },
   ];
 
   const legacyChallenges = [
@@ -130,6 +134,9 @@ const Navigation: React.FC = () => {
 
         {/* Right side: Navigation links or hamburger menu */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton color="inherit" onClick={toggleMode}>
+            {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
+          </IconButton>
           {isMobile ? (
             <IconButton
               color="inherit"
@@ -171,6 +178,9 @@ const Navigation: React.FC = () => {
                   </MenuItem>
                 ))}
               </Menu>
+              <Button color="inherit" href="/villagerhunt">
+                ACNH Villager Hunt
+              </Button>
             </Box>
           )}
         </Box>
@@ -212,6 +222,13 @@ const Navigation: React.FC = () => {
                 <ListItemText primary={challenge.title} />
               </ListItem>
             ))}
+            <ListItem
+              component="a"
+              href="/villagerhunt"
+              onClick={toggleDrawer}
+            >
+              <ListItemText primary="ACNH Villager Hunt" />
+            </ListItem>
           </List>
         </Box>
       </Drawer>
