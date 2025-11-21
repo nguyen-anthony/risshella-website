@@ -39,6 +39,41 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              November 20, 2025 - v0.3.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Added additional hunt statistics! Check them out!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Added the navigation from the main page and added supported dark mode"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Name of your active hunt appears on grid"/>
+              </ListItem>
+            </List>
+
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Added ability to close change log notification"/>
+              </ListItem>
+            </List>
+
+            
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               November 18, 2025 - v0.2.0
             </Typography>
           </AccordionSummary>
