@@ -1,15 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
-import { getSessionFromCookie } from '@/app/lib/session';
-import { getModeratedChannels } from '@/app/lib/twitch';
+import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
+import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const supabase = createServiceClient(cookieStore);
   const session = await getSessionFromCookie();
 
-  if (!session) {
+  // Refresh token if expired
+  if (session && session.exp < Date.now() / 1000 && session.refreshToken) {
+    try {
+      const newToken = await refreshAccessToken(session.refreshToken);
+      session.accessToken = newToken.access_token;
+      session.refreshToken = newToken.refresh_token;
+      session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
+      await setSessionCookie(session);
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      // If refresh fails, treat as unauthorized
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
+  if (!session || session.exp < Date.now() / 1000) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

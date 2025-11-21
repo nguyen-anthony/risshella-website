@@ -33,7 +33,6 @@ export function decodeSession(token?: string): Session | null {
   if (sign(payload) !== sig) return null;
   try {
     const json = JSON.parse(Buffer.from(payload, 'base64url').toString());
-    if (json.exp && Date.now() / 1000 > json.exp) return null;
     return json as Session;
   } catch {
     return null;
