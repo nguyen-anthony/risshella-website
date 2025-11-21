@@ -100,7 +100,7 @@ export default function ChangelogNotification() {
         >
           <CloseIcon fontSize="small" />
         </IconButton>
-        <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2 }}>
+        <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
           Hey there! There&apos;s new stuff in the{' '}
           <Link
             href="/villagerhunt/changelog"
