@@ -156,6 +156,12 @@ export default function ChangelogPage() {
               <ListItem>
                 <ListItemText primary="You've been able to search the encounters table with the 'Filter' icon, but no one knew that. I changed it to a search icon."/>
               </ListItem>
+              <ListItem>
+                <ListItemText primary="Improved the loading time of images of villagers everywhere, including bingo card generation, encounters list, encounter controls, etc."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Added trello board details to the changelog"/>
+              </ListItem>
             </List>
 
             <Typography variant="h6" gutterBottom fontWeight="semibold">
