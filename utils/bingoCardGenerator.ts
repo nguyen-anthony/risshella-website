@@ -6,18 +6,6 @@ type Villager = {
   image_url: string | null;
 };
 
-async function preloadImages(urls: string[]): Promise<Record<string, string>> {
-  // Use a CORS proxy to load images
-  const CORS_PROXY = 'https://api.codetabs.com/v1/proxy?quest=';
-
-  const urlMap: Record<string, string> = {};
-  urls.forEach(url => {
-    urlMap[url] = CORS_PROXY + encodeURIComponent(url);
-  });
-
-  return urlMap;
-}
-
 async function waitForImagesToLoad(container: HTMLElement): Promise<void> {
   const images = container.querySelectorAll('img');
   const promises = Array.from(images).map(img => {
@@ -41,13 +29,11 @@ function createBingoCardHTML({
   creatorName,
   targetVillagers,
   bingoVillagers,
-  imageUrlMap,
 }: {
   huntName: string;
   creatorName: string;
   targetVillagers: { name: string; image_url: string | null }[];
   bingoVillagers: Villager[];
-  imageUrlMap: Record<string, string>;
 }) {
   const container = document.createElement('div');
   container.style.width = '800px';
@@ -104,7 +90,8 @@ function createBingoCardHTML({
       villagerDiv.style.gap = '4px';
 
       const villagerImg = document.createElement('img');
-      villagerImg.src = imageUrlMap[villager.image_url || ''] || villager.image_url || '';
+      const sanitizedName = villager.name.replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_');
+      villagerImg.src = `/villagers/${sanitizedName}.png`;
       villagerImg.alt = villager.name;
       villagerImg.style.width = 'auto';
       villagerImg.style.height = 'auto';
@@ -183,7 +170,8 @@ function createBingoCardHTML({
 
       if (villager?.image_url) {
         const img = document.createElement('img');
-        img.src = imageUrlMap[villager.image_url] || villager.image_url;
+        const sanitizedName = villager.name.replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_');
+        img.src = `/villagers/${sanitizedName}.png`;
         img.alt = villager.name;
         img.style.width = 'auto';
         img.style.height = 'auto';
@@ -243,21 +231,12 @@ export async function generateBingoCard({
   const shuffled = [...availableVillagers].sort(() => Math.random() - 0.5);
   const bingoVillagers = shuffled.slice(0, 24);
 
-  // Preload all villager images and convert to data URLs or proxy URLs
-  const imageUrls = [
-    ...targetVillagers.map(v => v.image_url).filter(Boolean),
-    ...bingoVillagers.map(v => v.image_url).filter(Boolean),
-  ].filter(Boolean) as string[];
-
-  const imageUrlMap = await preloadImages(imageUrls);
-
-  // Create bingo card HTML with proxied image URLs
+  // Create bingo card HTML with local image URLs
   const bingoCard = createBingoCardHTML({
     huntName,
     creatorName,
     targetVillagers,
     bingoVillagers,
-    imageUrlMap,
   });
 
   // Temporarily add to DOM (hidden off-screen to prevent flash)
@@ -275,7 +254,6 @@ export async function generateBingoCard({
     const canvas = await html2canvas(bingoCard, {
       backgroundColor: '#ffffff',
       scale: 2,
-      useCORS: true, // Enable CORS for proxy images
     });
 
     // Get data URL
