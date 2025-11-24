@@ -36,7 +36,39 @@ export default function ChangelogPage() {
 
       <Box sx={{ mt: 3 }}>
         {/* Most recent changelog - expanded by default */}
-        <Accordion defaultExpanded>
+<Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
+              November 23, 2025 - v0.4.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Added island numbers to the landing page grid to show the current island number they are on in their hunt"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="You've been able to search the encounters table with the 'Filter' icon, but no one knew that. I changed it to a search icon."/>
+              </ListItem>
+            </List>
+
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Fixed text color on Bingo Card when generating bingo cards in dark mode"/>
+              </ListItem>
+            </List>
+
+            
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               November 20, 2025 - v0.3.0
