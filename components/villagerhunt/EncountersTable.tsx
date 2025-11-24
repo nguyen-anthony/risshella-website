@@ -139,7 +139,9 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
   const getVillager = (id: number | null) => {
     if (id == null) return { name: "—", image_url: null };
     const v = index?.[id];
-    return { name: v?.name ?? `#${id}`, image_url: v?.image_url ?? null };
+    const name = v?.name ?? `#${id}`;
+    const sanitizedName = name.replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_');
+    return { name, image_url: `/villagers/${sanitizedName}.png` };
   };
 
   // Sorting function
