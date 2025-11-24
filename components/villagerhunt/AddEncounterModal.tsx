@@ -33,6 +33,20 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
   const [selected, setSelected] = React.useState<Villager | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && selected && islandNumber) {
+      handleAdd();
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const inputValue = e.currentTarget.value.toLowerCase();
+      const filtered = villagers.filter(v => v.name.toLowerCase().includes(inputValue));
+      if (filtered.length > 0) {
+        setSelected(filtered[0]);
+        setDropdownOpen(false);
+      }
+    }
+  };
   const villagerInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -41,6 +55,7 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       setIslandNumber((maxIsland + 1).toString());
       setSelected(null);
       setError(null); // Clear error when modal opens
+      setDropdownOpen(true);
       
       // Focus the villager input after a short delay to ensure the modal is fully rendered
       setTimeout(() => {
@@ -116,6 +131,7 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
         />
         <Autocomplete
           loading={loading}
+          open={dropdownOpen}
           options={villagers}
           getOptionKey={(option) => option.villager_id}
           getOptionLabel={(v) => v.name}
@@ -127,7 +143,7 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} inputRef={villagerInputRef} label="Villager" required />}
+          renderInput={(params) => <TextField {...params} inputRef={villagerInputRef} label="Villager" required inputProps={{...params.inputProps, onKeyDown: handleKeyDown}} />}
           
         />
         {loading && (
