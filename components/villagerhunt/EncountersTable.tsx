@@ -2,7 +2,6 @@
 import * as React from "react";
 import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination, TextField, InputAdornment, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import UpdateDeleteEncounterModal from "@/components/villagerhunt/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/villagerhunt/AddEncounterModal";
 import { createClient } from '@/utils/supabase/client';
@@ -220,7 +219,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
                 onClick={() => setShowFilter(!showFilter)}
                 sx={{ ml: 1 }}
               >
-                <FilterListIcon />
+                <SearchIcon />
               </IconButton>
             </TableCell>
             <TableCell>
