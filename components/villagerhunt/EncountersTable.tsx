@@ -140,7 +140,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     if (id == null) return { name: "—", image_url: null };
     const v = index?.[id];
     const name = v?.name ?? `#${id}`;
-    const sanitizedName = name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_');
+    const sanitizedName = name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_');
     return { name, image_url: `/villagers/${sanitizedName}.png` };
   };
 

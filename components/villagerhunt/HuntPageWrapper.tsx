@@ -337,7 +337,7 @@ export default function HuntPageWrapper({
                 <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box
                     component="img"
-                    src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_')}.png`}
+                    src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
                     alt={villager.name}
                     sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
                   />
@@ -355,7 +355,7 @@ export default function HuntPageWrapper({
                 <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box
                     component="img"
-                    src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_')}.png`}
+                    src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
                     alt={villager.name}
                     sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
                   />

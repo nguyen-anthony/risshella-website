@@ -90,7 +90,7 @@ function createBingoCardHTML({
       villagerDiv.style.gap = '4px';
 
       const villagerImg = document.createElement('img');
-      const sanitizedName = villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_');
+      const sanitizedName = villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_');
       villagerImg.src = `/villagers/${sanitizedName}.png`;
       villagerImg.alt = villager.name;
       villagerImg.style.width = 'auto';
@@ -170,7 +170,7 @@ function createBingoCardHTML({
 
       if (villager?.image_url) {
         const img = document.createElement('img');
-        const sanitizedName = villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_');
+        const sanitizedName = villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_');
         img.src = `/villagers/${sanitizedName}.png`;
         img.alt = villager.name;
         img.style.width = 'auto';
