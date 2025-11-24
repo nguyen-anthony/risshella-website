@@ -57,6 +57,7 @@ function createBingoCardHTML({
   container.style.display = 'flex';
   container.style.flexDirection = 'column';
   container.style.alignItems = 'center';
+  container.style.color = '#000000'; // Ensure all text is black by default
 
   // Header
   const header = document.createElement('div');
@@ -72,6 +73,7 @@ function createBingoCardHTML({
   const huntInfo = document.createElement('div');
   huntInfo.style.fontSize = '18px';
   huntInfo.style.marginBottom = '10px';
+  huntInfo.style.color = '#000000'; // Explicit black for hunt info text
   huntInfo.innerHTML = `
     <strong>Hunt:</strong> ${huntName}<br>
     <strong>Creator:</strong> ${creatorName}
@@ -86,6 +88,7 @@ function createBingoCardHTML({
 
     const targetLabel = document.createElement('strong');
     targetLabel.textContent = 'Dreamies:';
+    targetLabel.style.color = '#000000'; // Explicit black for target label
 
     targetInfo.appendChild(targetLabel);
 
@@ -112,6 +115,7 @@ function createBingoCardHTML({
       const villagerName = document.createElement('span');
       villagerName.textContent = villager.name;
       villagerName.style.fontSize = '14px';
+      villagerName.style.color = '#000000'; // Explicit black for villager names
 
       villagerDiv.appendChild(villagerImg);
       villagerDiv.appendChild(villagerName);
@@ -171,6 +175,7 @@ function createBingoCardHTML({
       subText.textContent = 'Villager Hunt';
       subText.style.fontSize = '12px';
       subText.style.marginTop = '4px';
+      subText.style.color = '#000000'; // Explicit black for subtext
       cell.appendChild(subText);
     } else {
       const villagerIndex = i < 12 ? i : i - 1; // Skip center
@@ -193,6 +198,7 @@ function createBingoCardHTML({
       name.textContent = villager?.name || 'Unknown';
       name.style.fontSize = '12px';
       name.style.fontWeight = 'bold';
+      name.style.color = '#000000'; // Explicit black for bingo square names
       cell.appendChild(name);
     }
 
