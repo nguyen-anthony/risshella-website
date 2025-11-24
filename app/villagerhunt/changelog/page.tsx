@@ -62,6 +62,9 @@ export default function ChangelogPage() {
               <ListItem>
                 <ListItemText primary="Fixed text color on Bingo Card when generating bingo cards in dark mode"/>
               </ListItem>
+              <ListItem>
+                <ListItemText primary="Removed the navigation bar from the stream overlay page"/>
+              </ListItem>
             </List>
 
             
