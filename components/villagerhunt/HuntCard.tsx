@@ -57,7 +57,7 @@ export default function HuntCard({ hunt, username, twitchId, villagersMap }: Pro
                     <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Box
                         component="img"
-                        src={`/villagers/${villager.name.replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_')}.png`}
+                        src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '_')}.png`}
                         alt={villager.name}
                         sx={{ maxWidth: 40, maxHeight: 40, borderRadius: 1 }}
                       />
