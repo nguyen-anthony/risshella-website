@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Container,
@@ -12,12 +12,47 @@ import {
   ListItem,
   ListItemText,
   Box,
+  Chip,
+  CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+interface TrelloCard {
+  id: string;
+  name: string;
+  desc: string;
+  labels: { name: string; color: string }[];
+  url: string;
+}
+
+interface TrelloData {
+  lists: Record<string, string>;
+  cards: Record<string, TrelloCard[]>;
+}
+
 export default function ChangelogPage() {
   const router = useRouter();
+  const [trelloData, setTrelloData] = useState<TrelloData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrelloData = async () => {
+      try {
+        const res = await fetch('/api/trello/cards');
+        if (res.ok) {
+          const data = await res.json();
+          setTrelloData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch Trello data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrelloData();
+  }, []);
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -35,8 +70,76 @@ export default function ChangelogPage() {
       </Typography>
 
       <Box sx={{ mt: 3 }}>
+        {/* Trello Board Display */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Feature Requests & Bug Reports
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Full board found here: <a href="https://trello.com/b/XUeuFFbu/acnh-villager-hunt">https://trello.com/b/XUeuFFbu/acnh-villager-hunt</a>
+          </Typography>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : trelloData ? (
+            Object.entries(trelloData.cards).map(([listName, cards]) => (
+              <Accordion key={listName}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h6" fontWeight="semibold">
+                    {listName} ({cards.length})
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {cards.length === 0 ? (
+                    <Typography color="text.secondary">No cards in this list.</Typography>
+                  ) : (
+                    <List dense>
+                      {cards.map((card) => (
+                        <ListItem key={card.id} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <Box sx={{ width: '100%' }}>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {card.name}
+                            </Typography>
+                            {card.desc && (
+                              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                {card.desc}
+                              </Typography>
+                            )}
+                            {card.labels.length > 0 && (
+                              <Box sx={{ mt: 1 }}>
+                                {card.labels.map((label) => (
+                                  <Chip
+                                    key={label.name}
+                                    label={label.name}
+                                    size="small"
+                                    sx={{
+                                      mr: 0.5,
+                                      mb: 0.5,
+                                      backgroundColor: label.color !== 'null' ? `#${label.color}` : 'default',
+                                      color: 'white',
+                                    }}
+                                  />
+                                ))}
+                              </Box>
+                            )}
+                          </Box>
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            ))
+          ) : (
+            <Typography color="error">Failed to load Trello data.</Typography>
+          )}
+        </Box>
         {/* Most recent changelog - expanded by default */}
-<Accordion defaultExpanded>
+        <Typography variant="h4" gutterBottom>
+          Changelog
+        </Typography>
+        <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               November 23, 2025 - v0.4.0
