@@ -10,11 +10,13 @@ export const metadata: Metadata = {
   title: "ACNH Villager Hunt",
 };
 
+type ActiveHunt = { hunt_id: string; hunt_name: string; twitch_id: number; current_island: number };
+
 type PageData = {
   creators: Creator[];
   session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
   error?: Error | null;
-  activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number }[];
+  activeHunts: ActiveHunt[];
 };
 
 export default async function VillagerHunt() {
@@ -68,17 +70,14 @@ export default async function VillagerHunt() {
     }
   }
 
-  // Get active hunts
-  const { data: activeHunts } = await supabase
-    .from('hunts')
-    .select('hunt_id, hunt_name, twitch_id')
-    .eq('hunt_status', 'ACTIVE');
+  // Get active hunts with current island
+  const { data: activeHunts } = await supabase.rpc('get_active_hunts_with_island');
 
   const pageData: PageData = {
     creators,
     session,
     error,
-    activeHunts: activeHunts || [],
+    activeHunts,
   };
 
   return <VillagerHuntClient data={pageData} />;

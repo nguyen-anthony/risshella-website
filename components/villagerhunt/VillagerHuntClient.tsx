@@ -12,7 +12,7 @@ type PageData = {
   creators: Creator[];
   session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
   error?: Error | null;
-  activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number }[];
+  activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number; current_island?: number }[];
 };
 
 export default function VillagerHuntClient({ data }: { data: PageData }) {

@@ -8,7 +8,7 @@ import type { Creator } from "@/types/creator";
 type Props = {
   creators: Creator[];
   moderatedUsernames?: string[];
-  activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number }[];
+  activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number; current_island?: number }[];
 };
 
 export default function CreatorsSearchGrid({ creators, moderatedUsernames = [], activeHunts }: Props) {
