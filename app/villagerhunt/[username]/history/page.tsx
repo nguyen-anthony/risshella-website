@@ -28,7 +28,7 @@ export default async function HuntHistoryPage(props: PageProps) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
   const session = await getSessionFromCookie();
-  const isOwner = session && session.login.toLowerCase() === username.toLowerCase();
+  const isOwner = session ? session.login.toLowerCase() === username.toLowerCase() : false;
   const isAuthenticated = !!session;
 
   // Query creators table for twitch_id
