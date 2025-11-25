@@ -181,7 +181,8 @@ export async function POST(request: NextRequest) {
     // Store bingo data in a way, but since server-side, perhaps return the image
     // For now, just return the image
 
-    return new NextResponse(buffer, {
+    // Convert Node Buffer to Uint8Array to satisfy BodyInit/ArrayBufferView typing
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'image/png',
