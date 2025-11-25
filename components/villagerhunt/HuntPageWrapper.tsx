@@ -295,8 +295,20 @@ function TempModsTable({ creatorTwitchId }: { creatorTwitchId: number }) {
                     <TextField
                       type="datetime-local"
                       size="small"
-                      value={new Date(currentExpiry).toISOString().slice(0, 16)}
-                      onChange={(e) => handleExpiryChange(mod.temp_mod_twitch_id, new Date(e.target.value).toISOString())}
+                      value={(() => {
+                        const date = new Date(currentExpiry + (currentExpiry.includes('Z') ? '' : 'Z'));
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        return `${year}-${month}-${day}T${hours}:${minutes}`;
+                      })()}
+                      onChange={(e) => {
+                        // The input value is in local time, convert to UTC for storage
+                        const localDate = new Date(e.target.value);
+                        handleExpiryChange(mod.temp_mod_twitch_id, localDate.toISOString());
+                      }}
                       fullWidth
                     />
                   </TableCell>
@@ -549,6 +561,13 @@ export default function HuntPageWrapper({
     const islandVillagers = villagers.filter(v => hunt.island_villagers.includes(v.villager_id));
     setIslandVillagersData(islandVillagers);
   }, [hunt?.island_villagers, villagers]);
+
+  // Set bingo enabled state from hunt data
+  React.useEffect(() => {
+    if (hunt) {
+      setIsBingoEnabled(hunt.is_bingo_enabled ?? false);
+    }
+  }, [hunt?.is_bingo_enabled]);
 
   // Set overlay URL on client side
   React.useEffect(() => {
