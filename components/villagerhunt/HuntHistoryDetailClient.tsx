@@ -2,6 +2,9 @@
 
 import * as React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
+import Link from 'next/link';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import HistoryIcon from '@mui/icons-material/History';
 import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import ResumeButton from '@/components/villagerhunt/ResumeButton';
@@ -24,6 +27,8 @@ type Props = {
   villagers: Villager[];
   targetVillagers: Villager[];
   isOwner: boolean;
+  isAuthenticated: boolean;
+  username: string;
 };
 
 export default function HuntHistoryDetailClient({
@@ -32,6 +37,8 @@ export default function HuntHistoryDetailClient({
   villagers,
   targetVillagers,
   isOwner,
+  isAuthenticated,
+  username,
 }: Props) {
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
 
@@ -44,7 +51,15 @@ export default function HuntHistoryDetailClient({
       <Box>
         <Typography variant="h4" fontWeight={700}>{displayName}</Typography>
         <Typography variant="h6" color="text.secondary">{hunt.hunt_name}</Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
+          <Button component={Link} href={`/villagerhunt/${encodeURIComponent(username)}`} variant="outlined" startIcon={<ArrowBackIcon />}>
+            Go back to current hunt
+          </Button>
+          <Button component={Link} href={`/villagerhunt/${encodeURIComponent(username)}/history`} variant="outlined" startIcon={<HistoryIcon />}>
+            Go back to hunt history
+          </Button>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
           <Button
             variant="contained"
             color="primary"
@@ -72,7 +87,7 @@ export default function HuntHistoryDetailClient({
           </Box>
         </Box>
       )}
-      {isOwner && hunt.hunt_status === 'PAUSED' && (
+      {isAuthenticated && isOwner && hunt.hunt_status === 'PAUSED' && (
         <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={hunt.twitch_id} />
       )}
       <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />

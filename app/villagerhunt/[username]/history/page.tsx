@@ -2,8 +2,11 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container, Typography, Box, Stack } from '@mui/material';
 import Link from 'next/link';
+import { Button } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HuntStatusFilter from '@/components/villagerhunt/HuntStatusFilter';
 import HuntCard from '@/components/villagerhunt/HuntCard';
+import { getSessionFromCookie } from '@/app/lib/session';
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -24,6 +27,9 @@ export default async function HuntHistoryPage(props: PageProps) {
   const username = decodeURIComponent(rawUsername);
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
+  const session = await getSessionFromCookie();
+  const isOwner = session ? session.login.toLowerCase() === username.toLowerCase() : false;
+  const isAuthenticated = !!session;
 
   // Query creators table for twitch_id
   const { data: creatorRow } = await supabase
@@ -79,14 +85,14 @@ export default async function HuntHistoryPage(props: PageProps) {
           <Typography variant="h4" fontWeight={700}>{displayName} - Hunt History</Typography>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
             <HuntStatusFilter />
-            <Link href={`/villagerhunt/${encodeURIComponent(username)}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-              Back to Current Hunt
-            </Link>
+            <Button component={Link} href={`/villagerhunt/${encodeURIComponent(username)}`} variant="outlined" startIcon={<ArrowBackIcon />}>
+              Go back to current hunt
+            </Button>
           </Box>
         </Box>
         {filteredHunts && filteredHunts.length > 0 ? (
           filteredHunts.map((hunt) => (
-            <HuntCard key={hunt.hunt_id} hunt={hunt} username={username} twitchId={twitchId} villagersMap={villagersMap} />
+            <HuntCard key={hunt.hunt_id} hunt={hunt} username={username} twitchId={twitchId} villagersMap={villagersMap} isOwner={isOwner} isAuthenticated={isAuthenticated} />
           ))
         ) : (
           <Typography>No previous hunts found.</Typography>

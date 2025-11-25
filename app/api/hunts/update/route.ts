@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     hunt_id?: string;
     island_villagers?: number[];
     target_villager_id?: number[];
+    is_bingo_enabled?: boolean;
   } | null;
 
   if (!body || typeof body.hunt_id !== 'string') {
@@ -38,8 +39,9 @@ export async function POST(req: NextRequest) {
 
   const hasIslandVillagers = Array.isArray(body.island_villagers);
   const hasTargetVillagers = Array.isArray(body.target_villager_id);
+  const hasBingoEnabled = typeof body.is_bingo_enabled === 'boolean';
 
-  if (!hasIslandVillagers && !hasTargetVillagers) {
+  if (!hasIslandVillagers && !hasTargetVillagers && !hasBingoEnabled) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
@@ -69,12 +71,15 @@ export async function POST(req: NextRequest) {
   }
 
   // Update the hunt
-  const updateData: { island_villagers?: number[]; target_villager_id?: number[] } = {};
+  const updateData: { island_villagers?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean } = {};
   if (hasIslandVillagers) {
     updateData.island_villagers = body.island_villagers;
   }
   if (hasTargetVillagers) {
     updateData.target_villager_id = body.target_villager_id;
+  }
+  if (hasBingoEnabled) {
+    updateData.is_bingo_enabled = body.is_bingo_enabled;
   }
 
   const { error } = await supabase
