@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -55,6 +55,278 @@ type Props = {
   initialUsername: string;
 };
 
+type TempMod = {
+  temp_mod_twitch_id: number;
+  temp_mod_username: string;
+  expiry_timestamp: string;
+};
+
+function AddTempModModal({ open, onClose, onSuccess, creatorTwitchId }: { 
+  open: boolean; 
+  onClose: () => void; 
+  onSuccess: () => void;
+  creatorTwitchId: number;
+}) {
+  const [username, setUsername] = React.useState('');
+  const [expiryDate, setExpiryDate] = React.useState('');
+  const [expiryTime, setExpiryTime] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  const handleSubmit = async () => {
+    if (!username.trim() || !expiryDate || !expiryTime) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    const expiryTimestamp = new Date(`${expiryDate}T${expiryTime}`).toISOString();
+    
+    if (new Date(expiryTimestamp) <= new Date()) {
+      setError('Expiry time must be in the future');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/temp-mods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creatorTwitchId,
+          username: username.trim(),
+          expiryTimestamp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add temp mod');
+      }
+
+      // Success
+      alert('Successfully added temp mod');
+      setUsername('');
+      setExpiryDate('');
+      setExpiryTime('');
+      onSuccess();
+    } catch (error) {
+      console.error('Error adding temp mod:', error);
+      setError(error instanceof Error ? error.message : 'Failed to add temp mod');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} sx={{ '& .MuiDialog-paper': { minWidth: '400px' } }}>
+      <DialogTitle>Add Temp Mod</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          <TextField
+            label="Twitch Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            fullWidth
+            helperText="Enter the Twitch username to add as temporary moderator"
+          />
+          <TextField
+            label="Expiry Date"
+            type="date"
+            value={expiryDate}
+            onChange={(e) => setExpiryDate(e.target.value)}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Expiry Time"
+            type="time"
+            value={expiryTime}
+            onChange={(e) => setExpiryTime(e.target.value)}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSubmit} variant="contained" disabled={submitting}>
+          {submitting ? 'Adding...' : 'Add Temp Mod'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function TempModsTable({ creatorTwitchId }: { creatorTwitchId: number }) {
+  const [tempMods, setTempMods] = React.useState<TempMod[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [changes, setChanges] = React.useState<{[key: number]: {expiry: string, delete: boolean}}>({});
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchTempMods = async () => {
+      try {
+        const response = await fetch(`/api/temp-mods?creatorTwitchId=${creatorTwitchId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch temp mods');
+        }
+        const data = await response.json();
+        setTempMods(data.tempMods || []);
+      } catch (error) {
+        console.error('Error fetching temp mods:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTempMods();
+  }, [creatorTwitchId]);
+
+  const handleExpiryChange = (tempModTwitchId: number, newExpiry: string) => {
+    setChanges(prev => ({
+      ...prev,
+      [tempModTwitchId]: {
+        ...prev[tempModTwitchId],
+        expiry: newExpiry
+      }
+    }));
+  };
+
+  const handleDeleteToggle = (tempModTwitchId: number, shouldDelete: boolean) => {
+    setChanges(prev => ({
+      ...prev,
+      [tempModTwitchId]: {
+        ...prev[tempModTwitchId],
+        delete: shouldDelete
+      }
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updates = [];
+      const deletions = [];
+
+      for (const [tempModTwitchId, change] of Object.entries(changes)) {
+        if (change.delete) {
+          deletions.push(parseInt(tempModTwitchId));
+        } else if (change.expiry) {
+          updates.push({
+            tempModTwitchId: parseInt(tempModTwitchId),
+            expiryTimestamp: change.expiry
+          });
+        }
+      }
+
+      // Process updates
+      for (const update of updates) {
+        await fetch('/api/temp-mods', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tempModTwitchId: update.tempModTwitchId,
+            expiryTimestamp: update.expiryTimestamp,
+            creatorTwitchId
+          }),
+        });
+      }
+
+      // Process deletions
+      for (const tempModTwitchId of deletions) {
+        await fetch(`/api/temp-mods?tempModTwitchId=${tempModTwitchId}&creatorTwitchId=${creatorTwitchId}`, {
+          method: 'DELETE',
+        });
+      }
+
+      // Refresh the table
+      const response = await fetch(`/api/temp-mods?creatorTwitchId=${creatorTwitchId}`);
+      const data = await response.json();
+      setTempMods(data.tempMods || []);
+      setChanges({});
+
+      alert('Changes saved successfully!');
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert('Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const hasChanges = Object.keys(changes).length > 0;
+
+  if (loading) {
+    return <Typography>Loading temp mods...</Typography>;
+  }
+
+  if (tempMods.length === 0) {
+    return <Typography>No temporary moderators found.</Typography>;
+  }
+
+  return (
+    <Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Username</TableCell>
+              <TableCell>Expires</TableCell>
+              <TableCell>Delete</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tempMods.map((mod) => {
+              const change = changes[mod.temp_mod_twitch_id] || {};
+              const currentExpiry = change.expiry || mod.expiry_timestamp;
+              
+              return (
+                <TableRow key={mod.temp_mod_twitch_id}>
+                  <TableCell>{mod.temp_mod_username}</TableCell>
+                  <TableCell>
+                    <TextField
+                      type="datetime-local"
+                      size="small"
+                      value={new Date(currentExpiry).toISOString().slice(0, 16)}
+                      onChange={(e) => handleExpiryChange(mod.temp_mod_twitch_id, new Date(e.target.value).toISOString())}
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={change.delete || false}
+                      onChange={(e) => handleDeleteToggle(mod.temp_mod_twitch_id, e.target.checked)}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {hasChanges && (
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button 
+            variant="contained" 
+            onClick={handleSave} 
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
 export default function HuntPageWrapper({
   initialDisplayName,
   initialTwitchId,
@@ -78,6 +350,9 @@ export default function HuntPageWrapper({
   const [settingsModalOpen, setSettingsModalOpen] = React.useState(false);
   const [isPublic, setIsPublic] = React.useState<boolean>(false);
   const [isBingoEnabled, setIsBingoEnabled] = React.useState<boolean>(false);
+  const [tempModsModalOpen, setTempModsModalOpen] = React.useState(false);
+  const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
+  const [overlayUrl, setOverlayUrl] = React.useState<string>('');
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -275,12 +550,10 @@ export default function HuntPageWrapper({
     setIslandVillagersData(islandVillagers);
   }, [hunt?.island_villagers, villagers]);
 
-  // Set bingo enabled state
+  // Set overlay URL on client side
   React.useEffect(() => {
-    if (hunt) {
-      setIsBingoEnabled(hunt.is_bingo_enabled);
-    }
-  }, [hunt]);
+    setOverlayUrl(`${window.location.href.replace(/\/$/, '')}/overlay`);
+  }, []);
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
@@ -664,6 +937,7 @@ export default function HuntPageWrapper({
                 }
                 label="Enable Bingo Card Generation"
               />
+              <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
               <FormControl variant="outlined" size="small">
                 <InputLabel>Update Hunt Status</InputLabel>
                 <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
@@ -678,7 +952,7 @@ export default function HuntPageWrapper({
             <TextField 
               disabled
               fullWidth
-              value={`${window.location.href.replace(/\/$/, '')}/overlay`}
+              value={overlayUrl}
               helperText="Overlay: Set this URL as a browser source in OBS"
             />
           </Box>
@@ -687,6 +961,37 @@ export default function HuntPageWrapper({
           <Button onClick={() => setSettingsModalOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Temp Mods Modal */}
+      <Dialog open={tempModsModalOpen} onClose={() => setTempModsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '600px' } }}>
+        <DialogTitle>Temp Mods</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Temp mods can only update the villager hunt tracker. This will not add them as a mod in your Twitch channel.
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Button variant="contained" onClick={() => { setAddTempModModalOpen(true); setTempModsModalOpen(false); }}>
+              Add Temp Mod
+            </Button>
+          </Box>
+          <TempModsTable key={tempModsModalOpen ? 'open' : 'closed'} creatorTwitchId={initialTwitchId} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTempModsModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Temp Mod Modal */}
+      <AddTempModModal
+        open={addTempModModalOpen}
+        onClose={() => setAddTempModModalOpen(false)}
+        onSuccess={() => {
+          setAddTempModModalOpen(false);
+          setTempModsModalOpen(true);
+          // The table will refresh automatically due to the useEffect
+        }}
+        creatorTwitchId={initialTwitchId}
+      />
 
     </Container>
   );

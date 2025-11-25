@@ -136,7 +136,10 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
           getOptionKey={(option) => option.villager_id}
           getOptionLabel={(v) => v.name}
           value={selected}
-          onChange={(_, v) => setSelected(v)}
+          onChange={(_, v) => {
+            setSelected(v);
+            setDropdownOpen(false);
+          }}
           renderOption={(props, option) => (
             <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Avatar src={`/villagers/${option.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`} alt={option.name} sx={{ width: 24, height: 24 }} />
