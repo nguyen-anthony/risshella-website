@@ -70,7 +70,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!isOwner && !isModerator) {
+    // Check if user is a temporary moderator
+    let isTempMod = false;
+    if (!isOwner && !isModerator && session.userId) {
+      const serviceSupabase = createServiceClient(cookieStore);
+      const { data: tempModData } = await serviceSupabase
+        .from('temp_mods')
+        .select('temp_mod_twitch_id')
+        .eq('creator_twitch_id', hunt.twitch_id)
+        .eq('temp_mod_twitch_id', parseInt(session.userId))
+        .gt('expiry_timestamp', new Date().toISOString())
+        .maybeSingle();
+      
+      isTempMod = !!tempModData;
+    }
+
+    if (!isOwner && !isModerator && !isTempMod) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

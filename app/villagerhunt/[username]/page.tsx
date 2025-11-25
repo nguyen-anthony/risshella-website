@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createServiceClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
 import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
 import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
@@ -107,6 +107,21 @@ export default async function CreatorHuntPage(props: PageProps) {
       isModerator = mods.some((m: ModeratedChannel) => m.broadcaster_id === String(twitchId));
     } catch {
       // ignore moderation check errors
+    }
+  }
+
+  // Check if user is a temporary moderator
+  if (!isOwner && session?.userId) {
+    const serviceSupabase = createServiceClient(cookieStore);
+    const { data: tempModData } = await serviceSupabase
+      .from('temp_mods')
+      .select('temp_mod_twitch_id')
+      .eq('creator_twitch_id', twitchId)
+      .eq('temp_mod_twitch_id', parseInt(session.userId))
+      .gt('expiry_timestamp', new Date().toISOString())
+      .maybeSingle();
+    if (tempModData) {
+      isModerator = true;
     }
   }
 

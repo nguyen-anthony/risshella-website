@@ -57,13 +57,29 @@ export async function POST(request: NextRequest) {
       try {
         const mods = await getModeratedChannels(session.accessToken, session.userId);
         isModerator = mods.some((m) => m.broadcaster_id === String(hunt.twitch_id));
-        console.log('Moderator check:', { isModerator, modsCount: mods.length });
+        console.log('Official moderator check:', { isModerator, modsCount: mods.length });
       } catch (err) {
-        console.log('Moderator check error:', err);
+        console.log('Official moderator check error:', err);
       }
     }
 
-    if (!isOwner && !isModerator) {
+    // Check if user is a temporary moderator
+    let isTempMod = false;
+    if (!isOwner && !isModerator && session.userId) {
+      const serviceSupabase = createServiceClient(cookieStore);
+      const { data: tempModData } = await serviceSupabase
+        .from('temp_mods')
+        .select('temp_mod_twitch_id')
+        .eq('creator_twitch_id', hunt.twitch_id)
+        .eq('temp_mod_twitch_id', parseInt(session.userId))
+        .gt('expiry_timestamp', new Date().toISOString())
+        .maybeSingle();
+      
+      isTempMod = !!tempModData;
+      console.log('Temp mod check:', { isTempMod, tempModData });
+    }
+
+    if (!isOwner && !isModerator && !isTempMod) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
