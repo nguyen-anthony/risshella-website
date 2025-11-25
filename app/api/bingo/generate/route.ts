@@ -59,12 +59,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create canvas
-    const canvas = createCanvas(800, 1000);
+    const canvas = createCanvas(800, 1200);
     const ctx = canvas.getContext('2d');
 
     // Background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 1000);
+    ctx.fillRect(0, 0, 800, 1200);
 
     // Header
     ctx.fillStyle = '#000000';
@@ -77,25 +77,26 @@ export async function POST(request: NextRequest) {
     ctx.fillText(`Creator: ${creatorName}`, 400, 105);
 
     // Target villagers
+    let dreamiesEndY = 140; // Default if no dreamies
     if (targetVillagers.length > 0) {
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('Dreamies:', 400, 140);
+      ctx.font = 'bold 32px Arial';
+      ctx.fillText('Dreamies:', 400, 150);
 
       let x = 50;
-      let y = 170;
+      let y = 190;
       for (const villager of targetVillagers) {
         if (villager.image_url) {
           try {
             const imageBuffer = await fetchImageBuffer(villager.image_url);
             const img = await loadImage(imageBuffer);
 
-            drawImageAspectRatio(ctx, img, x, y - 20, 24, 24);
+            drawImageAspectRatio(ctx, img, x, y - 25, 32, 32);
           } catch (error) {
             console.error('Failed to load target image:', villager.image_url, error);
           }
         }
 
-        ctx.font = '16px Arial';
+        ctx.font = '24px Arial';
         ctx.textAlign = 'left';
         ctx.fillText(villager.name, x + 40, y);
         x += 140;
@@ -104,10 +105,11 @@ export async function POST(request: NextRequest) {
           y += 40;
         }
       }
+      dreamiesEndY = y + 20; // Add some padding after the last row
     }
 
     // Bingo grid
-    const gridStartY = targetVillagers.length > 0 ? 280 : 150;
+    const gridStartY = Math.max(dreamiesEndY, 150);
     ctx.strokeStyle = '#2e7d32';
     ctx.lineWidth = 3;
     ctx.strokeRect(50, gridStartY, 700, 700);
