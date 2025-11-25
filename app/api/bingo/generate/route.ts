@@ -68,18 +68,18 @@ export async function POST(request: NextRequest) {
 
     // Header
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 32px Arial';
+    ctx.font = 'bold 32px Helvetica';
     ctx.textAlign = 'center';
     ctx.fillText('Animal Crossing Villager Hunt', 400, 50);
 
-    ctx.font = '24px Arial';
+    ctx.font = '24px Helvetica';
     ctx.fillText(`Hunt: ${huntName}`, 400, 80);
     ctx.fillText(`Creator: ${creatorName}`, 400, 105);
 
     // Target villagers
     let dreamiesEndY = 140; // Default if no dreamies
     if (targetVillagers.length > 0) {
-      ctx.font = 'bold 24px Arial';
+      ctx.font = 'bold 24px Helvetica';
       ctx.fillText('Dreamies:', 400, 150);
 
       let x = 50;
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        ctx.font = '24px Arial';
+        ctx.font = '24px Helvetica';
         ctx.textAlign = 'left';
         ctx.fillText(villager.name, x + 40, y);
 
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     // B-I-N-G-O letters
     ctx.fillStyle = '#2e7d32';
-    ctx.font = 'bold 20px Arial';
+    ctx.font = 'bold 20px Helvetica';
     ctx.textAlign = 'center';
     const letters = ['B', 'I', 'N', 'G', 'O'];
     for (let i = 0; i < 5; i++) {
@@ -143,9 +143,9 @@ export async function POST(request: NextRequest) {
           ctx.fillRect(x, y, 140, 140);
           ctx.strokeRect(x, y, 140, 140);
           ctx.fillStyle = '#000000';
-          ctx.font = 'bold 18px Arial';
+          ctx.font = 'bold 18px Helvetica';
           ctx.fillText('FREE', x + 70, y + 70);
-          ctx.font = '20px Arial';
+          ctx.font = '20px Helvetica';
           ctx.fillText('Villager Hunt', x + 70, y + 90);
         } else {
           ctx.fillStyle = 'white';
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
           }
 
           ctx.fillStyle = '#000000';
-          ctx.font = 'bold 20px Arial';
+          ctx.font = 'bold 20px Helvetica';
           ctx.textAlign = 'center';
           ctx.fillText(villager?.name || 'Unknown', x + 70, y + 120);
         }
