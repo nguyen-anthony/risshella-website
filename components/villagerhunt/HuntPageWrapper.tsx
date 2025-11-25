@@ -568,7 +568,7 @@ export default function HuntPageWrapper({
     if (hunt) {
       setIsBingoEnabled(hunt.is_bingo_enabled ?? false);
     }
-  }, [hunt?.is_bingo_enabled]);
+  }, [hunt, hunt?.is_bingo_enabled]);
 
   // Set overlay URL on client side
   React.useEffect(() => {
