@@ -60,6 +60,7 @@ export default async function HuntDetailPage(props: PageProps) {
         villagers={villagers}
         targetVillagers={targetVillagers}
         isOwner={isOwner || false}
+        isAuthenticated={!!session}
         username={username}
       />
     </Container>

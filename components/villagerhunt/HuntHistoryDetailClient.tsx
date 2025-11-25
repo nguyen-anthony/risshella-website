@@ -27,6 +27,7 @@ type Props = {
   villagers: Villager[];
   targetVillagers: Villager[];
   isOwner: boolean;
+  isAuthenticated: boolean;
   username: string;
 };
 
@@ -36,6 +37,7 @@ export default function HuntHistoryDetailClient({
   villagers,
   targetVillagers,
   isOwner,
+  isAuthenticated,
   username,
 }: Props) {
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
@@ -85,7 +87,7 @@ export default function HuntHistoryDetailClient({
           </Box>
         </Box>
       )}
-      {isOwner && hunt.hunt_status === 'PAUSED' && (
+      {isAuthenticated && isOwner && hunt.hunt_status === 'PAUSED' && (
         <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={hunt.twitch_id} />
       )}
       <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />

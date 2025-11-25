@@ -25,9 +25,11 @@ type Props = {
   username: string;
   twitchId: number;
   villagersMap: Record<number, Villager>;
+  isOwner: boolean;
+  isAuthenticated: boolean;
 };
 
-export default function HuntCard({ hunt, username, twitchId, villagersMap }: Props) {
+export default function HuntCard({ hunt, username, twitchId, villagersMap, isOwner, isAuthenticated }: Props) {
   const router = useRouter();
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -68,7 +70,7 @@ export default function HuntCard({ hunt, username, twitchId, villagersMap }: Pro
               </Box>
             )}
           </Box>
-          {hunt.hunt_status === 'PAUSED' && (
+          {isAuthenticated && isOwner && hunt.hunt_status === 'PAUSED' && (
             <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={twitchId} />
           )}
         </Box>
