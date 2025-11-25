@@ -10,6 +10,8 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
@@ -26,6 +28,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
   const [huntName, setHuntName] = React.useState("");
   const [selected, setSelected] = React.useState<Villager[]>([]);
   const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
+  const [isBingoEnabled, setIsBingoEnabled] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -56,7 +59,8 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
         body: JSON.stringify({
           hunt_name: huntName || undefined,
           target_villager_id: selected.map(v => v.villager_id),
-          island_villagers: islandVillagers.map(v => v.villager_id)
+          island_villagers: islandVillagers.map(v => v.villager_id),
+          is_bingo_enabled: isBingoEnabled,
         }),
       });
       if (res.ok) {
@@ -128,6 +132,16 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               </Box>
             ))
           }
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={isBingoEnabled}
+              onChange={(e) => setIsBingoEnabled(e.target.checked)}
+            />
+          }
+          label="Enable Bingo Card Generation"
+          sx={{ alignSelf: 'flex-start' }}
         />
       </DialogContent>
       <DialogActions>
