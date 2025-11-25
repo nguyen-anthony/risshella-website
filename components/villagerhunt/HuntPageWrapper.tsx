@@ -31,6 +31,7 @@ type Hunt = {
   hunt_name: string;
   target_villager_id: number[];
   island_villagers: number[];
+  is_bingo_enabled: boolean;
 };
 
 type Villager = {
@@ -76,6 +77,7 @@ export default function HuntPageWrapper({
   const [isModerator, setIsModerator] = React.useState(initialIsModerator);
   const [settingsModalOpen, setSettingsModalOpen] = React.useState(false);
   const [isPublic, setIsPublic] = React.useState<boolean>(false);
+  const [isBingoEnabled, setIsBingoEnabled] = React.useState<boolean>(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -85,7 +87,7 @@ export default function HuntPageWrapper({
       // Fetch ACTIVE hunt
       const { data: huntData, error: huntError } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name, target_villager_id, island_villagers')
+        .select('hunt_id, hunt_name, target_villager_id, island_villagers, is_bingo_enabled')
         .eq('twitch_id', initialTwitchId)
         .eq('hunt_status', 'ACTIVE')
         .order('hunt_id', { ascending: false })
@@ -204,7 +206,31 @@ export default function HuntPageWrapper({
     setHuntStatsModalOpen(true);
   };
 
-  // Handle public/private toggle
+  // Handle bingo enabled toggle
+  const handleBingoToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!hunt) return;
+    const newValue = e.target.checked;
+    const previousValue = isBingoEnabled;
+    setIsBingoEnabled(newValue);
+    try {
+      const res = await fetch('/api/hunts/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hunt_id: hunt.hunt_id, is_bingo_enabled: newValue }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update');
+      }
+      // Refetch to update hunt data
+      fetchHuntData();
+    } catch (error) {
+      console.error('Failed to update bingo enabled:', error);
+      // Revert on error
+      setIsBingoEnabled(previousValue);
+    }
+  };
+
+  // Handle public toggle
   const handlePublicToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.checked;
     const previousValue = isPublic;
@@ -245,9 +271,16 @@ export default function HuntPageWrapper({
       setIslandVillagersData([]);
       return;
     }
-    const islandVillagersFiltered = villagers.filter(v => hunt.island_villagers.includes(v.villager_id));
-    setIslandVillagersData(islandVillagersFiltered);
+    const islandVillagers = villagers.filter(v => hunt.island_villagers.includes(v.villager_id));
+    setIslandVillagersData(islandVillagers);
   }, [hunt?.island_villagers, villagers]);
+
+  // Set bingo enabled state
+  React.useEffect(() => {
+    if (hunt) {
+      setIsBingoEnabled(hunt.is_bingo_enabled);
+    }
+  }, [hunt]);
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
@@ -352,14 +385,16 @@ export default function HuntPageWrapper({
           )}
 
           <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleGenerateBingoCard}
-              disabled={generatingBingo}
-            >
-              {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
-            </Button>
+            {isBingoEnabled && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleGenerateBingoCard}
+                disabled={generatingBingo}
+              >
+                {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
+              </Button>
+            )}
             <Button
               variant="contained"
               color="primary"
@@ -620,6 +655,15 @@ export default function HuntPageWrapper({
             {hunt && (<>
               <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
               <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isBingoEnabled}
+                    onChange={handleBingoToggle}
+                  />
+                }
+                label="Enable Bingo Card Generation"
+              />
               <FormControl variant="outlined" size="small">
                 <InputLabel>Update Hunt Status</InputLabel>
                 <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
