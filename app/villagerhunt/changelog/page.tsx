@@ -142,6 +142,44 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              November 24, 2025 - v0.5.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="When you add an encounter, you can now immediately type to search for a villager, hitting TAB will select the top result, and then hit Enter to actually submit the encounter." secondary="Please report any issues with this!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Improved navigation between active hunt, hunt history, and when viewing previous hunts."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Creators can now toggle bingo for an individual hunt in case they are villager hunting and don't want bingo cards."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Creators can now add temporary mods. This only grants a specified Twitch user the ability to act like a mod for the villager hunt only. This should only be granted to viewers you trust."/>
+              </ListItem>
+            </List>
+
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Paused hunts always showed the resume button. It should now only show for the creator of the hunt."/>
+              </ListItem>
+            </List>
+
+            
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               November 23, 2025 - v0.4.0
             </Typography>
           </AccordionSummary>
