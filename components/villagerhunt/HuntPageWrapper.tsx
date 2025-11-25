@@ -61,7 +61,6 @@ export default function HuntPageWrapper({
   initialUsername,
 }: Props) {
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
-  const [loading, setLoading] = React.useState(true);
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
@@ -104,7 +103,6 @@ export default function HuntPageWrapper({
       const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
 
       setVillagers(filteredVillagers);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching hunt data:', error);
       // If 401, perhaps set a flag to show login
@@ -112,7 +110,6 @@ export default function HuntPageWrapper({
         // Handle auth error, e.g., redirect to login
         window.location.href = '/auth'; // or show a login button
       }
-      setLoading(false);
     }
   }, [initialTwitchId]);
 
@@ -250,34 +247,6 @@ export default function HuntPageWrapper({
     setIslandVillagersData(islandVillagersFiltered);
   }, [hunt?.island_villagers, villagers]);
 
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
-        <Typography>Loading...</Typography>
-      </Container>
-    );
-  }
-
-  if (!hunt) {
-    return (
-      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
-        <Stack spacing={1} sx={{ mb: 2 }}>
-          <Typography variant="h4" fontWeight={700}>{initialDisplayName}</Typography>
-          <Typography variant="h6" color="text.secondary">No active hunt</Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-              Home
-            </Link>
-            <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-              View Hunt History
-            </Link>
-          </Box>
-        </Stack>
-        {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
-      </Container>
-    );
-  }
-
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
       {/* Help Button for authenticated owners/moderators */}
@@ -297,6 +266,8 @@ export default function HuntPageWrapper({
           </IconButton>
         </Box>
       )}
+
+      {/* Always present elements */}
       <Stack spacing={0.5} sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
@@ -320,7 +291,6 @@ export default function HuntPageWrapper({
           )}
         </Box>
         {!initialSession && <AuthLink username={initialDisplayName} />}
-        <Typography variant="h6" component="h2" color="text.secondary">{hunt.hunt_name}</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
             Home
@@ -329,128 +299,140 @@ export default function HuntPageWrapper({
             View Hunt History
           </Link>
         </Box>
-        {targetVillagers.length > 0 && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {targetVillagers.map((villager) => (
-                <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box
-                    component="img"
-                    src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
-                    alt={villager.name}
-                    sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
-                  />
-                  <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-        {islandVillagersData.length > 0 && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">Current Island Villagers:</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {islandVillagersData.map((villager) => (
-                <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box
-                    component="img"
-                    src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
-                    alt={villager.name}
-                    sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
-                  />
-                  <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
       </Stack>
 
-      
-        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateBingoCard}
-            disabled={generatingBingo}
-          >
-            {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleHuntStats}
-          >
-            {'Hunt Statistics'}
-          </Button>
+      {/* Conditional content based on hunt existence */}
+      {!hunt ? (
+        <Box>
+          <Typography variant="h6" color="text.secondary">No active hunt</Typography>
+          {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
         </Box>
+      ) : (
+        <Box>
+          <Typography variant="h6" component="h2" color="text.secondary" sx={{ mb: 2 }}>{hunt.hunt_name}</Typography>
 
+          {targetVillagers.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {targetVillagers.map((villager) => (
+                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      component="img"
+                      src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
+                      alt={villager.name}
+                      sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
 
-      <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
+          {islandVillagersData.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">Current Island Villagers:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {islandVillagersData.map((villager) => (
+                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      component="img"
+                      src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
+                      alt={villager.name}
+                      sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
 
-      <UpdateIslandVillagersModal
-        open={updateIslandModalOpen}
-        onClose={() => setUpdateIslandModalOpen(false)}
-        huntId={hunt.hunt_id}
-        currentIslandVillagers={hunt.island_villagers}
-        villagers={villagers}
-        onUpdated={fetchHuntData}
-      />
+          <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleGenerateBingoCard}
+              disabled={generatingBingo}
+            >
+              {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleHuntStats}
+            >
+              {'Hunt Statistics'}
+            </Button>
+          </Box>
 
-      <UpdateTargetVillagersModal
-        open={updateTargetModalOpen}
-        onClose={() => setUpdateTargetModalOpen(false)}
-        huntId={hunt.hunt_id}
-        currentTargetVillagers={hunt.target_villager_id}
-        villagers={villagers}
-        onUpdated={fetchHuntData}
-      />
+          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
 
-      <BingoCardModal
-        open={bingoCardModalOpen}
-        onClose={() => setBingoCardModalOpen(false)}
-        onRegenerate={handleGenerateBingoCard}
-        bingoCardImage={bingoCardImage}
-        loading={generatingBingo}
-      />
+          <UpdateIslandVillagersModal
+            open={updateIslandModalOpen}
+            onClose={() => setUpdateIslandModalOpen(false)}
+            huntId={hunt.hunt_id}
+            currentIslandVillagers={hunt.island_villagers}
+            villagers={villagers}
+            onUpdated={fetchHuntData}
+          />
 
-      {/* Delete Confirmation Modal */}
-      <Dialog
-        open={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-      >
-        <DialogTitle>Delete Hunt</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete this hunt?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Deleted hunts will not show up in your history. Consider changing the status to paused or abandoned instead if you want to see it in your history.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteModalOpen(false)}>No</Button>
-          <Button
-            onClick={() => {
-              const form = document.createElement('form');
-              form.method = 'post';
-              form.action = '/api/hunts/delete';
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = 'hunt_id';
-              input.value = hunt.hunt_id;
-              form.appendChild(input);
-              document.body.appendChild(form);
-              form.submit();
-            }}
-            color="error"
-            variant="contained"
+          <UpdateTargetVillagersModal
+            open={updateTargetModalOpen}
+            onClose={() => setUpdateTargetModalOpen(false)}
+            huntId={hunt.hunt_id}
+            currentTargetVillagers={hunt.target_villager_id}
+            villagers={villagers}
+            onUpdated={fetchHuntData}
+          />
+
+          <BingoCardModal
+            open={bingoCardModalOpen}
+            onClose={() => setBingoCardModalOpen(false)}
+            onRegenerate={handleGenerateBingoCard}
+            bingoCardImage={bingoCardImage}
+            loading={generatingBingo}
+          />
+
+          {/* Delete Confirmation Modal */}
+          <Dialog
+            open={deleteModalOpen}
+            onClose={() => setDeleteModalOpen(false)}
           >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <DialogTitle>Delete Hunt</DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this hunt?
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Deleted hunts will not show up in your history. Consider changing the status to paused or abandoned instead if you want to see it in your history.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteModalOpen(false)}>No</Button>
+              <Button
+                onClick={() => {
+                  const form = document.createElement('form');
+                  form.method = 'post';
+                  form.action = '/api/hunts/delete';
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = 'hunt_id';
+                  input.value = hunt.hunt_id;
+                  form.appendChild(input);
+                  document.body.appendChild(form);
+                  form.submit();
+                }}
+                color="error"
+                variant="contained"
+              >
+                Yes
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
+      )}
 
       {/* Instructions Drawer */}
       <Drawer
@@ -633,18 +615,20 @@ export default function HuntPageWrapper({
         <DialogTitle>Hunt Settings</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
-            <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
-            <FormControl variant="outlined" size="small">
-              <InputLabel>Update Hunt Status</InputLabel>
-              <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
-                <MenuItem value="complete">Completed</MenuItem>
-                <MenuItem value="pause">Paused</MenuItem>
-                <MenuItem value="abandon">Abandoned</MenuItem>
-              </Select>
-            </FormControl>
-            <Button variant="contained" color="primary" onClick={() => { if (!selectedStatus) return; const form = document.createElement('form'); form.method = 'post'; form.action = `/api/hunts/${selectedStatus}`; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }} disabled={!selectedStatus}>Change Status</Button>
-            <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+            {hunt && (<>
+              <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
+              <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
+              <FormControl variant="outlined" size="small">
+                <InputLabel>Update Hunt Status</InputLabel>
+                <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
+                  <MenuItem value="complete">Completed</MenuItem>
+                  <MenuItem value="pause">Paused</MenuItem>
+                  <MenuItem value="abandon">Abandoned</MenuItem>
+                </Select>
+              </FormControl>
+              <Button variant="contained" color="primary" onClick={() => { if (!selectedStatus) return; const form = document.createElement('form'); form.method = 'post'; form.action = `/api/hunts/${selectedStatus}`; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }} disabled={!selectedStatus}>Change Status</Button>
+              <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+            </>)}
             <TextField 
               disabled
               fullWidth
