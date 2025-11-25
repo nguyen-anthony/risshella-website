@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -168,6 +168,8 @@ function AddTempModModal({ open, onClose, onSuccess, creatorTwitchId }: {
 function TempModsTable({ creatorTwitchId }: { creatorTwitchId: number }) {
   const [tempMods, setTempMods] = React.useState<TempMod[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [changes, setChanges] = React.useState<{[key: number]: {expiry: string, delete: boolean}}>({});
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     const fetchTempMods = async () => {
@@ -188,6 +190,80 @@ function TempModsTable({ creatorTwitchId }: { creatorTwitchId: number }) {
     fetchTempMods();
   }, [creatorTwitchId]);
 
+  const handleExpiryChange = (tempModTwitchId: number, newExpiry: string) => {
+    setChanges(prev => ({
+      ...prev,
+      [tempModTwitchId]: {
+        ...prev[tempModTwitchId],
+        expiry: newExpiry
+      }
+    }));
+  };
+
+  const handleDeleteToggle = (tempModTwitchId: number, shouldDelete: boolean) => {
+    setChanges(prev => ({
+      ...prev,
+      [tempModTwitchId]: {
+        ...prev[tempModTwitchId],
+        delete: shouldDelete
+      }
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updates = [];
+      const deletions = [];
+
+      for (const [tempModTwitchId, change] of Object.entries(changes)) {
+        if (change.delete) {
+          deletions.push(parseInt(tempModTwitchId));
+        } else if (change.expiry) {
+          updates.push({
+            tempModTwitchId: parseInt(tempModTwitchId),
+            expiryTimestamp: change.expiry
+          });
+        }
+      }
+
+      // Process updates
+      for (const update of updates) {
+        await fetch('/api/temp-mods', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tempModTwitchId: update.tempModTwitchId,
+            expiryTimestamp: update.expiryTimestamp,
+            creatorTwitchId
+          }),
+        });
+      }
+
+      // Process deletions
+      for (const tempModTwitchId of deletions) {
+        await fetch(`/api/temp-mods?tempModTwitchId=${tempModTwitchId}&creatorTwitchId=${creatorTwitchId}`, {
+          method: 'DELETE',
+        });
+      }
+
+      // Refresh the table
+      const response = await fetch(`/api/temp-mods?creatorTwitchId=${creatorTwitchId}`);
+      const data = await response.json();
+      setTempMods(data.tempMods || []);
+      setChanges({});
+
+      alert('Changes saved successfully!');
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert('Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const hasChanges = Object.keys(changes).length > 0;
+
   if (loading) {
     return <Typography>Loading temp mods...</Typography>;
   }
@@ -197,24 +273,57 @@ function TempModsTable({ creatorTwitchId }: { creatorTwitchId: number }) {
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Username</TableCell>
-            <TableCell>Expires</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {tempMods.map((mod) => (
-            <TableRow key={mod.temp_mod_twitch_id}>
-              <TableCell>{mod.temp_mod_username}</TableCell>
-              <TableCell>{new Date(mod.expiry_timestamp).toLocaleString()}</TableCell>
+    <Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Username</TableCell>
+              <TableCell>Expires</TableCell>
+              <TableCell>Delete</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {tempMods.map((mod) => {
+              const change = changes[mod.temp_mod_twitch_id] || {};
+              const currentExpiry = change.expiry || mod.expiry_timestamp;
+              
+              return (
+                <TableRow key={mod.temp_mod_twitch_id}>
+                  <TableCell>{mod.temp_mod_username}</TableCell>
+                  <TableCell>
+                    <TextField
+                      type="datetime-local"
+                      size="small"
+                      value={new Date(currentExpiry).toISOString().slice(0, 16)}
+                      onChange={(e) => handleExpiryChange(mod.temp_mod_twitch_id, new Date(e.target.value).toISOString())}
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={change.delete || false}
+                      onChange={(e) => handleDeleteToggle(mod.temp_mod_twitch_id, e.target.checked)}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {hasChanges && (
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button 
+            variant="contained" 
+            onClick={handleSave} 
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Box>
+      )}
+    </Box>
   );
 }
 
@@ -857,6 +966,9 @@ export default function HuntPageWrapper({
       <Dialog open={tempModsModalOpen} onClose={() => setTempModsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '600px' } }}>
         <DialogTitle>Temp Mods</DialogTitle>
         <DialogContent>
+          <Typography variant="body1">
+            Temp mods can only update the villager hunt tracker. This will not add them as a mod in your Twitch channel.
+          </Typography>
           <Box sx={{ mb: 2 }}>
             <Button variant="contained" onClick={() => { setAddTempModModalOpen(true); setTempModsModalOpen(false); }}>
               Add Temp Mod

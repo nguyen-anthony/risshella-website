@@ -96,3 +96,86 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  const cookieStore = await cookies();
+  const supabase = createServiceClient(cookieStore);
+  const session = await getSessionFromCookie();
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { tempModTwitchId, expiryTimestamp, creatorTwitchId } = body;
+
+    if (!tempModTwitchId || !expiryTimestamp || !creatorTwitchId) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Verify the session user is the creator
+    if (parseInt(session.userId) !== creatorTwitchId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Update the temp mod expiry
+    const { error } = await supabase
+      .from('temp_mods')
+      .update({ expiry_timestamp: expiryTimestamp })
+      .eq('creator_twitch_id', creatorTwitchId)
+      .eq('temp_mod_twitch_id', tempModTwitchId);
+
+    if (error) {
+      console.error('Error updating temp mod:', error);
+      return NextResponse.json({ error: 'Failed to update temp mod' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error updating temp mod:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const cookieStore = await cookies();
+  const supabase = createServiceClient(cookieStore);
+  const session = await getSessionFromCookie();
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const tempModTwitchId = searchParams.get('tempModTwitchId');
+    const creatorTwitchId = searchParams.get('creatorTwitchId');
+
+    if (!tempModTwitchId || !creatorTwitchId) {
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    // Verify the session user is the creator
+    if (parseInt(session.userId) !== parseInt(creatorTwitchId)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Delete the temp mod
+    const { error } = await supabase
+      .from('temp_mods')
+      .delete()
+      .eq('creator_twitch_id', creatorTwitchId)
+      .eq('temp_mod_twitch_id', tempModTwitchId);
+
+    if (error) {
+      console.error('Error deleting temp mod:', error);
+      return NextResponse.json({ error: 'Failed to delete temp mod' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting temp mod:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
 import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
-import { createClient, createServiceClient } from '@/utils/supabase/server';
+import { createServiceClient } from '@/utils/supabase/server';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ twitchId: string }> }) {
   const { twitchId } = await params;
