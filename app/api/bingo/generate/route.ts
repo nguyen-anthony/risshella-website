@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCanvas, loadImage } from 'canvas';
+import { registerFont, createCanvas, loadImage } from 'canvas';
+import path from 'path';
 
 // Register a font if needed, but for now use default
-// registerFont('path/to/font.ttf', { family: 'Arial' });
+registerFont(path.join(process.cwd(), 'public/ARIAL.TTF'), { family: 'Arial' });
 
 async function fetchImageBuffer(url: string): Promise<Buffer> {
   const response = await fetch(url);
