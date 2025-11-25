@@ -14,6 +14,8 @@ import RemoveIcon from '@mui/icons-material/Remove'
 import SortIcon from '@mui/icons-material/Sort';
 import SearchIcon from '@mui/icons-material/Search';
 import SettingsIcon from '@mui/icons-material/Settings';
+import HomeIcon from '@mui/icons-material/Home';
+import HistoryIcon from '@mui/icons-material/History';
 import OwnerHuntControls from '@/components/villagerhunt/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import AuthLink from '@/components/villagerhunt/AuthLink';
@@ -292,12 +294,12 @@ export default function HuntPageWrapper({
         </Box>
         {!initialSession && <AuthLink username={initialDisplayName} />}
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Link href={`/villagerhunt`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+          <Button component={Link} href={`/villagerhunt`} variant="outlined" startIcon={<HomeIcon />}>
             Home
-          </Link>
-          <Link href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+          </Button>
+          <Button component={Link} href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} variant="outlined" startIcon={<HistoryIcon />}>
             View Hunt History
-          </Link>
+          </Button>
         </Box>
       </Stack>
 

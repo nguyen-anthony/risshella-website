@@ -2,6 +2,8 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container, Typography, Box, Stack } from '@mui/material';
 import Link from 'next/link';
+import { Button } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HuntStatusFilter from '@/components/villagerhunt/HuntStatusFilter';
 import HuntCard from '@/components/villagerhunt/HuntCard';
 
@@ -79,9 +81,9 @@ export default async function HuntHistoryPage(props: PageProps) {
           <Typography variant="h4" fontWeight={700}>{displayName} - Hunt History</Typography>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
             <HuntStatusFilter />
-            <Link href={`/villagerhunt/${encodeURIComponent(username)}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
-              Back to Current Hunt
-            </Link>
+            <Button component={Link} href={`/villagerhunt/${encodeURIComponent(username)}`} variant="outlined" startIcon={<ArrowBackIcon />}>
+              Go back to current hunt
+            </Button>
           </Box>
         </Box>
         {filteredHunts && filteredHunts.length > 0 ? (
