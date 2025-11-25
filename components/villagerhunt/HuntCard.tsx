@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import ResumeButton from './ResumeButton';
 
 type Villager = {
@@ -57,12 +58,14 @@ export default function HuntCard({ hunt, username, twitchId, villagersMap, isOwn
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                   {dreamies.map((villager: Villager) => (
                     <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        component="img"
-                        src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
-                        alt={villager.name}
-                        sx={{ maxWidth: 40, maxHeight: 40, borderRadius: 1 }}
-                      />
+                      <Box sx={{ position: 'relative', width: 40, height: 40 }}>
+                        <Image
+                          src={villager.image_url || '/placeholder.png'}
+                          alt={villager.name}
+                          fill
+                          style={{ objectFit: 'contain', borderRadius: 4 }}
+                        />
+                      </Box>
                       <Typography variant="body2">{villager.name}</Typography>
                     </Box>
                   ))}

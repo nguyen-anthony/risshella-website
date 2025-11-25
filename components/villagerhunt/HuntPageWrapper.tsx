@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import Link from 'next/link';
+import Image from 'next/image';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -644,12 +645,14 @@ export default function HuntPageWrapper({
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {targetVillagers.map((villager) => (
                   <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      component="img"
-                      src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
-                      alt={villager.name}
-                      sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
-                    />
+                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
+                      <Image
+                        src={villager.image_url || '/placeholder.png'}
+                        alt={villager.name}
+                        fill
+                        style={{ objectFit: 'contain', borderRadius: 4 }}
+                      />
+                    </Box>
                     <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
                   </Box>
                 ))}
@@ -663,12 +666,14 @@ export default function HuntPageWrapper({
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {islandVillagersData.map((villager) => (
                   <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      component="img"
-                      src={`/villagers/${villager.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
-                      alt={villager.name}
-                      sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
-                    />
+                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
+                      <Image
+                        src={villager.image_url || '/placeholder.png'}
+                        alt={villager.name}
+                        fill
+                        style={{ objectFit: 'contain', borderRadius: 4 }}
+                      />
+                    </Box>
                     <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
                   </Box>
                 ))}

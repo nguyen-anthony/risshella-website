@@ -95,7 +95,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           onChange={(_, v) => setSelected(v)}
           renderOption={(props, option) => (
             <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={`/villagers/${option.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`} alt={option.name} sx={{ width: 24, height: 24 }} />
+              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
               {option.name}
             </Box>
           )}
@@ -119,7 +119,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           onChange={(_, v) => setIslandVillagers(v.slice(0, 9))} // Limit to 9 villagers
           renderOption={(props, option) => (
             <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={`/villagers/${option.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`} alt={option.name} sx={{ width: 24, height: 24 }} />
+              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
               {option.name}
             </Box>
           )}
@@ -127,7 +127,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           renderTags={(tagValue) =>
             tagValue.map((option) => (
               <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Avatar src={`/villagers/${option.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`} alt={option.name} sx={{ width: 20, height: 20 }} />
+                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
                 {option.name}
               </Box>
             ))
