@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
 import HelpIcon from '@mui/icons-material/Help';
@@ -356,7 +356,6 @@ export default function HuntPageWrapper({
   const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
   const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
-  const [selectedStatus, setSelectedStatus] = React.useState<string>('');
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
   const [isModerator, setIsModerator] = React.useState(initialIsModerator);
@@ -962,15 +961,20 @@ export default function HuntPageWrapper({
                 label="Enable Bingo Card Generation"
               />
               <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
-              <FormControl variant="outlined" size="small">
-                <InputLabel>Update Hunt Status</InputLabel>
-                <Select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} label="Change Status">
-                  <MenuItem value="complete">Completed</MenuItem>
-                  <MenuItem value="pause">Paused</MenuItem>
-                  <MenuItem value="abandon">Abandoned</MenuItem>
-                </Select>
-              </FormControl>
-              <Button variant="contained" color="primary" onClick={() => { if (!selectedStatus) return; const form = document.createElement('form'); form.method = 'post'; form.action = `/api/hunts/${selectedStatus}`; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }} disabled={!selectedStatus}>Change Status</Button>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="subtitle1">Update Hunt Status</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
+                    <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
+                  </Tooltip>
+                  <Tooltip title="Marks as paused and can be resumed from hunt history">
+                    <Button variant="contained" color="warning" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/pause'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Pause Hunt</Button>
+                  </Tooltip>
+                  <Tooltip title="Marks as abandoned and saves to history. Cannot be resumed. Quitter">
+                    <Button variant="contained" color="error" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/abandon'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Abandon Hunt</Button>
+                  </Tooltip>
+                </Box>
+              </Box>
               <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
             </>)}
             <TextField 
