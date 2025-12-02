@@ -19,6 +19,10 @@ export default function IssueReportButton() {
             bottom: 16,
             right: 16,
             zIndex: 1000,
+            '@media (max-width: 600px)': {
+              right: 'auto',
+              left: 16,
+            },
           }}
         >
           <FeedbackIcon />
