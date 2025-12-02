@@ -139,7 +139,37 @@ export default function ChangelogPage() {
         <Typography variant="h4" gutterBottom>
           Changelog
         </Typography>
+
         <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
+              December 1, 2025 - v0.6.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Changed the update hunt status dropdown to individual buttons to make it more obvious on how to complete hunts instead of deleting them with the Delete Hunt button. Reminder that COMPLETING or ABANDONING a hunt will keep the hunt records in the history. Deleting will not." secondary="You know who you are."/>
+              </ListItem>
+            </List>
+
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Report button was covering up the pagination controls on the encounters table on mobile devices. Moved the report button for mobile devices."/>
+              </ListItem>
+            </List>
+
+            
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               November 24, 2025 - v0.5.0
