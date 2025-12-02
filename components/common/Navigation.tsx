@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   AppBar,
   Toolbar,
@@ -134,6 +135,21 @@ const Navigation: React.FC = () => {
 
         {/* Right side: Navigation links or hamburger menu */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton
+            component="a"
+            href="https://ko-fi.com/ront_tv"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ mr: 1, p: 0.5 }}
+          >
+            <Image
+              src="/support_me_on_kofi_beige.png"
+              alt="Support me on Ko-fi"
+              width={150}
+              height={32}
+              style={{ objectFit: 'contain' }}
+            />
+          </IconButton>
           <IconButton color="inherit" onClick={toggleMode}>
             {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
           </IconButton>
@@ -202,6 +218,25 @@ const Navigation: React.FC = () => {
       >
         <Box sx={{ width: '100%', pt: 2 }} role="presentation">
           <List>
+            <ListItem
+              component="a"
+              href="https://ko-fi.com/ront_tv"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={toggleDrawer}
+              sx={{ mb: 1 }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Image
+                  src="/support_me_on_kofi_beige.png"
+                  alt="Support me on Ko-fi"
+                  width={120}
+                  height={32}
+                  style={{ objectFit: 'contain', marginRight: '8px' }}
+                />
+                <ListItemText primary="Support on Ko-fi" />
+              </Box>
+            </ListItem>
             {navItems.map((item) => (
               <ListItem 
                 key={item.title} 
