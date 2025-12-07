@@ -123,7 +123,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
               {option.name}
             </Box>
           )}
-          renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island. Villagers in this list will not be included on generated Bingo cards for your community. You can edit this later." />}
+          renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island. Villagers in this list will not be included on generated Bingo cards for your community. You can edit this later. Why 9? Because you must have an open spot on your island to do a villager hunt." />}
           renderTags={(tagValue) =>
             tagValue.map((option) => (
               <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
