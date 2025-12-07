@@ -28,6 +28,7 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
   const [type, setType] = React.useState<'issue' | 'feature'>('issue');
   const [shortDescription, setShortDescription] = React.useState('');
   const [description, setDescription] = React.useState('');
+  const [discordUsername, setDiscordUsername] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
@@ -47,7 +48,8 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
         body: JSON.stringify({ 
           type, 
           shortDescription: shortDescription.trim(),
-          description: description.trim() 
+          description: description.trim(),
+          discordUsername: discordUsername.trim() || undefined
         }),
       });
 
@@ -57,6 +59,7 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
         setSuccess(true);
         setShortDescription('');
         setDescription('');
+        setDiscordUsername('');
         setTimeout(() => {
           setSuccess(false);
           onClose();
@@ -75,6 +78,7 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
     if (!submitting) {
       setShortDescription('');
       setDescription('');
+      setDiscordUsername('');
       setError(null);
       setSuccess(false);
       onClose();
@@ -118,7 +122,20 @@ export default function IssueReportModal({ open, onClose }: IssueReportModalProp
             placeholder={`Provide more details about the ${type === 'issue' ? 'issue' : 'feature request'}...`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            helperText={'Provide more details on what you are reporting'}
             disabled={submitting}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            label="Discord Username"
+            placeholder="Optional. In case I need more details on your feature or bug report."
+            value={discordUsername}
+            onChange={(e) => setDiscordUsername(e.target.value)}
+            disabled={submitting}
+            helperText={'Optional. Only will be used if I need more details on your feature/bug report.'}
+            sx={{ mb: 2 }}
           />
 
           {error && (

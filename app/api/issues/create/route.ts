@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, shortDescription, description } = await request.json();
+    const { type, shortDescription, description, discordUsername } = await request.json();
 
     if (!type || !shortDescription || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -56,6 +56,28 @@ ${description}
     }
 
     const card = await response.json();
+
+    // Add Discord username as a comment if provided
+    if (discordUsername && discordUsername.trim()) {
+      const commentParams = new URLSearchParams({
+        key: apiKey,
+        token: token,
+        text: `**Discord Username:** ${discordUsername.trim()}`,
+      });
+
+      const commentResponse = await fetch(`https://api.trello.com/1/cards/${card.id}/actions/comments?${commentParams}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!commentResponse.ok) {
+        console.warn('Failed to add Discord username comment:', await commentResponse.text());
+        // Don't fail the whole request if comment fails
+      }
+    }
+
     return NextResponse.json({ success: true, cardId: card.id, cardUrl: card.url });
   } catch (error) {
     console.error('Error creating card:', error);
