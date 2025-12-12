@@ -365,6 +365,7 @@ export default function HuntPageWrapper({
   const [tempModsModalOpen, setTempModsModalOpen] = React.useState(false);
   const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
+  const [encounters, setEncounters] = React.useState<any[]>([]);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -382,6 +383,18 @@ export default function HuntPageWrapper({
 
       if (!huntError) {
         setHunt(huntData);
+        // Fetch encounters if hunt exists
+        if (huntData) {
+          const { data: encountersData } = await supabase
+            .from('encounters')
+            .select('encounter_id, island_number, encountered_at, villager_id')
+            .eq('hunt_id', huntData.hunt_id)
+            .eq('is_deleted', false)
+            .order('island_number', { ascending: false });
+          setEncounters(encountersData || []);
+        } else {
+          setEncounters([]);
+        }
       }
 
       // Fetch villagers for encounter lookup
@@ -717,7 +730,7 @@ export default function HuntPageWrapper({
             </Button>
           </Box>
 
-          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} twitchId={initialTwitchId} targetVillagerIds={hunt.target_villager_id} />
+          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} twitchId={initialTwitchId} targetVillagerIds={hunt.target_villager_id} encounters={encounters} />
 
           <UpdateIslandVillagersModal
             open={updateIslandModalOpen}

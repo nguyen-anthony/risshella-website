@@ -8,6 +8,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import ResumeButton from '@/components/villagerhunt/ResumeButton';
+import { createClient } from '@/utils/supabase/client';
 
 type Villager = {
   villager_id: number;
@@ -41,6 +42,21 @@ export default function HuntHistoryDetailClient({
   username,
 }: Props) {
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
+  const [encounters, setEncounters] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchEncounters = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('encounters')
+        .select('encounter_id, island_number, encountered_at, villager_id')
+        .eq('hunt_id', hunt.hunt_id)
+        .eq('is_deleted', false)
+        .order('island_number', { ascending: false });
+      setEncounters(data || []);
+    };
+    fetchEncounters();
+  }, [hunt.hunt_id]);
 
   const handleHuntStats = () => {
     setHuntStatsModalOpen(true);
@@ -90,7 +106,7 @@ export default function HuntHistoryDetailClient({
       {isAuthenticated && isOwner && hunt.hunt_status === 'PAUSED' && (
         <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={hunt.twitch_id} />
       )}
-      <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} twitchId={hunt.twitch_id} targetVillagerIds={hunt.target_villager_id} />
+      <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} twitchId={hunt.twitch_id} targetVillagerIds={hunt.target_villager_id} encounters={encounters} />
 
       <HuntStatisticsModal
         open={huntStatsModalOpen}

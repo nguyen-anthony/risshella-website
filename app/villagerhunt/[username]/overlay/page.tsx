@@ -64,7 +64,7 @@ export default function OverlayPage({ params }: PageProps) {
         const { data: huntData } = await supabase
           .from('hunts')
           .select('hunt_id, hunt_name')
-          .eq('twitch_id', creator?.twitch_id)
+          .eq('twitch_id', creatorData.twitch_id)
           .eq('hunt_status', 'ACTIVE')
           .maybeSingle();
 
@@ -103,6 +103,36 @@ export default function OverlayPage({ params }: PageProps) {
 
       // Initial fetch
       fetchHuntData();
+
+      // Set up WebSocket connection for updates
+      const ws = new WebSocket('wss://villagerhunt-websocket.fly.dev');
+
+      ws.onopen = () => {
+        console.log('Overlay WebSocket connected');
+        // Subscribe to the creator's room
+        ws.send(JSON.stringify({ type: 'subscribe', room: creatorData.twitch_id.toString() }));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === 'update') {
+            console.log('Overlay WebSocket update:', message);
+            // Refetch hunt data on any update
+            fetchHuntData();
+          }
+        } catch (e) {
+          console.error('Failed to parse WebSocket message:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('Overlay WebSocket disconnected');
+      };
+
+      ws.onerror = (error) => {
+        console.error('Overlay WebSocket error:', error);
+      };
 
       // Subscribe to hunt status changes
       const huntsChannel = supabase
@@ -155,76 +185,12 @@ export default function OverlayPage({ params }: PageProps) {
 
       return () => {
         supabase.removeChannel(huntsChannel);
+        ws.close();
       };
     };
 
     fetchData();
   }, [username]);
-
-  useEffect(() => {
-    if (!hunt) return;
-
-    const supabase = createClient();
-
-    const fetchEncounters = async () => {
-      const { data: encountersData } = await supabase
-        .from('encounters')
-        .select('encounter_id, island_number, encountered_at, villager_id')
-        .eq('hunt_id', hunt.hunt_id)
-        .eq('is_deleted', false)
-        .order('encountered_at', { ascending: false })
-        .limit(3);
-      if (encountersData) {
-        setEncounters(encountersData);
-        // Update villagers if needed
-        const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
-        if (villagerIds.length > 0) {
-          const { data: villagersData } = await supabase
-            .from('villagers')
-            .select('villager_id, name, image_url')
-            .in('villager_id', villagerIds);
-          setVillagers(villagersData || []);
-        }
-      }
-    };
-
-    // Set up WebSocket connection
-    const ws = new WebSocket('wss://villagerhunt-websocket.fly.dev');
-
-    ws.onopen = () => {
-      console.log('Overlay WebSocket connected');
-      // Subscribe to the creator's room
-      ws.send(JSON.stringify({ type: 'subscribe', room: creator?.twitch_id.toString() }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type === 'update') {
-          console.log('Overlay WebSocket update:', message);
-          // Refetch encounters on any update
-          fetchEncounters();
-        }
-      } catch (e) {
-        console.error('Failed to parse WebSocket message:', e);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log('Overlay WebSocket disconnected');
-    };
-
-    ws.onerror = (error) => {
-      console.error('Overlay WebSocket error:', error);
-    };
-
-    return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'unsubscribe', room: creator?.twitch_id.toString() }));
-        ws.close();
-      }
-    };
-  }, [hunt, villagers, creator]);
 
   const villagerMap = new Map(villagers.map(v => [v.villager_id, v]));
 

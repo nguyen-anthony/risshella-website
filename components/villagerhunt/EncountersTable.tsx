@@ -23,17 +23,17 @@ type Props = {
   huntId: string;
   twitchId: number;
   targetVillagerIds?: number[];
+  encounters: EncounterRow[];
 };
 
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ villagers, isOwner, isModerator, huntId, twitchId, targetVillagerIds }: Props) {
+export default function EncountersTable({ villagers, isOwner, isModerator, huntId, twitchId, targetVillagerIds, encounters }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
   const [addModalOpen, setAddModalOpen] = React.useState(false);
-  const [encounters, setEncounters] = React.useState<EncounterRow[]>([]);
 
   // Sorting state
   const [orderBy, setOrderBy] = React.useState<'island_number' | 'encountered_at'>('island_number');
@@ -92,64 +92,6 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
       return () => { cancelled = true; };
     }
   }, [villagers]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Fetch encounters and set up WebSocket subscription
-  React.useEffect(() => {
-    const supabase = createClient();
-
-    const fetchEncounters = async () => {
-      const { data, error } = await supabase
-        .from('encounters')
-        .select('encounter_id, island_number, encountered_at, villager_id')
-        .eq('hunt_id', huntId)
-        .eq('is_deleted', false)
-        .order('island_number', { ascending: false });
-
-      if (!error && data) {
-        setEncounters(data);
-      }
-    };
-
-    // Initial fetch
-    fetchEncounters();
-
-    // Set up WebSocket connection
-    const ws = new WebSocket('wss://villagerhunt-websocket.fly.dev');
-
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      // Subscribe to the creator's room
-      ws.send(JSON.stringify({ type: 'subscribe', room: twitchId.toString() }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type === 'update') {
-          console.log('WebSocket update:', message);
-          // Refetch on any update
-          fetchEncounters();
-        }
-      } catch (e) {
-        console.error('Failed to parse WebSocket message:', e);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'unsubscribe', room: twitchId.toString() }));
-        ws.close();
-      }
-    };
-  }, [huntId]);
 
   const getVillager = (id: number | null) => {
     if (id == null) return { name: "—", image_url: null };
