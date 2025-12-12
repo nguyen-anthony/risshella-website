@@ -73,5 +73,23 @@ export async function POST(req: NextRequest) {
   if (error) {
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
+
+  // Broadcast hunt creation to WebSocket server
+  try {
+    await fetch('https://villagerhunt-websocket.fly.dev/broadcast', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        room: session.userId,
+        payload: { action: 'hunt_created', hunt: insert },
+      }),
+    });
+  } catch (broadcastError) {
+    console.error('Failed to broadcast hunt create:', broadcastError);
+    // Don't fail the request if broadcast fails
+  }
+
   return NextResponse.json({ ok: true, hunt_id: data?.hunt_id ?? null });
 }
