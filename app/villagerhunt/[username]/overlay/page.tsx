@@ -154,39 +154,63 @@ export default function OverlayPage({ params }: PageProps) {
 
     const supabase = createClient();
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('encounters-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'encounters',
-          filter: `hunt_id=eq.${hunt.hunt_id}`,
-        },
-        (payload) => {
-          const newEncounter = payload.new as Encounter;
-          // Add new encounter to the list
-          setEncounters((prev) => [newEncounter, ...prev.slice(0, 2)]);
-          // Update villagers if needed
-          const newVillagerId = newEncounter.villager_id;
-          if (newVillagerId && !villagers.find(v => v.villager_id === newVillagerId)) {
-            supabase
-              .from('villagers')
-              .select('villager_id, name, image_url')
-              .eq('villager_id', newVillagerId)
-              .single()
-              .then(({ data }) => {
-                if (data) setVillagers((prev) => [...prev, data]);
-              });
-          }
+    const fetchEncounters = async () => {
+      const { data: encountersData } = await supabase
+        .from('encounters')
+        .select('encounter_id, island_number, encountered_at, villager_id')
+        .eq('hunt_id', hunt.hunt_id)
+        .eq('is_deleted', false)
+        .order('encountered_at', { ascending: false })
+        .limit(3);
+      if (encountersData) {
+        setEncounters(encountersData);
+        // Update villagers if needed
+        const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
+        if (villagerIds.length > 0) {
+          const { data: villagersData } = await supabase
+            .from('villagers')
+            .select('villager_id, name, image_url')
+            .in('villager_id', villagerIds);
+          setVillagers(villagersData || []);
         }
-      )
-      .subscribe();
+      }
+    };
+
+    // Set up WebSocket connection
+    const ws = new WebSocket('wss://villagerhunt-websocket.fly.dev');
+
+    ws.onopen = () => {
+      console.log('Overlay WebSocket connected');
+      // Subscribe to the hunt room
+      ws.send(JSON.stringify({ type: 'subscribe', room: hunt.hunt_id }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'update') {
+          console.log('Overlay WebSocket update:', message);
+          // Refetch encounters on any update
+          fetchEncounters();
+        }
+      } catch (e) {
+        console.error('Failed to parse WebSocket message:', e);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('Overlay WebSocket disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('Overlay WebSocket error:', error);
+    };
 
     return () => {
-      supabase.removeChannel(channel);
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'unsubscribe', room: hunt.hunt_id }));
+        ws.close();
+      }
     };
   }, [hunt, villagers]);
 

@@ -92,7 +92,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     }
   }, [villagers]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch encounters and set up realtime subscription
+  // Fetch encounters and set up WebSocket subscription
   React.useEffect(() => {
     const supabase = createClient();
 
@@ -112,27 +112,41 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     // Initial fetch
     fetchEncounters();
 
-    // Subscribe to realtime changes
-    const channel = supabase
-      .channel('encounters_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'encounters',
-          filter: `hunt_id=eq.${huntId}`,
-        },
-        (payload) => {
-          console.log('Realtime update:', payload);
-          // Refetch on any change
+    // Set up WebSocket connection
+    const ws = new WebSocket('wss://villagerhunt-websocket.fly.dev');
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+      // Subscribe to the hunt room
+      ws.send(JSON.stringify({ type: 'subscribe', room: huntId }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'update') {
+          console.log('WebSocket update:', message);
+          // Refetch on any update
           fetchEncounters();
         }
-      )
-      .subscribe();
+      } catch (e) {
+        console.error('Failed to parse WebSocket message:', e);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
 
     return () => {
-      supabase.removeChannel(channel);
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'unsubscribe', room: huntId }));
+        ws.close();
+      }
     };
   }, [huntId]);
 
