@@ -56,41 +56,50 @@ export default function OverlayPage({ params }: PageProps) {
 
       if (!creator) return;
 
-      // Get the active hunt
-      const { data: huntData } = await supabase
-        .from('hunts')
-        .select('hunt_id, hunt_name')
-        .eq('twitch_id', creator.twitch_id)
-        .eq('hunt_status', 'ACTIVE')
-        .maybeSingle();
+      const fetchHuntData = async () => {
+        // Get the active hunt
+        const { data: huntData } = await supabase
+          .from('hunts')
+          .select('hunt_id, hunt_name')
+          .eq('twitch_id', creator.twitch_id)
+          .eq('hunt_status', 'ACTIVE')
+          .maybeSingle();
 
-      if (huntData) {
-        setHunt(huntData);
-        setHuntName(huntData.hunt_name || 'Hunt');
+        if (huntData) {
+          setHunt(huntData);
+          setHuntName(huntData.hunt_name || 'Hunt');
 
-        // Get the 3 most recent encounters
-        const { data: encountersData } = await supabase
-          .from('encounters')
-          .select('encounter_id, island_number, encountered_at, villager_id')
-          .eq('hunt_id', huntData.hunt_id)
-          .eq('is_deleted', false)
-          .order('encountered_at', { ascending: false })
-          .limit(3);
+          // Get the 3 most recent encounters
+          const { data: encountersData } = await supabase
+            .from('encounters')
+            .select('encounter_id, island_number, encountered_at, villager_id')
+            .eq('hunt_id', huntData.hunt_id)
+            .eq('is_deleted', false)
+            .order('encountered_at', { ascending: false })
+            .limit(3);
 
-        if (encountersData) {
-          setEncounters(encountersData);
+          if (encountersData) {
+            setEncounters(encountersData);
 
-          // Get villager data
-          const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
-          if (villagerIds.length > 0) {
-            const { data: villagersData } = await supabase
-              .from('villagers')
-              .select('villager_id, name, image_url')
-              .in('villager_id', villagerIds);
-            setVillagers(villagersData || []);
+            // Get villager data
+            const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
+            if (villagerIds.length > 0) {
+              const { data: villagersData } = await supabase
+                .from('villagers')
+                .select('villager_id, name, image_url')
+                .in('villager_id', villagerIds);
+              setVillagers(villagersData || []);
+            }
           }
+        } else {
+          setHunt(null);
+          setEncounters([]);
+          setVillagers([]);
         }
-      }
+      };
+
+      // Initial fetch
+      fetchHuntData();
 
       // Subscribe to hunt status changes
       const huntsChannel = supabase
