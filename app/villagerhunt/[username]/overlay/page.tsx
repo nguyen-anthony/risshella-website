@@ -331,6 +331,7 @@ export default function OverlayPage({ params }: PageProps) {
                         borderRadius: '8px',
                         border: '2px solid white'
                       }}
+                      unoptimized
                     />
                   )}
                   <Typography sx={{

@@ -37,7 +37,7 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
           </Typography>
           {currentIsland && (
             <Box sx={{ position: 'relative', width: 80, height: 80, mx: 'auto' }}>
-              <Image src="/island_image.png" alt="Island" fill style={{ objectFit: 'cover' }} />
+              <Image src="/island_image.png" alt="Island" width={80} height={80} style={{ objectFit: 'cover' }} unoptimized />
               <Typography
                 variant="h5"
                 sx={{

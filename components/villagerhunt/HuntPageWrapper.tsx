@@ -648,8 +648,10 @@ export default function HuntPageWrapper({
                       <Image
                         src={villager.image_url || '/placeholder.png'}
                         alt={villager.name}
-                        fill
+                        width={60}
+                        height={60}
                         style={{ objectFit: 'contain', borderRadius: 4 }}
+                        unoptimized
                       />
                     </Box>
                     <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
@@ -669,8 +671,10 @@ export default function HuntPageWrapper({
                       <Image
                         src={villager.image_url || '/placeholder.png'}
                         alt={villager.name}
-                        fill
+                        width={60}
+                        height={60}
                         style={{ objectFit: 'contain', borderRadius: 4 }}
+                        unoptimized
                       />
                     </Box>
                     <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
