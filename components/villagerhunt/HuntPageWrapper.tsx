@@ -374,6 +374,9 @@ export default function HuntPageWrapper({
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
   const [encounters, setEncounters] = React.useState<EncounterRow[]>([]);
 
+  // Ref to store the latest fetchEncounters function to avoid WebSocket reconnections
+  const fetchEncountersRef = React.useRef<() => Promise<void> | undefined>(undefined);
+
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
     const supabase = createClient();
@@ -424,6 +427,30 @@ export default function HuntPageWrapper({
     }
   }, [initialTwitchId]);
 
+  // Fetch only encounters data (for WebSocket updates)
+  const fetchEncounters = React.useCallback(async () => {
+    if (!hunt) return;
+
+    const supabase = createClient();
+    try {
+      const { data: encountersData } = await supabase
+        .from('encounters')
+        .select('encounter_id, island_number, encountered_at, villager_id')
+        .eq('hunt_id', hunt.hunt_id)
+        .eq('is_deleted', false)
+        .order('island_number', { ascending: false });
+
+      setEncounters(encountersData || []);
+    } catch (error) {
+      console.error('Error fetching encounters:', error);
+    }
+  }, [hunt]);
+
+  // Update the ref whenever fetchEncounters changes
+  React.useEffect(() => {
+    fetchEncountersRef.current = fetchEncounters;
+  }, [fetchEncounters]);
+
   // Initial fetch
   React.useEffect(() => {
     fetchHuntData();
@@ -470,8 +497,15 @@ export default function HuntPageWrapper({
         const message = JSON.parse(event.data);
         if (message.type === 'update') {
           console.log('HuntPageWrapper WebSocket update:', message);
-          // Refetch hunt data on any hunt update
-          fetchHuntData();
+          
+          // Check if this is an encounter update
+          if (message.payload.action === 'encounter_added' || message.payload.action === 'encounter_updated' || message.payload.action === 'encounter_deleted') {
+            // Only refresh encounters data
+            fetchEncountersRef.current?.();
+          } else {
+            // For hunt updates or other changes, refresh all hunt data
+            fetchHuntData();
+          }
         }
       } catch (e) {
         console.error('Failed to parse WebSocket message:', e);
