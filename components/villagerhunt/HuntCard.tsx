@@ -62,8 +62,10 @@ export default function HuntCard({ hunt, username, twitchId, villagersMap, isOwn
                         <Image
                           src={villager.image_url || '/placeholder.png'}
                           alt={villager.name}
-                          fill
+                          width={40}
+                          height={40}
                           style={{ objectFit: 'contain', borderRadius: 4 }}
+                          unoptimized
                         />
                       </Box>
                       <Typography variant="body2">{villager.name}</Typography>
