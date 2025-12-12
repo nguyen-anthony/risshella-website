@@ -717,7 +717,7 @@ export default function HuntPageWrapper({
             </Button>
           </Box>
 
-          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
+          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} twitchId={initialTwitchId} targetVillagerIds={hunt.target_villager_id} />
 
           <UpdateIslandVillagersModal
             open={updateIslandModalOpen}

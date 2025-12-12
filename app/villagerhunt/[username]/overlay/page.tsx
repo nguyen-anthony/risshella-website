@@ -42,26 +42,29 @@ export default function OverlayPage({ params }: PageProps) {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [villagers, setVillagers] = useState<Villager[]>([]);
   const [huntName, setHuntName] = useState<string>('');
+  const [creator, setCreator] = useState<{ twitch_id: number } | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
 
     const fetchData = async () => {
       // Find the creator by username
-      const { data: creator } = await supabase
+      const { data: creatorData } = await supabase
         .from('creators')
         .select('twitch_id')
         .eq('twitch_username', username.toLowerCase())
         .maybeSingle();
 
-      if (!creator) return;
+      if (!creatorData) return;
+
+      setCreator(creatorData);
 
       const fetchHuntData = async () => {
         // Get the active hunt
         const { data: huntData } = await supabase
           .from('hunts')
           .select('hunt_id, hunt_name')
-          .eq('twitch_id', creator.twitch_id)
+          .eq('twitch_id', creator?.twitch_id)
           .eq('hunt_status', 'ACTIVE')
           .maybeSingle();
 
@@ -110,7 +113,7 @@ export default function OverlayPage({ params }: PageProps) {
             event: '*',
             schema: 'public',
             table: 'hunts',
-            filter: `twitch_id=eq.${creator.twitch_id}`,
+            filter: `twitch_id=eq.${creatorData.twitch_id}`,
           },
           async (payload) => {
             const newHunt = payload.new as Hunt;
@@ -190,8 +193,8 @@ export default function OverlayPage({ params }: PageProps) {
 
     ws.onopen = () => {
       console.log('Overlay WebSocket connected');
-      // Subscribe to the hunt room
-      ws.send(JSON.stringify({ type: 'subscribe', room: hunt.hunt_id }));
+      // Subscribe to the creator's room
+      ws.send(JSON.stringify({ type: 'subscribe', room: creator?.twitch_id.toString() }));
     };
 
     ws.onmessage = (event) => {
@@ -217,11 +220,11 @@ export default function OverlayPage({ params }: PageProps) {
 
     return () => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'unsubscribe', room: hunt.hunt_id }));
+        ws.send(JSON.stringify({ type: 'unsubscribe', room: creator?.twitch_id.toString() }));
         ws.close();
       }
     };
-  }, [hunt, villagers]);
+  }, [hunt, villagers, creator]);
 
   const villagerMap = new Map(villagers.map(v => [v.villager_id, v]));
 

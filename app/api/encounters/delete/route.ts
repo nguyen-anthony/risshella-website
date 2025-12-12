@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          room: encounter.hunt_id,
+          room: hunt.twitch_id.toString(),
           payload: { action: 'encounter_deleted', encounter: { encounter_id } },
         }),
       });

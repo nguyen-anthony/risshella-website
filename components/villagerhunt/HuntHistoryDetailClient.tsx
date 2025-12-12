@@ -90,7 +90,7 @@ export default function HuntHistoryDetailClient({
       {isAuthenticated && isOwner && hunt.hunt_status === 'PAUSED' && (
         <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={hunt.twitch_id} />
       )}
-      <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
+      <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} twitchId={hunt.twitch_id} targetVillagerIds={hunt.target_villager_id} />
 
       <HuntStatisticsModal
         open={huntStatsModalOpen}

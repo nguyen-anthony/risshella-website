@@ -21,13 +21,14 @@ type Props = {
   isOwner: boolean;
   isModerator: boolean;
   huntId: string;
+  twitchId: number;
   targetVillagerIds?: number[];
 };
 
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ villagers, isOwner, isModerator, huntId, targetVillagerIds }: Props) {
+export default function EncountersTable({ villagers, isOwner, isModerator, huntId, twitchId, targetVillagerIds }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
@@ -117,8 +118,8 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
 
     ws.onopen = () => {
       console.log('WebSocket connected');
-      // Subscribe to the hunt room
-      ws.send(JSON.stringify({ type: 'subscribe', room: huntId }));
+      // Subscribe to the creator's room
+      ws.send(JSON.stringify({ type: 'subscribe', room: twitchId.toString() }));
     };
 
     ws.onmessage = (event) => {
@@ -144,7 +145,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
 
     return () => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'unsubscribe', room: huntId }));
+        ws.send(JSON.stringify({ type: 'unsubscribe', room: twitchId.toString() }));
         ws.close();
       }
     };

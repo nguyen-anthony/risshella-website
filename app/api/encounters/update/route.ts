@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          room: encounter.hunt_id,
+          room: hunt.twitch_id.toString(),
           payload: { action: 'encounter_updated', encounter: { hunt_id: encounter.hunt_id, island_number, villager_id } },
         }),
       });
