@@ -16,6 +16,13 @@ type Villager = {
   image_url: string | null;
 };
 
+type EncounterRow = {
+  encounter_id: string;
+  island_number: number;
+  encountered_at: string; // ISO timestamp
+  villager_id: number | null;
+};
+
 type Props = {
   hunt: {
     hunt_id: string;
@@ -42,7 +49,7 @@ export default function HuntHistoryDetailClient({
   username,
 }: Props) {
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
-  const [encounters, setEncounters] = React.useState<any[]>([]);
+  const [encounters, setEncounters] = React.useState<EncounterRow[]>([]);
 
   React.useEffect(() => {
     const fetchEncounters = async () => {
@@ -106,7 +113,7 @@ export default function HuntHistoryDetailClient({
       {isAuthenticated && isOwner && hunt.hunt_status === 'PAUSED' && (
         <ResumeButton huntId={hunt.hunt_id} huntName={hunt.hunt_name} twitchId={hunt.twitch_id} />
       )}
-      <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} twitchId={hunt.twitch_id} targetVillagerIds={hunt.target_villager_id} encounters={encounters} />
+      <EncountersTable villagers={villagers} isOwner={false} isModerator={false} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} encounters={encounters} />
 
       <HuntStatisticsModal
         open={huntStatsModalOpen}

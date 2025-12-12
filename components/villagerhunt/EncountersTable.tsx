@@ -4,7 +4,6 @@ import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, Ta
 import SearchIcon from "@mui/icons-material/Search";
 import UpdateDeleteEncounterModal from "@/components/villagerhunt/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/villagerhunt/AddEncounterModal";
-import { createClient } from '@/utils/supabase/client';
 
 export type EncounterRow = {
   encounter_id: string;
@@ -21,7 +20,6 @@ type Props = {
   isOwner: boolean;
   isModerator: boolean;
   huntId: string;
-  twitchId: number;
   targetVillagerIds?: number[];
   encounters: EncounterRow[];
 };
@@ -29,7 +27,7 @@ type Props = {
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ villagers, isOwner, isModerator, huntId, twitchId, targetVillagerIds, encounters }: Props) {
+export default function EncountersTable({ villagers, isOwner, isModerator, huntId, targetVillagerIds, encounters }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);

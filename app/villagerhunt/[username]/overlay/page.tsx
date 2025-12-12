@@ -42,7 +42,6 @@ export default function OverlayPage({ params }: PageProps) {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [villagers, setVillagers] = useState<Villager[]>([]);
   const [huntName, setHuntName] = useState<string>('');
-  const [creator, setCreator] = useState<{ twitch_id: number } | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -56,8 +55,6 @@ export default function OverlayPage({ params }: PageProps) {
         .maybeSingle();
 
       if (!creatorData) return;
-
-      setCreator(creatorData);
 
       const fetchHuntData = async () => {
         // Get the active hunt

@@ -41,6 +41,13 @@ type Villager = {
   image_url: string | null;
 };
 
+type EncounterRow = {
+  encounter_id: string;
+  island_number: number;
+  encountered_at: string; // ISO timestamp
+  villager_id: number | null;
+};
+
 type Session = {
   login: string;
   userId: string;
@@ -365,7 +372,7 @@ export default function HuntPageWrapper({
   const [tempModsModalOpen, setTempModsModalOpen] = React.useState(false);
   const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
-  const [encounters, setEncounters] = React.useState<any[]>([]);
+  const [encounters, setEncounters] = React.useState<EncounterRow[]>([]);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -730,7 +737,7 @@ export default function HuntPageWrapper({
             </Button>
           </Box>
 
-          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} twitchId={initialTwitchId} targetVillagerIds={hunt.target_villager_id} encounters={encounters} />
+          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} encounters={encounters} />
 
           <UpdateIslandVillagersModal
             open={updateIslandModalOpen}
