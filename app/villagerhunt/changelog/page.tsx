@@ -143,6 +143,24 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              December 12, 2025 - v0.7.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Made some major enhancements to improve how real-time updates work during hunts." secondary="You ideally should see no difference in using the tool."/>
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               December 1, 2025 - v0.6.0
             </Typography>
           </AccordionSummary>
