@@ -68,6 +68,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to complete hunt' }, { status: 500 });
   }
 
+  // Broadcast hunt complete to WebSocket server
+  try {
+    await fetch('https://villagerhunt-websocket.fly.dev/broadcast', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        room: creator.twitch_id.toString(),
+        payload: { action: 'hunt_completed', hunt_id: huntId },
+      }),
+    });
+  } catch (broadcastError) {
+    console.error('Failed to broadcast hunt complete:', broadcastError);
+    // Don't fail the request if broadcast fails
+  }
+
   // Redirect back to the hunt page
   return NextResponse.redirect(new URL(`/villagerhunt/${encodeURIComponent(session.login)}`, request.url));
 }

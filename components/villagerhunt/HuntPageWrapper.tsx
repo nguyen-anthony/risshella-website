@@ -434,30 +434,43 @@ export default function HuntPageWrapper({
     fetchCreatorData();
   }, [initialTwitchId]);
 
-  // Set up real-time subscription for hunt changes
+  // Set up WebSocket subscription for hunt changes
   React.useEffect(() => {
-    const supabase = createClient();
+    // Set up WebSocket connection
+    const ws = new WebSocket('wss://villagerhunt-websocket.fly.dev');
 
-    const channel = supabase
-      .channel('hunts_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'hunts',
-          filter: `twitch_id=eq.${initialTwitchId}`,
-        },
-        (payload) => {
-          console.log('Hunt realtime update:', payload);
-          // Refetch hunt data on any change to hunts for this creator
+    ws.onopen = () => {
+      console.log('HuntPageWrapper WebSocket connected');
+      // Subscribe to the creator's room for hunt changes
+      ws.send(JSON.stringify({ type: 'subscribe', room: initialTwitchId.toString() }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'update') {
+          console.log('HuntPageWrapper WebSocket update:', message);
+          // Refetch hunt data on any hunt update
           fetchHuntData();
         }
-      )
-      .subscribe();
+      } catch (e) {
+        console.error('Failed to parse WebSocket message:', e);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('HuntPageWrapper WebSocket disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('HuntPageWrapper WebSocket error:', error);
+    };
 
     return () => {
-      supabase.removeChannel(channel);
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'unsubscribe', room: initialTwitchId.toString() }));
+        ws.close();
+      }
     };
   }, [initialTwitchId, fetchHuntData]);
 

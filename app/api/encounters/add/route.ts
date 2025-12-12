@@ -105,6 +105,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to add encounter' }, { status: 500 });
     }
 
+    // Broadcast update to WebSocket server
+    try {
+      await fetch('https://villagerhunt-websocket.fly.dev/broadcast', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          room: hunt_id,
+          payload: { action: 'encounter_added', encounter: { hunt_id, island_number, villager_id } },
+        }),
+      });
+    } catch (broadcastError) {
+      console.error('Failed to broadcast encounter add:', broadcastError);
+      // Don't fail the request if broadcast fails
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Add encounter error:', err);

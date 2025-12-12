@@ -102,6 +102,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to delete encounter' }, { status: 500 });
     }
 
+    // Broadcast update to WebSocket server
+    try {
+      await fetch('https://villagerhunt-websocket.fly.dev/broadcast', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          room: encounter.hunt_id,
+          payload: { action: 'encounter_deleted', encounter: { encounter_id } },
+        }),
+      });
+    } catch (broadcastError) {
+      console.error('Failed to broadcast encounter delete:', broadcastError);
+      // Don't fail the request if broadcast fails
+    }
+
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });

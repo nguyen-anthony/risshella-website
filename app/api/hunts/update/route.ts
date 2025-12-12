@@ -91,5 +91,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'update_failed' }, { status: 500 });
   }
 
+  // Broadcast hunt update to WebSocket server
+  try {
+    await fetch('https://villagerhunt-websocket.fly.dev/broadcast', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        room: session.userId,
+        payload: { action: 'hunt_updated', hunt_id: body.hunt_id, updates: updateData },
+      }),
+    });
+  } catch (broadcastError) {
+    console.error('Failed to broadcast hunt update:', broadcastError);
+    // Don't fail the request if broadcast fails
+  }
+
   return NextResponse.json({ ok: true });
 }
