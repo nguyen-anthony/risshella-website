@@ -165,10 +165,10 @@ export async function POST(request: NextRequest) {
           ctx.fillRect(x, y, cellSize, cellSize);
           ctx.strokeRect(x, y, cellSize, cellSize);
           ctx.fillStyle = '#000000';
-          ctx.font = `bold ${Math.max(14, cellSize / 6)}px sans-serif`; // Scale font size
+          ctx.font = `bold ${Math.max(16, cellSize / 5)}px sans-serif`; // Scale font size
           ctx.textAlign = 'center';
           ctx.fillText('FREE', x + cellSize / 2, y + cellSize * 0.4);
-          ctx.font = `${Math.max(10, cellSize / 8)}px sans-serif`; // Smaller font for subtitle
+          ctx.font = `${Math.max(12, cellSize / 7)}px sans-serif`; // Smaller font for subtitle
           ctx.fillText('Villager Hunt', x + cellSize / 2, y + cellSize * 0.55);
         } else {
           ctx.fillStyle = 'white';
@@ -178,10 +178,10 @@ export async function POST(request: NextRequest) {
           const villager = bingoVillagers[villagerIndex++];
 
           // Calculate image and text positioning
-          const imageWidth = Math.min(cellSize * 0.6, 80); // Image takes up 60% of cell width, max 80px
+          const imageWidth = Math.min(cellSize * 0.7, 120); // Image takes up 70% of cell width, max 120px
           const imageHeight = imageWidth * 0.8; // Maintain aspect ratio
           const imageX = x + (cellSize - imageWidth) / 2; // Center horizontally
-          const imageY = y + cellSize * 0.15; // Position in upper 15% of cell
+          const imageY = y + cellSize * 0.12; // Position in upper 12% of cell
 
           if (villager?.image_url) {
             try {
@@ -196,9 +196,9 @@ export async function POST(request: NextRequest) {
 
           // Position text below the image
           ctx.fillStyle = '#000000';
-          ctx.font = `bold ${Math.max(10, Math.min(16, cellSize / 8))}px sans-serif`; // Scale font size, max 16px
+          ctx.font = `bold ${Math.max(12, Math.min(24, cellSize / 6))}px sans-serif`; // Scale font size, max 24px, min 12px
           ctx.textAlign = 'center';
-          const textY = imageY + imageHeight + cellSize * 0.1; // Position below image with some padding
+          const textY = imageY + imageHeight + cellSize * 0.2; // Position below image with some padding
           ctx.fillText(villager?.name || 'Unknown', x + cellSize / 2, textY);
         }
       }
