@@ -481,6 +481,7 @@ export default function HuntPageWrapper({
         targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
         villagers,
+        bingoCardSize: hunt.bingo_card_size,
       });
 
       setBingoCardImage(imageDataUrl);
