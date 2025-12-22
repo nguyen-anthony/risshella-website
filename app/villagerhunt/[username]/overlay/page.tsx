@@ -23,6 +23,7 @@ interface Encounter {
   island_number: number;
   encountered_at: string;
   villager_id: number;
+  is_deleted: boolean;
 }
 
 interface Villager {
@@ -71,7 +72,7 @@ export default function OverlayPage({ params }: PageProps) {
         // Get the 3 most recent encounters
         const { data: encountersData } = await supabase
           .from('encounters')
-          .select('encounter_id, island_number, encountered_at, villager_id')
+          .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
           .eq('hunt_id', huntData.hunt_id)
           .eq('is_deleted', false)
           .order('encountered_at', { ascending: false })
@@ -112,7 +113,7 @@ export default function OverlayPage({ params }: PageProps) {
                 // Fetch encounters for the new active hunt
                 const { data: encountersData } = await supabase
                   .from('encounters')
-                  .select('encounter_id, island_number, encountered_at, villager_id')
+                  .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
                   .eq('hunt_id', newHunt.hunt_id)
                   .eq('is_deleted', false)
                   .order('encountered_at', { ascending: false })
@@ -186,7 +187,7 @@ export default function OverlayPage({ params }: PageProps) {
             // Refetch the top 3 encounters to account for soft deletes
             const { data: encountersData } = await supabase
               .from('encounters')
-              .select('encounter_id, island_number, encountered_at, villager_id')
+              .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
               .eq('hunt_id', hunt.hunt_id)
               .eq('is_deleted', false)
               .order('encountered_at', { ascending: false })
