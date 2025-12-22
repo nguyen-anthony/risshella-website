@@ -143,7 +143,7 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
-              December 21, 2025 - v0.7.0
+              December 21, 2025 - v0.8.0
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -156,11 +156,22 @@ export default function ChangelogPage() {
               </ListItem>
             </List>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Fixed issue where encounter deletions were not updating on the overlay."/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
               Notes
             </Typography>
             <List dense>
               <ListItem>
                 <ListItemText primary="I'm aware that regional names and Amiibo characters are not available. I am working on a solution on how to make this better."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Ignore the fact that 0.7.0 is skipped. I scrapped every update related to it. Don't @ me :)"/>
               </ListItem>
             </List>
           </AccordionDetails>
