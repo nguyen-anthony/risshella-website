@@ -165,6 +165,9 @@ export default function ChangelogPage() {
               <ListItem>
                 <ListItemText primary="Fixed issue where encounter deletions were not updating on the overlay."/>
               </ListItem>
+              <ListItem>
+                <ListItemText primary="Fixed issue where a name change causes issue with authentication."/>
+              </ListItem>
             </List>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Notes
