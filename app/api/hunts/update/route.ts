@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     island_villagers?: number[];
     target_villager_id?: number[];
     is_bingo_enabled?: boolean;
+    bingo_card_size?: number;
   } | null;
 
   if (!body || typeof body.hunt_id !== 'string') {
@@ -40,8 +41,9 @@ export async function POST(req: NextRequest) {
   const hasIslandVillagers = Array.isArray(body.island_villagers);
   const hasTargetVillagers = Array.isArray(body.target_villager_id);
   const hasBingoEnabled = typeof body.is_bingo_enabled === 'boolean';
+  const hasBingoCardSize = typeof body.bingo_card_size === 'number';
 
-  if (!hasIslandVillagers && !hasTargetVillagers && !hasBingoEnabled) {
+  if (!hasIslandVillagers && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
@@ -53,6 +55,11 @@ export async function POST(req: NextRequest) {
   // Validate target_villager_id if provided
   if (hasTargetVillagers && body.target_villager_id!.some(v => typeof v !== 'number')) {
     return NextResponse.json({ error: 'invalid_target_villager_id' }, { status: 400 });
+  }
+
+  // Validate bingo_card_size if provided
+  if (hasBingoCardSize && ![3, 4, 5].includes(body.bingo_card_size!)) {
+    return NextResponse.json({ error: 'invalid_bingo_card_size' }, { status: 400 });
   }
 
   const cookieStore = await cookies();
@@ -71,7 +78,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Update the hunt
-  const updateData: { island_villagers?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean } = {};
+  const updateData: { island_villagers?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number } = {};
   if (hasIslandVillagers) {
     updateData.island_villagers = body.island_villagers;
   }
@@ -80,6 +87,9 @@ export async function POST(req: NextRequest) {
   }
   if (hasBingoEnabled) {
     updateData.is_bingo_enabled = body.is_bingo_enabled;
+  }
+  if (hasBingoCardSize) {
+    updateData.bingo_card_size = body.bingo_card_size;
   }
 
   const { error } = await supabase

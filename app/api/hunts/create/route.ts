@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     target_villager_id?: number[];
     island_villagers?: number[];
     is_bingo_enabled?: boolean;
+    bingo_card_size?: number;
   } | null;
   if (!body || !Array.isArray(body.target_villager_id) || body.target_villager_id.length === 0) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
     twitch_id: Number(session.userId),
     island_villagers: body.island_villagers || [],
     is_bingo_enabled: body.is_bingo_enabled ?? true,
+    bingo_card_size: body.bingo_card_size ?? 5,
   };
 
   const { data, error } = await supabase.from('hunts').insert(insert).select('hunt_id').maybeSingle();

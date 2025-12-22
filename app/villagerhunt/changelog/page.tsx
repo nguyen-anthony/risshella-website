@@ -143,6 +143,32 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              December 21, 2025 - v0.7.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Dynamic Bingo Card Generation - You can now set bingo cards to 3x3, 4x4, or 5x5." secondary="If there is truly any desire to make cards larger than this, please submit a request, but please understand that this image generation is insanely complex and it'll take some time <3"/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Notes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="I'm aware that regional names and Amiibo characters are not available. I am working on a solution on how to make this better."/>
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               December 1, 2025 - v0.6.0
             </Typography>
           </AccordionSummary>
@@ -155,7 +181,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Changed the update hunt status dropdown to individual buttons to make it more obvious on how to complete hunts instead of deleting them with the Delete Hunt button. Reminder that COMPLETING or ABANDONING a hunt will keep the hunt records in the history. Deleting will not." secondary="You know who you are."/>
               </ListItem>
             </List>
-
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Bug Fixes
             </Typography>
@@ -164,8 +189,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Report button was covering up the pagination controls on the encounters table on mobile devices. Moved the report button for mobile devices."/>
               </ListItem>
             </List>
-
-            
           </AccordionDetails>
         </Accordion>
 
@@ -193,7 +216,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Creators can now add temporary mods. This only grants a specified Twitch user the ability to act like a mod for the villager hunt only. This should only be granted to viewers you trust."/>
               </ListItem>
             </List>
-
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Bug Fixes
             </Typography>
@@ -202,8 +224,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Paused hunts always showed the resume button. It should now only show for the creator of the hunt."/>
               </ListItem>
             </List>
-
-            
           </AccordionDetails>
         </Accordion>
 
@@ -231,7 +251,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Added trello board details to the changelog"/>
               </ListItem>
             </List>
-
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Bug Fixes
             </Typography>
@@ -243,8 +262,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Removed the navigation bar from the stream overlay page"/>
               </ListItem>
             </List>
-
-            
           </AccordionDetails>
         </Accordion>
 
@@ -278,8 +295,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Added ability to close change log notification"/>
               </ListItem>
             </List>
-
-            
           </AccordionDetails>
         </Accordion>
 
@@ -310,8 +325,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Removed Changelog notification from overlay page"/>
               </ListItem>
             </List>
-
-            
           </AccordionDetails>
         </Accordion>
 
@@ -345,8 +358,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Added changelog"/>
               </ListItem>
             </List>
-
-            
           </AccordionDetails>
         </Accordion>
         
