@@ -28,9 +28,10 @@ type Props = {
   villagersMap: Record<number, Villager>;
   isOwner: boolean;
   isAuthenticated: boolean;
+  maxIsland: number;
 };
 
-export default function HuntCard({ hunt, username, twitchId, villagersMap, isOwner, isAuthenticated }: Props) {
+export default function HuntCard({ hunt, username, twitchId, villagersMap, isOwner, isAuthenticated, maxIsland }: Props) {
   const router = useRouter();
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -52,6 +53,11 @@ export default function HuntCard({ hunt, username, twitchId, villagersMap, isOwn
             <Typography variant="body2" color="text.secondary">
               Status: {hunt.hunt_status} { hunt.complete_ts ? `| Completed: ${new Date(hunt.complete_ts).toLocaleDateString()}` : ''}
             </Typography>
+            {maxIsland > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Islands Visited: {maxIsland}
+              </Typography>
+            )}
             {dreamies.length > 0 && (
               <Box sx={{ mt: 1 }}>
                 <Typography variant="body2" color="text.secondary">Dreamies:</Typography>

@@ -65,6 +65,19 @@ export default async function HuntHistoryPage(props: PageProps) {
     );
   }
 
+  // Fetch max island number for each hunt
+  const maxIslandPromises = (hunts || []).map(async (hunt) => {
+    const { data } = await supabase
+      .from('encounters')
+      .select('island_number')
+      .eq('hunt_id', hunt.hunt_id)
+      .order('island_number', { ascending: false })
+      .limit(1);
+    return { hunt_id: hunt.hunt_id, max_island: data?.[0]?.island_number || 0 };
+  });
+  const maxIslands = await Promise.all(maxIslandPromises);
+  const maxIslandMap: Record<string, number> = Object.fromEntries(maxIslands.map(m => [m.hunt_id, m.max_island]));
+
   // Filter hunts by status if specified
   const filteredHunts = statusFilter ? hunts?.filter(hunt => hunt.hunt_status === statusFilter) : hunts;
 
@@ -92,7 +105,7 @@ export default async function HuntHistoryPage(props: PageProps) {
         </Box>
         {filteredHunts && filteredHunts.length > 0 ? (
           filteredHunts.map((hunt) => (
-            <HuntCard key={hunt.hunt_id} hunt={hunt} username={username} twitchId={twitchId} villagersMap={villagersMap} isOwner={isOwner} isAuthenticated={isAuthenticated} />
+            <HuntCard key={hunt.hunt_id} hunt={hunt} username={username} twitchId={twitchId} villagersMap={villagersMap} isOwner={isOwner} isAuthenticated={isAuthenticated} maxIsland={maxIslandMap[hunt.hunt_id] || 0} />
           ))
         ) : (
           <Typography>No previous hunts found.</Typography>
