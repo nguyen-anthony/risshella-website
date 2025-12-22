@@ -22,12 +22,13 @@ type Props = {
   isModerator: boolean;
   huntId: string;
   targetVillagerIds?: number[];
+  onDreamieFound?: () => void;
 };
 
 const LS_KEY = "villagersIndex.v1";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export default function EncountersTable({ villagers, isOwner, isModerator, huntId, targetVillagerIds }: Props) {
+export default function EncountersTable({ villagers, isOwner, isModerator, huntId, targetVillagerIds, onDreamieFound }: Props) {
   const [index, setIndex] = React.useState<VillagersIndex | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedEncounter, setSelectedEncounter] = React.useState<EncounterRow | null>(null);
@@ -45,6 +46,8 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
   // Search state
   const [searchTerm, setSearchTerm] = React.useState('');
   const [showFilter, setShowFilter] = React.useState(false);
+
+  const popupTriggeredRef = React.useRef(false);
 
 
   React.useEffect(() => {
@@ -106,6 +109,14 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
 
       if (!error && data) {
         setEncounters(data);
+        // Check for dreamie popup
+        if (isOwner && onDreamieFound && data.some(e => targetVillagerIds?.includes(e.villager_id || 0))) {
+          const key = `dreamiePopupShown_${huntId}`;
+          if (!popupTriggeredRef.current && !localStorage.getItem(key)) {
+            onDreamieFound();
+            popupTriggeredRef.current = true;
+          }
+        }
       }
     };
 
@@ -134,7 +145,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [huntId]);
+  }, [huntId, isOwner, onDreamieFound, targetVillagerIds]);
 
   const getVillager = (id: number | null) => {
     if (id == null) return { name: "—", image_url: null };

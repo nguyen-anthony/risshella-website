@@ -369,6 +369,7 @@ export default function HuntPageWrapper({
   const [tempModsModalOpen, setTempModsModalOpen] = React.useState(false);
   const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
+  const [dreamieModalOpen, setDreamieModalOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -686,7 +687,7 @@ export default function HuntPageWrapper({
             </Button>
           </Box>
 
-          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} />
+          <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} onDreamieFound={() => { if (hunt && !localStorage.getItem(`dreamiePopupShown_${hunt.hunt_id}`)) setDreamieModalOpen(true); }} />
 
           <UpdateIslandVillagersModal
             open={updateIslandModalOpen}
@@ -1026,6 +1027,30 @@ export default function HuntPageWrapper({
           }
         }}
       />
+
+      <Dialog open={dreamieModalOpen} onClose={() => { setDreamieModalOpen(false); if (hunt) localStorage.setItem(`dreamiePopupShown_${hunt.hunt_id}`, 'true'); }}>
+        <DialogTitle>Looks like you found a dreamie!</DialogTitle>
+        <DialogContent>
+          <Typography>Would you like to mark this hunt as Complete?</Typography>
+          <Typography>You can complete this later in the settings/gear icon.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setDreamieModalOpen(false); if (hunt) localStorage.setItem(`dreamiePopupShown_${hunt.hunt_id}`, 'true'); }}>Not Now</Button>
+          <Button variant="contained" color="success" onClick={() => { 
+            setDreamieModalOpen(false); 
+            const form = document.createElement('form'); 
+            form.method = 'post'; 
+            form.action = '/api/hunts/complete'; 
+            const input = document.createElement('input'); 
+            input.type = 'hidden'; 
+            input.name = 'hunt_id'; 
+            input.value = hunt!.hunt_id; 
+            form.appendChild(input); 
+            document.body.appendChild(form); 
+            form.submit(); 
+          }}>Complete Hunt</Button>
+        </DialogActions>
+      </Dialog>
 
     </Container>
   );
