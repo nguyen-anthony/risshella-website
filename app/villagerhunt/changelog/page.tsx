@@ -176,6 +176,9 @@ export default function ChangelogPage() {
               <ListItem>
                 <ListItemText primary="Ignore the fact that 0.7.0 is skipped. I scrapped every update related to it. Don't @ me :)"/>
               </ListItem>
+              <ListItem>
+                <ListItemText primary="There have been requests for allowing 10 villagers on the current island villagers list. Please let me know why this is necessary. If you have 10 villagers, you can't do a villager hunt AFAIK."/>
+              </ListItem>
             </List>
           </AccordionDetails>
         </Accordion>
