@@ -25,6 +25,7 @@ import UpdateIslandVillagersModal from '@/components/villagerhunt/UpdateIslandVi
 import UpdateTargetVillagersModal from '@/components/villagerhunt/UpdateTargetVillagersModal';
 import BingoCardModal from '@/components/villagerhunt/BingoCardModal';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
+import BingoCardControlModal from '@/components/villagerhunt/BingoCardControlModal';
 import { createClient } from '@/utils/supabase/client';
 
 type Hunt = {
@@ -33,6 +34,7 @@ type Hunt = {
   target_villager_id: number[];
   island_villagers: number[];
   is_bingo_enabled: boolean;
+  bingo_card_size: number;
 };
 
 type Villager = {
@@ -362,6 +364,8 @@ export default function HuntPageWrapper({
   const [settingsModalOpen, setSettingsModalOpen] = React.useState(false);
   const [isPublic, setIsPublic] = React.useState<boolean>(false);
   const [isBingoEnabled, setIsBingoEnabled] = React.useState<boolean>(false);
+  const [bingoCardSize, setBingoCardSize] = React.useState<number>(5);
+  const [bingoSettingsModalOpen, setBingoSettingsModalOpen] = React.useState(false);
   const [tempModsModalOpen, setTempModsModalOpen] = React.useState(false);
   const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
@@ -374,7 +378,7 @@ export default function HuntPageWrapper({
       // Fetch ACTIVE hunt
       const { data: huntData, error: huntError } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name, target_villager_id, island_villagers, is_bingo_enabled')
+        .select('hunt_id, hunt_name, target_villager_id, island_villagers, is_bingo_enabled, bingo_card_size')
         .eq('twitch_id', initialTwitchId)
         .eq('hunt_status', 'ACTIVE')
         .order('hunt_id', { ascending: false })
@@ -477,6 +481,7 @@ export default function HuntPageWrapper({
         targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
         villagers,
+        bingoCardSize: hunt.bingo_card_size,
       });
 
       setBingoCardImage(imageDataUrl);
@@ -491,30 +496,6 @@ export default function HuntPageWrapper({
   // Handle hunt statistics modal
   const handleHuntStats = () => {
     setHuntStatsModalOpen(true);
-  };
-
-  // Handle bingo enabled toggle
-  const handleBingoToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!hunt) return;
-    const newValue = e.target.checked;
-    const previousValue = isBingoEnabled;
-    setIsBingoEnabled(newValue);
-    try {
-      const res = await fetch('/api/hunts/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hunt_id: hunt.hunt_id, is_bingo_enabled: newValue }),
-      });
-      if (!res.ok) {
-        throw new Error('Failed to update');
-      }
-      // Refetch to update hunt data
-      fetchHuntData();
-    } catch (error) {
-      console.error('Failed to update bingo enabled:', error);
-      // Revert on error
-      setIsBingoEnabled(previousValue);
-    }
   };
 
   // Handle public toggle
@@ -566,8 +547,9 @@ export default function HuntPageWrapper({
   React.useEffect(() => {
     if (hunt) {
       setIsBingoEnabled(hunt.is_bingo_enabled ?? false);
+      setBingoCardSize(hunt.bingo_card_size ?? 5);
     }
-  }, [hunt, hunt?.is_bingo_enabled]);
+  }, [hunt, hunt?.is_bingo_enabled, hunt?.bingo_card_size]);
 
   // Set overlay URL on client side
   React.useEffect(() => {
@@ -955,15 +937,7 @@ export default function HuntPageWrapper({
             {hunt && (<>
               <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
               <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isBingoEnabled}
-                    onChange={handleBingoToggle}
-                  />
-                }
-                label="Enable Bingo Card Generation"
-              />
+              <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
               <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant="subtitle1">Update Hunt Status</Typography>
@@ -1023,6 +997,34 @@ export default function HuntPageWrapper({
           // The table will refresh automatically due to the useEffect
         }}
         creatorTwitchId={initialTwitchId}
+      />
+
+      <BingoCardControlModal
+        open={bingoSettingsModalOpen}
+        onClose={() => setBingoSettingsModalOpen(false)}
+        isBingoEnabled={isBingoEnabled}
+        bingoCardSize={bingoCardSize}
+        onSave={async (enabled, size) => {
+          setIsBingoEnabled(enabled);
+          setBingoCardSize(size);
+          try {
+            const res = await fetch('/api/hunts/update', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ hunt_id: hunt?.hunt_id, is_bingo_enabled: enabled, bingo_card_size: size }),
+            });
+            if (!res.ok) {
+              throw new Error('Failed to update');
+            }
+            // Refetch to update hunt data
+            fetchHuntData();
+          } catch (error) {
+            console.error('Failed to update bingo settings:', error);
+            // Revert on error
+            setIsBingoEnabled(!enabled);
+            setBingoCardSize(hunt?.bingo_card_size ?? 5);
+          }
+        }}
       />
 
     </Container>

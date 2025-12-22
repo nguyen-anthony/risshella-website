@@ -10,9 +10,8 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Switch,
-  FormControlLabel,
 } from "@mui/material";
+import BingoCardControlModal from "./BingoCardControlModal";
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
 
@@ -29,6 +28,8 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
   const [selected, setSelected] = React.useState<Villager[]>([]);
   const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
   const [isBingoEnabled, setIsBingoEnabled] = React.useState(true);
+  const [bingoCardSize, setBingoCardSize] = React.useState(5);
+  const [bingoSettingsModalOpen, setBingoSettingsModalOpen] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -61,6 +62,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           target_villager_id: selected.map(v => v.villager_id),
           island_villagers: islandVillagers.map(v => v.villager_id),
           is_bingo_enabled: isBingoEnabled,
+          bingo_card_size: bingoCardSize,
         }),
       });
       if (res.ok) {
@@ -133,16 +135,13 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
             ))
           }
         />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isBingoEnabled}
-              onChange={(e) => setIsBingoEnabled(e.target.checked)}
-            />
-          }
-          label="Enable Bingo Card Generation"
+        <Button
+          variant="outlined"
+          onClick={() => setBingoSettingsModalOpen(true)}
           sx={{ alignSelf: 'flex-start' }}
-        />
+        >
+          Bingo Settings
+        </Button>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
@@ -150,6 +149,16 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           {submitting ? "Creating..." : "Create Hunt"}
         </Button>
       </DialogActions>
+      <BingoCardControlModal
+        open={bingoSettingsModalOpen}
+        onClose={() => setBingoSettingsModalOpen(false)}
+        isBingoEnabled={isBingoEnabled}
+        bingoCardSize={bingoCardSize}
+        onSave={(enabled, size) => {
+          setIsBingoEnabled(enabled);
+          setBingoCardSize(size);
+        }}
+      />
     </Dialog>
   );
 }
