@@ -154,6 +154,9 @@ export default function ChangelogPage() {
               <ListItem>
                 <ListItemText primary="Dynamic Bingo Card Generation - You can now set bingo cards to 3x3, 4x4, or 5x5." secondary="If there is truly any desire to make cards larger than this, please submit a request, but please understand that this image generation is insanely complex and it'll take some time <3"/>
               </ListItem>
+              <ListItem>
+                <ListItemText primary="Display number of islands visited in the hunt history."/>
+              </ListItem>
             </List>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Bug Fixes
