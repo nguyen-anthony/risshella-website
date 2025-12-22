@@ -930,7 +930,7 @@ export default function HuntPageWrapper({
         huntId={hunt?.hunt_id || ''}
       />
 
-      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '500px' } }}>
+      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '300px' } }}>
         <DialogTitle>Hunt Settings</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -941,7 +941,7 @@ export default function HuntPageWrapper({
               <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant="subtitle1">Update Hunt Status</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
                   <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
                     <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
                   </Tooltip>
