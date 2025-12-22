@@ -34,12 +34,12 @@ export async function POST(request: NextRequest) {
   // Insert into creators table
   const { error } = await supabase
     .from('creators')
-    .insert({
+    .upsert({
       twitch_id: parseInt(user.id),
       twitch_username: user.login,
       display_name: user.display_name,
       avatar_url: user.profile_image_url,
-    });
+    }, { onConflict: 'twitch_id' });
 
   if (error) {
     return NextResponse.json({ error: 'Failed to create creator' }, { status: 500 });

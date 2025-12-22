@@ -4,7 +4,7 @@ import { Box, Link, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { usePathname } from 'next/navigation';
 
-const LATEST_CHANGELOG_DATE = new Date('2025-12-01');
+const LATEST_CHANGELOG_DATE = new Date('2025-12-21');
 
 export default function ChangelogNotification() {
   const pathname = usePathname();
@@ -102,7 +102,7 @@ export default function ChangelogNotification() {
           <CloseIcon fontSize="small" />
         </IconButton>
         <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
-          Hey there! Lots of new features in the{' '}
+          Hey there! v0.8.0 is out! Lots of new features in the{' '}
           <Link
             href="/villagerhunt/changelog"
             onClick={handleLinkClick}
