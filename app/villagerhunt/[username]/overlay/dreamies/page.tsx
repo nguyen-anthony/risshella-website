@@ -5,12 +5,6 @@ import { createClient } from '@/utils/supabase/client';
 import { Box } from '@mui/material';
 import Image from 'next/image';
 
-interface Hunt {
-  hunt_id: string;
-  hunt_name: string;
-  target_villager_id: number[];
-}
-
 interface Villager {
   villager_id: number;
   name: string;
