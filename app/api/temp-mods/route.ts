@@ -9,9 +9,28 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const creatorTwitchId = searchParams.get('creatorTwitchId');
+  const userTwitchId = searchParams.get('userTwitchId');
 
   if (!creatorTwitchId) {
     return NextResponse.json({ error: 'creatorTwitchId is required' }, { status: 400 });
+  }
+
+  if (userTwitchId) {
+    // Check if user is a temp mod
+    const { data, error } = await supabase
+      .from('temp_mods')
+      .select('temp_mod_twitch_id')
+      .eq('creator_twitch_id', creatorTwitchId)
+      .eq('temp_mod_twitch_id', userTwitchId)
+      .gt('expiry_timestamp', new Date().toISOString())
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking temp mod:', error);
+      return NextResponse.json({ error: 'Failed to check temp mod' }, { status: 500 });
+    }
+
+    return NextResponse.json({ isTempMod: !!data });
   }
 
   const { data, error } = await supabase

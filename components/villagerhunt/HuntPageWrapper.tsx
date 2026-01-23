@@ -370,6 +370,7 @@ export default function HuntPageWrapper({
   const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
   const [dreamieModalOpen, setDreamieModalOpen] = React.useState(false);
+  const [isTempMod, setIsTempMod] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -422,6 +423,15 @@ export default function HuntPageWrapper({
       .then(data => setIsModerator(data.isModerator))
       .catch(() => setIsModerator(false));
   }, [initialIsOwner, initialSession, initialTwitchId]);
+
+  // Check temp mod status
+  React.useEffect(() => {
+    if (!initialSession) return;
+    fetch(`/api/temp-mods/check?creatorTwitchId=${initialTwitchId}&userTwitchId=${initialSession.userId}`)
+      .then(res => res.json())
+      .then(data => setIsTempMod(data.isTempMod))
+      .catch(() => setIsTempMod(false));
+  }, [initialSession, initialTwitchId]);
 
   // Fetch creator public status
   React.useEffect(() => {
@@ -581,7 +591,7 @@ export default function HuntPageWrapper({
       <Stack spacing={0.5} sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
-          {initialIsOwner && (
+          {(initialIsOwner || isModerator || isTempMod) && (
             <>
               <Tooltip title="Hunt Settings">
                 <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
@@ -936,32 +946,40 @@ export default function HuntPageWrapper({
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             {hunt && (<>
-              <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
-              <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
-              <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
-              <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="subtitle1">Update Hunt Status</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
-                  <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
-                    <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
-                  </Tooltip>
-                  <Tooltip title="Marks as paused and can be resumed from hunt history">
-                    <Button variant="contained" color="warning" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/pause'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Pause Hunt</Button>
-                  </Tooltip>
-                  <Tooltip title="Marks as abandoned and saves to history. Cannot be resumed. Quitter">
-                    <Button variant="contained" color="error" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/abandon'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Abandon Hunt</Button>
-                  </Tooltip>
-                </Box>
-              </Box>
-              <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+              {(initialIsOwner || isModerator || isTempMod) && (
+                <>
+                  <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
+                  <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
+                  <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
+                </>
+              )}
+              {initialIsOwner && (
+                <>
+                  <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="subtitle1">Update Hunt Status</Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
+                      <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
+                        <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
+                      </Tooltip>
+                      <Tooltip title="Marks as paused and can be resumed from hunt history">
+                        <Button variant="contained" color="warning" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/pause'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Pause Hunt</Button>
+                      </Tooltip>
+                      <Tooltip title="Marks as abandoned and saves to history. Cannot be resumed. Quitter">
+                        <Button variant="contained" color="error" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/abandon'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Abandon Hunt</Button>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                  <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+                  <TextField 
+                    disabled
+                    fullWidth
+                    value={overlayUrl}
+                    helperText="Overlay: Set this URL as a browser source in OBS"
+                  />
+                </>
+              )}
             </>)}
-            <TextField 
-              disabled
-              fullWidth
-              value={overlayUrl}
-              helperText="Overlay: Set this URL as a browser source in OBS"
-            />
           </Box>
         </DialogContent>
         <DialogActions>
