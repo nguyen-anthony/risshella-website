@@ -33,6 +33,7 @@ type Hunt = {
   hunt_name: string;
   target_villager_id: number[];
   island_villagers: number[];
+  hotel_tourists: number[];
   is_bingo_enabled: boolean;
   bingo_card_size: number;
 };
@@ -380,7 +381,7 @@ export default function HuntPageWrapper({
       // Fetch ACTIVE hunt
       const { data: huntData, error: huntError } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name, target_villager_id, island_villagers, is_bingo_enabled, bingo_card_size')
+        .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, is_bingo_enabled, bingo_card_size')
         .eq('twitch_id', initialTwitchId)
         .eq('hunt_status', 'ACTIVE')
         .order('hunt_id', { ascending: false })
@@ -491,6 +492,7 @@ export default function HuntPageWrapper({
         creatorName: initialDisplayName,
         targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
+        hotelTourists: hunt.hotel_tourists,
         villagers,
         bingoCardSize: hunt.bingo_card_size,
       });
@@ -704,6 +706,7 @@ export default function HuntPageWrapper({
             onClose={() => setUpdateIslandModalOpen(false)}
             huntId={hunt.hunt_id}
             currentIslandVillagers={hunt.island_villagers}
+            currentHotelTourists={hunt.hotel_tourists}
             villagers={villagers}
             onUpdated={fetchHuntData}
           />
@@ -809,7 +812,7 @@ export default function HuntPageWrapper({
                   <EditIcon color="primary" />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Update Island Villagers"
+                  primary="Update Island Villagers/Tourists"
                   secondary="Modify which villagers are currently on your island. These will be excluded from bingo cards."
                 />
               </ListItem>
@@ -926,6 +929,7 @@ export default function HuntPageWrapper({
         onClose={() => setUpdateIslandModalOpen(false)}
         huntId={hunt?.hunt_id || ''}
         currentIslandVillagers={hunt?.island_villagers || []}
+        currentHotelTourists={hunt?.hotel_tourists || []}
         villagers={villagers}
         onUpdated={fetchHuntData}
       />
@@ -949,7 +953,7 @@ export default function HuntPageWrapper({
               {(initialIsOwner || isModerator || isTempMod) && (
                 <>
                   <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
-                  <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
+                  <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers/Tourists</Button>
                   <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
                 </>
               )}

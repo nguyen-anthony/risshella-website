@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     hunt_name?: string;
     target_villager_id?: number[];
     island_villagers?: number[];
+    hotel_tourists?: number[];
     is_bingo_enabled?: boolean;
     bingo_card_size?: number;
   } | null;
@@ -40,6 +41,11 @@ export async function POST(req: NextRequest) {
   // Validate island_villagers if provided
   if (body.island_villagers && (!Array.isArray(body.island_villagers) || body.island_villagers.length > 9 || !body.island_villagers.every(v => typeof v === 'number'))) {
     return NextResponse.json({ error: 'invalid_island_villagers' }, { status: 400 });
+  }
+
+  // Validate hotel_tourists if provided
+  if (body.hotel_tourists && (!Array.isArray(body.hotel_tourists) || body.hotel_tourists.length > 9 || !body.hotel_tourists.every(v => typeof v === 'number'))) {
+    return NextResponse.json({ error: 'invalid_hotel_tourists' }, { status: 400 });
   }
 
   const cookieStore = await cookies();
@@ -67,6 +73,7 @@ export async function POST(req: NextRequest) {
     hunt_status: 'ACTIVE',
     twitch_id: Number(session.userId),
     island_villagers: body.island_villagers || [],
+    hotel_tourists: body.hotel_tourists || [],
     is_bingo_enabled: body.is_bingo_enabled ?? true,
     bingo_card_size: body.bingo_card_size ?? 5,
   };
