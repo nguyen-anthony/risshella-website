@@ -161,9 +161,6 @@ export default function ChangelogPage() {
                 <ListItemText primary="Mods can now update the lists like dreamies, island villagers, and hotel tourists. Can also control bingo card settings."/>
               </ListItem>
               <ListItem>
-                <ListItemText primary="Mods can now update the lists like dreamies, island villagers, and hotel tourists. Can also control bingo card settings."/>
-              </ListItem>
-              <ListItem>
                 <ListItemText primary="Added a new overlay for your dreamies on your stream as a browser source!" secondary="Use {your_hunt_url}/overlay/dreamies (e.g. risshella.com/villagerhunt/ront_tv/overlay/dreamies"/>
               </ListItem>
             </List>
