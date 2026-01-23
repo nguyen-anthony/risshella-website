@@ -143,6 +143,64 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              January 22, 2026 - v0.9.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="You can now add your island's hotel tourists in your hunt settings." secondary="Hotel tourists (AFAIK) can not show up on mystery islands, so these will be restricted from your bingo card too."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Current island villagers (residents and tourists) are now in a modal popup instead of statically on the page all the time."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Mods can now update the lists like dreamies, island villagers, and hotel tourists. Can also control bingo card settings."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Mods can now update the lists like dreamies, island villagers, and hotel tourists. Can also control bingo card settings."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Added a new overlay for your dreamies on your stream as a browser source!" secondary="Use {your_hunt_url}/overlay/dreamies (e.g. risshella.com/villagerhunt/ront_tv/overlay/dreamies"/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Encounters table had a limit of 1000 records. This has been fixed for all of you struggling with 1000+ villager hunts." secondary="Get good please."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="As a temporary fix, I edited Jacob and Spork to have their UK names (Jakey and Crackle). I'm hoping for a better solution but data is limited"/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              What is next?
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="I'm working on a better design to make this page more Animal Crossing friendly rather than a basic dark mode/light mode color theme."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Interactive Bingo Card!" secondary="This is a bit more complex because I am trying to not require everyone to login to do this, but I am working on a hopefully slick solution to make this happen so you can stop saving your bingo cards locally!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Amiibo Villagers!" secondary="This site was originally meant for one person, my wife. Supporting Ammibo characters was not on my priority. I am working on including Amiibo Villager support!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Global Stats!" secondary="Looking to add a global statistics page that will include data across all PUBLIC hunts. Anyone set to private will not be included in these statistics to respect privacy."/>
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               December 21, 2025 - v0.8.0
             </Typography>
           </AccordionSummary>
