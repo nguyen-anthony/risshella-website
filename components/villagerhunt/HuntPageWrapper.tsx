@@ -33,6 +33,7 @@ type Hunt = {
   hunt_name: string;
   target_villager_id: number[];
   island_villagers: number[];
+  hotel_tourists: number[];
   is_bingo_enabled: boolean;
   bingo_card_size: number;
 };
@@ -370,6 +371,8 @@ export default function HuntPageWrapper({
   const [addTempModModalOpen, setAddTempModModalOpen] = React.useState(false);
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
   const [dreamieModalOpen, setDreamieModalOpen] = React.useState(false);
+  const [isTempMod, setIsTempMod] = React.useState(false);
+  const [islandDetailsModalOpen, setIslandDetailsModalOpen] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -379,7 +382,7 @@ export default function HuntPageWrapper({
       // Fetch ACTIVE hunt
       const { data: huntData, error: huntError } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name, target_villager_id, island_villagers, is_bingo_enabled, bingo_card_size')
+        .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, is_bingo_enabled, bingo_card_size')
         .eq('twitch_id', initialTwitchId)
         .eq('hunt_status', 'ACTIVE')
         .order('hunt_id', { ascending: false })
@@ -422,6 +425,15 @@ export default function HuntPageWrapper({
       .then(data => setIsModerator(data.isModerator))
       .catch(() => setIsModerator(false));
   }, [initialIsOwner, initialSession, initialTwitchId]);
+
+  // Check temp mod status
+  React.useEffect(() => {
+    if (!initialSession) return;
+    fetch(`/api/temp-mods/check?creatorTwitchId=${initialTwitchId}&userTwitchId=${initialSession.userId}`)
+      .then(res => res.json())
+      .then(data => setIsTempMod(data.isTempMod))
+      .catch(() => setIsTempMod(false));
+  }, [initialSession, initialTwitchId]);
 
   // Fetch creator public status
   React.useEffect(() => {
@@ -481,6 +493,7 @@ export default function HuntPageWrapper({
         creatorName: initialDisplayName,
         targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
+        hotelTourists: hunt.hotel_tourists,
         villagers,
         bingoCardSize: hunt.bingo_card_size,
       });
@@ -544,6 +557,18 @@ export default function HuntPageWrapper({
     setIslandVillagersData(islandVillagers);
   }, [hunt?.island_villagers, villagers]);
 
+  // Resolve hotel tourists data
+  const [hotelTouristsData, setHotelTouristsData] = React.useState<Villager[]>([]);
+
+  React.useEffect(() => {
+    if (!hunt?.hotel_tourists || hunt.hotel_tourists.length === 0) {
+      setHotelTouristsData([]);
+      return;
+    }
+    const hotelTourists = villagers.filter(v => hunt.hotel_tourists.includes(v.villager_id));
+    setHotelTouristsData(hotelTourists);
+  }, [hunt?.hotel_tourists, villagers]);
+
   // Set bingo enabled state from hunt data
   React.useEffect(() => {
     if (hunt) {
@@ -581,7 +606,7 @@ export default function HuntPageWrapper({
       <Stack spacing={0.5} sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
-          {initialIsOwner && (
+          {(initialIsOwner || isModerator || isTempMod) && (
             <>
               <Tooltip title="Hunt Settings">
                 <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
@@ -644,29 +669,6 @@ export default function HuntPageWrapper({
             </Box>
           )}
 
-          {islandVillagersData.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">Current Island Villagers:</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {islandVillagersData.map((villager) => (
-                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
-                      <Image
-                        src={villager.image_url || '/placeholder.png'}
-                        alt={villager.name}
-                        width={60}
-                        height={60}
-                        style={{ objectFit: 'contain', borderRadius: 4 }}
-                        unoptimized
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          )}
-
           <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {isBingoEnabled && (
               <Button
@@ -678,6 +680,13 @@ export default function HuntPageWrapper({
                 {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
               </Button>
             )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setIslandDetailsModalOpen(true)}
+            >
+              View Island Villagers
+            </Button>
             <Button
               variant="contained"
               color="primary"
@@ -694,6 +703,7 @@ export default function HuntPageWrapper({
             onClose={() => setUpdateIslandModalOpen(false)}
             huntId={hunt.hunt_id}
             currentIslandVillagers={hunt.island_villagers}
+            currentHotelTourists={hunt.hotel_tourists}
             villagers={villagers}
             onUpdated={fetchHuntData}
           />
@@ -799,7 +809,7 @@ export default function HuntPageWrapper({
                   <EditIcon color="primary" />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Update Island Villagers"
+                  primary="Update Island Villagers/Tourists"
                   secondary="Modify which villagers are currently on your island. These will be excluded from bingo cards."
                 />
               </ListItem>
@@ -916,6 +926,7 @@ export default function HuntPageWrapper({
         onClose={() => setUpdateIslandModalOpen(false)}
         huntId={hunt?.hunt_id || ''}
         currentIslandVillagers={hunt?.island_villagers || []}
+        currentHotelTourists={hunt?.hotel_tourists || []}
         villagers={villagers}
         onUpdated={fetchHuntData}
       />
@@ -931,37 +942,103 @@ export default function HuntPageWrapper({
         huntId={hunt?.hunt_id || ''}
       />
 
+      <Dialog open={islandDetailsModalOpen} onClose={() => setIslandDetailsModalOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>Island Details</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          {islandVillagersData.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+              <Typography variant="h6" color="text.secondary">Current Island Villagers:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {islandVillagersData.map((villager) => (
+                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
+                      <Image
+                        src={villager.image_url || '/placeholder.png'}
+                        alt={villager.name}
+                        width={60}
+                        height={60}
+                        style={{ objectFit: 'contain', borderRadius: 4 }}
+                        unoptimized
+                      />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+          {hotelTouristsData.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="h6" color="text.secondary">Current Hotel Tourists:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {hotelTouristsData.map((villager) => (
+                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
+                      <Image
+                        src={villager.image_url || '/placeholder.png'}
+                        alt={villager.name}
+                        width={60}
+                        height={60}
+                        style={{ objectFit: 'contain', borderRadius: 4 }}
+                        unoptimized
+                      />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+          {islandVillagersData.length === 0 && hotelTouristsData.length === 0 && (
+            <Typography variant="body1" color="text.secondary">
+              No island villagers or hotel tourists currently set.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIslandDetailsModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '300px' } }}>
         <DialogTitle>Hunt Settings</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             {hunt && (<>
-              <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
-              <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers</Button>
-              <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
-              <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="subtitle1">Update Hunt Status</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
-                  <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
-                    <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
-                  </Tooltip>
-                  <Tooltip title="Marks as paused and can be resumed from hunt history">
-                    <Button variant="contained" color="warning" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/pause'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Pause Hunt</Button>
-                  </Tooltip>
-                  <Tooltip title="Marks as abandoned and saves to history. Cannot be resumed. Quitter">
-                    <Button variant="contained" color="error" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/abandon'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Abandon Hunt</Button>
-                  </Tooltip>
-                </Box>
-              </Box>
-              <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+              {(initialIsOwner || isModerator || isTempMod) && (
+                <>
+                  <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
+                  <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers/Tourists</Button>
+                  <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
+                </>
+              )}
+              {initialIsOwner && (
+                <>
+                  <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="subtitle1">Update Hunt Status</Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
+                      <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
+                        <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
+                      </Tooltip>
+                      <Tooltip title="Marks as paused and can be resumed from hunt history">
+                        <Button variant="contained" color="warning" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/pause'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Pause Hunt</Button>
+                      </Tooltip>
+                      <Tooltip title="Marks as abandoned and saves to history. Cannot be resumed. Quitter">
+                        <Button variant="contained" color="error" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/abandon'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Abandon Hunt</Button>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                  <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
+                  <TextField 
+                    disabled
+                    fullWidth
+                    value={overlayUrl}
+                    helperText="Overlay: Set this URL as a browser source in OBS"
+                  />
+                </>
+              )}
             </>)}
-            <TextField 
-              disabled
-              fullWidth
-              value={overlayUrl}
-              helperText="Overlay: Set this URL as a browser source in OBS"
-            />
           </Box>
         </DialogContent>
         <DialogActions>

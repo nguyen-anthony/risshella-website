@@ -4,6 +4,7 @@ export async function generateBingoCard({
   creatorName,
   targetVillagers,
   islandVillagers,
+  hotelTourists,
   villagers,
   bingoCardSize = 5,
 }: {
@@ -12,13 +13,15 @@ export async function generateBingoCard({
   creatorName: string;
   targetVillagers: { villager_id: number; name: string; image_url: string | null }[];
   islandVillagers: number[];
+  hotelTourists: number[];
   villagers: { villager_id: number; name: string; image_url: string | null }[];
   bingoCardSize?: number;
 }): Promise<string> {
-  // Get available villagers (exclude target and island villagers)
+  // Get available villagers (exclude target, island, and hotel tourists)
   const excludedIds = new Set([
     ...targetVillagers.map(v => v.villager_id),
     ...islandVillagers,
+    ...hotelTourists,
   ]);
 
   const availableVillagers = villagers.filter(v => !excludedIds.has(v.villager_id));
@@ -47,6 +50,7 @@ export async function generateBingoCard({
       creatorName,
       targetVillagers,
       islandVillagers,
+      hotelTourists,
       bingoVillagers,
       bingoCardSize,
     }),

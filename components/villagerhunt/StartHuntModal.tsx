@@ -27,6 +27,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
   const [huntName, setHuntName] = React.useState("");
   const [selected, setSelected] = React.useState<Villager[]>([]);
   const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
+  const [hotelTourists, setHotelTourists] = React.useState<Villager[]>([]);
   const [isBingoEnabled, setIsBingoEnabled] = React.useState(true);
   const [bingoCardSize, setBingoCardSize] = React.useState(5);
   const [bingoSettingsModalOpen, setBingoSettingsModalOpen] = React.useState(false);
@@ -61,6 +62,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           hunt_name: huntName || undefined,
           target_villager_id: selected.map(v => v.villager_id),
           island_villagers: islandVillagers.map(v => v.villager_id),
+          hotel_tourists: hotelTourists.map(v => v.villager_id),
           is_bingo_enabled: isBingoEnabled,
           bingo_card_size: bingoCardSize,
         }),
@@ -114,7 +116,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
         <Autocomplete
           multiple
           loading={loading}
-          options={villagers.filter(v => !selected.some(s => s.villager_id === v.villager_id))}
+          options={villagers.filter(v => !selected.some(s => s.villager_id === v.villager_id) && !hotelTourists.some(h => h.villager_id === v.villager_id))}
           getOptionKey={(option) => option.villager_id}
           getOptionLabel={(v) => v.name}
           value={islandVillagers}
@@ -126,6 +128,30 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
             </Box>
           )}
           renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island. Villagers in this list will not be included on generated Bingo cards for your community. You can edit this later. Why 9? Because you must have an open spot on your island to do a villager hunt." />}
+          renderTags={(tagValue) =>
+            tagValue.map((option) => (
+              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
+                {option.name}
+              </Box>
+            ))
+          }
+        />
+        <Autocomplete
+          multiple
+          loading={loading}
+          options={villagers.filter(v => !selected.some(s => s.villager_id === v.villager_id) && !islandVillagers.some(i => i.villager_id === v.villager_id))}
+          getOptionKey={(option) => option.villager_id}
+          getOptionLabel={(v) => v.name}
+          value={hotelTourists}
+          onChange={(_, v) => setHotelTourists(v.slice(0, 9))} // Limit to 9 tourists
+          renderOption={(props, option) => (
+            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
+              {option.name}
+            </Box>
+          )}
+          renderInput={(params) => <TextField {...params} label="Current Hotel Tourists (max 9)" helperText="Select villagers currently visiting as hotel tourists. These villagers cannot be found during hunts and will be excluded from bingo cards." />}
           renderTags={(tagValue) =>
             tagValue.map((option) => (
               <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>

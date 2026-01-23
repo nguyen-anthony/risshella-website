@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as {
     hunt_id?: string;
     island_villagers?: number[];
+    hotel_tourists?: number[];
     target_villager_id?: number[];
     is_bingo_enabled?: boolean;
     bingo_card_size?: number;
@@ -39,17 +40,23 @@ export async function POST(req: NextRequest) {
   }
 
   const hasIslandVillagers = Array.isArray(body.island_villagers);
+  const hasHotelTourists = Array.isArray(body.hotel_tourists);
   const hasTargetVillagers = Array.isArray(body.target_villager_id);
   const hasBingoEnabled = typeof body.is_bingo_enabled === 'boolean';
   const hasBingoCardSize = typeof body.bingo_card_size === 'number';
 
-  if (!hasIslandVillagers && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize) {
+  if (!hasIslandVillagers && !hasHotelTourists && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
   // Validate island_villagers if provided
   if (hasIslandVillagers && (body.island_villagers!.some(v => typeof v !== 'number') || body.island_villagers!.length > 9)) {
     return NextResponse.json({ error: 'invalid_island_villagers' }, { status: 400 });
+  }
+
+  // Validate hotel_tourists if provided
+  if (hasHotelTourists && (body.hotel_tourists!.some(v => typeof v !== 'number') || body.hotel_tourists!.length > 9)) {
+    return NextResponse.json({ error: 'invalid_hotel_tourists' }, { status: 400 });
   }
 
   // Validate target_villager_id if provided
@@ -78,9 +85,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Update the hunt
-  const updateData: { island_villagers?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number } = {};
+  const updateData: { island_villagers?: number[]; hotel_tourists?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number } = {};
   if (hasIslandVillagers) {
     updateData.island_villagers = body.island_villagers;
+  }
+  if (hasHotelTourists) {
+    updateData.hotel_tourists = body.hotel_tourists;
   }
   if (hasTargetVillagers) {
     updateData.target_villager_id = body.target_villager_id;

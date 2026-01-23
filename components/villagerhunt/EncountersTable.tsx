@@ -100,22 +100,35 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     const supabase = createClient();
 
     const fetchEncounters = async () => {
-      const { data, error } = await supabase
-        .from('encounters')
-        .select('encounter_id, island_number, encountered_at, villager_id')
-        .eq('hunt_id', huntId)
-        .eq('is_deleted', false)
-        .order('island_number', { ascending: false });
+      let allData: EncounterRow[] = [];
+      let from = 0;
+      const batchSize = 1000;
 
-      if (!error && data) {
-        setEncounters(data);
-        // Check for dreamie popup
-        if (isOwner && onDreamieFound && data.some(e => targetVillagerIds?.includes(e.villager_id || 0))) {
-          const key = `dreamiePopupShown_${huntId}`;
-          if (!popupTriggeredRef.current && !localStorage.getItem(key)) {
-            onDreamieFound();
-            popupTriggeredRef.current = true;
-          }
+      while (true) {
+        const { data, error } = await supabase
+          .from('encounters')
+          .select('encounter_id, island_number, encountered_at, villager_id')
+          .eq('hunt_id', huntId)
+          .eq('is_deleted', false)
+          .order('island_number', { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error || !data) break;
+
+        allData = allData.concat(data);
+
+        if (data.length < batchSize) break;
+
+        from += batchSize;
+      }
+
+      setEncounters(allData);
+      // Check for dreamie popup
+      if (isOwner && onDreamieFound && allData.some(e => targetVillagerIds?.includes(e.villager_id || 0))) {
+        const key = `dreamiePopupShown_${huntId}`;
+        if (!popupTriggeredRef.current && !localStorage.getItem(key)) {
+          onDreamieFound();
+          popupTriggeredRef.current = true;
         }
       }
     };

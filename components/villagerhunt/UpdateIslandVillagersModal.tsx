@@ -20,6 +20,7 @@ type Props = {
   onClose: () => void;
   huntId: string;
   currentIslandVillagers: number[];
+  currentHotelTourists: number[];
   villagers: Villager[];
   onUpdated?: () => void;
 };
@@ -29,10 +30,12 @@ export default function UpdateIslandVillagersModal({
   onClose,
   huntId,
   currentIslandVillagers,
+  currentHotelTourists,
   villagers,
   onUpdated
 }: Props) {
   const [selectedVillagers, setSelectedVillagers] = React.useState<Villager[]>([]);
+  const [selectedHotelTourists, setSelectedHotelTourists] = React.useState<Villager[]>([]);
   const [submitting, setSubmitting] = React.useState(false);
 
   // Initialize selected villagers when modal opens
@@ -40,8 +43,10 @@ export default function UpdateIslandVillagersModal({
     if (open) {
       const current = villagers.filter(v => currentIslandVillagers.includes(v.villager_id));
       setSelectedVillagers(current);
+      const currentTourists = villagers.filter(v => currentHotelTourists.includes(v.villager_id));
+      setSelectedHotelTourists(currentTourists);
     }
-  }, [open, currentIslandVillagers, villagers]);
+  }, [open, currentIslandVillagers, currentHotelTourists, villagers]);
 
   const handleUpdate = async () => {
     setSubmitting(true);
@@ -51,7 +56,8 @@ export default function UpdateIslandVillagersModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hunt_id: huntId,
-          island_villagers: selectedVillagers.map(v => v.villager_id)
+          island_villagers: selectedVillagers.map(v => v.villager_id),
+          hotel_tourists: selectedHotelTourists.map(v => v.villager_id)
         }),
       });
 
@@ -71,14 +77,14 @@ export default function UpdateIslandVillagersModal({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Update Island Villagers</DialogTitle>
+      <DialogTitle>Update Island Villagers and Hotel Tourists</DialogTitle>
       <DialogContent sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
         <Typography variant="body2" component="h1">
             Villagers in this list will not be included on generated Bingo cards for your community.
         </Typography>
         <Autocomplete
           multiple
-          options={villagers}
+          options={villagers.filter(v => !selectedHotelTourists.some(h => h.villager_id === v.villager_id))}
           getOptionKey={(option) => option.villager_id}
           getOptionLabel={(v) => v.name}
           value={selectedVillagers}
@@ -102,6 +108,32 @@ export default function UpdateIslandVillagersModal({
         <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
           {selectedVillagers.length}/9 villagers selected
         </Box>
+        <Autocomplete
+          multiple
+          options={villagers.filter(v => !selectedVillagers.some(s => s.villager_id === v.villager_id))}
+          getOptionKey={(option) => option.villager_id}
+          getOptionLabel={(v) => v.name}
+          value={selectedHotelTourists}
+          onChange={(_, v) => setSelectedHotelTourists(v.slice(0, 9))} // Limit to 9 tourists
+          renderOption={(props, option) => (
+            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
+              {option.name}
+            </Box>
+          )}
+          renderInput={(params) => <TextField {...params} label="Current Hotel Tourists (max 9)" helperText="Select villagers currently visiting as hotel tourists" />}
+          renderTags={(tagValue) =>
+            tagValue.map((option) => (
+              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
+                {option.name}
+              </Box>
+            ))
+          }
+        />
+        <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+          {selectedHotelTourists.length}/9 tourists selected
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
@@ -110,7 +142,7 @@ export default function UpdateIslandVillagersModal({
           variant="contained"
           disabled={submitting}
         >
-          {submitting ? "Updating..." : "Update Island Villagers"}
+          {submitting ? "Updating..." : "Update Island Villagers and Tourists"}
         </Button>
       </DialogActions>
     </Dialog>
