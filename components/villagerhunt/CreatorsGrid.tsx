@@ -27,10 +27,18 @@ export default function CreatorsGrid({ creators, emptyMessage = "No creators fou
         const isModerated = moderatedUsernames.includes(c.twitch_username.toLowerCase());
         const activeHunt = activeHunts.find(h => h.twitch_id === c.twitch_id);
         const isLive = liveStreamUserIds.includes(c.twitch_id.toString());
+        const hasActiveHunt = !!activeHunt;
         const statusText = isModerated ? "You moderate this channel!" : (activeHunt ? activeHunt.hunt_name : "No hunt in progress.");
         return (
           <Grid key={c.twitch_id} size={{ xs: 12, sm: 12, md: 6, lg: 4, xl: 2 }}>
-            <CreatorCard creator={c} statusText={statusText} isModerated={isModerated} currentIsland={activeHunt?.current_island} isLive={isLive} />
+            <CreatorCard 
+              creator={c} 
+              statusText={statusText} 
+              isModerated={isModerated} 
+              currentIsland={activeHunt?.current_island} 
+              isLive={isLive} 
+              hasActiveHunt={hasActiveHunt}
+            />
           </Grid>
         );
       })}

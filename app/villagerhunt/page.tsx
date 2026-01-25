@@ -86,7 +86,6 @@ export default async function VillagerHunt() {
     try {
       const userIds = creatorsWithActiveHunts.map(c => c.twitch_id.toString());
       const liveStreams = await getStreams(userIds, ACNH_GAME_ID);
-      console.log(liveStreams)
       liveStreamUserIds = liveStreams.map(stream => stream.user_id);
     } catch (error) {
       console.error('Failed to fetch live streams:', error);
