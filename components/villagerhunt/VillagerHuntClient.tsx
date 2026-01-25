@@ -13,6 +13,7 @@ type PageData = {
   session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
   error?: Error | null;
   activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number; current_island?: number }[];
+  liveStreamUserIds: string[];
 };
 
 export default function VillagerHuntClient({ data }: { data: PageData }) {
@@ -47,7 +48,7 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
     setInfoDialogExpiry(30); // Don't show again for 30 days
   };
 
-  const { creators, session, error, activeHunts } = data;
+  const { creators, session, error, activeHunts, liveStreamUserIds } = data;
   const selfCreator = session ? creators.find(c => c.twitch_username.toLowerCase() === session.login.toLowerCase()) : undefined;
   const creatorsForGrid = selfCreator ? creators.filter(c => c.twitch_id !== selfCreator.twitch_id) : creators;
 
@@ -80,7 +81,7 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
           {error ? (
             <Alert severity="error">Error loading creators.</Alert>
           ) : (
-            <CreatorsSearchGrid creators={creatorsForGrid} activeHunts={activeHunts} moderatedUsernames={[]} />
+            <CreatorsSearchGrid creators={creatorsForGrid} activeHunts={activeHunts} moderatedUsernames={[]} liveStreamUserIds={liveStreamUserIds} />
           )}
         </Box>
       </Container>

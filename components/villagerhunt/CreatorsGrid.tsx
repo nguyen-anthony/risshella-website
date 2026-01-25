@@ -9,10 +9,11 @@ type Props = {
   emptyMessage?: string;
   moderatedUsernames?: string[];
   activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number; current_island?: number }[];
+  liveStreamUserIds: string[];
 };
 
 
-export default function CreatorsGrid({ creators, emptyMessage = "No creators found.", moderatedUsernames = [], activeHunts }: Props) {  if (!creators?.length) {
+export default function CreatorsGrid({ creators, emptyMessage = "No creators found.", moderatedUsernames = [], activeHunts, liveStreamUserIds }: Props) {  if (!creators?.length) {
     return (
       <Box sx={{ py: 4 }}>
         <Typography color="text.secondary">{emptyMessage}</Typography>
@@ -25,10 +26,19 @@ export default function CreatorsGrid({ creators, emptyMessage = "No creators fou
       {creators.map((c) => {
         const isModerated = moderatedUsernames.includes(c.twitch_username.toLowerCase());
         const activeHunt = activeHunts.find(h => h.twitch_id === c.twitch_id);
+        const isLive = liveStreamUserIds.includes(c.twitch_id.toString());
+        const hasActiveHunt = !!activeHunt;
         const statusText = isModerated ? "You moderate this channel!" : (activeHunt ? activeHunt.hunt_name : "No hunt in progress.");
         return (
           <Grid key={c.twitch_id} size={{ xs: 12, sm: 12, md: 6, lg: 4, xl: 2 }}>
-            <CreatorCard creator={c} statusText={statusText} isModerated={isModerated} currentIsland={activeHunt?.current_island} />
+            <CreatorCard 
+              creator={c} 
+              statusText={statusText} 
+              isModerated={isModerated} 
+              currentIsland={activeHunt?.current_island} 
+              isLive={isLive} 
+              hasActiveHunt={hasActiveHunt}
+            />
           </Grid>
         );
       })}

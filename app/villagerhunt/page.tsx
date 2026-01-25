@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
 import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
-import { refreshAccessToken } from '@/app/lib/twitch';
+import { refreshAccessToken, getStreams } from '@/app/lib/twitch';
 import VillagerHuntClient from '@/components/villagerhunt/VillagerHuntClient';
 import type { Metadata } from 'next';
 
@@ -17,6 +17,7 @@ type PageData = {
   session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
   error?: Error | null;
   activeHunts: ActiveHunt[];
+  liveStreamUserIds: string[];
 };
 
 export default async function VillagerHunt() {
@@ -73,11 +74,52 @@ export default async function VillagerHunt() {
   // Get active hunts with current island
   const { data: activeHunts } = await supabase.rpc('get_active_hunts_with_island');
 
+  // Get set of twitch IDs with active hunts
+  const activeHuntTwitchIds = new Set((activeHunts ?? []).map((hunt: ActiveHunt) => hunt.twitch_id));
+  const creatorsWithActiveHunts = creators.filter(creator => activeHuntTwitchIds.has(creator.twitch_id));
+
+  // Check which creators are live streaming Animal Crossing: New Horizons
+  const ACNH_GAME_ID = '509538';
+  let liveStreamUserIds: string[] = [];
+  
+  if (creatorsWithActiveHunts.length > 0) {
+    try {
+      const userIds = creatorsWithActiveHunts.map(c => c.twitch_id.toString());
+      const liveStreams = await getStreams(userIds, ACNH_GAME_ID);
+      liveStreamUserIds = liveStreams.map(stream => stream.user_id);
+    } catch (error) {
+      console.error('Failed to fetch live streams:', error);
+      // Continue without live stream data
+    }
+  }
+
+  // Sort creators by priority: live + active hunt > active hunt > no active hunt
+  const liveStreamUserIdSet = new Set(liveStreamUserIds);
+  const sortedCreators = [...creators].sort((a, b) => {
+    const aIsLive = liveStreamUserIdSet.has(a.twitch_id.toString());
+    const bIsLive = liveStreamUserIdSet.has(b.twitch_id.toString());
+    const aHasActiveHunt = activeHuntTwitchIds.has(a.twitch_id);
+    const bHasActiveHunt = activeHuntTwitchIds.has(b.twitch_id);
+    
+    // Calculate priority: 3 = live + active hunt, 2 = active hunt, 1 = no active hunt
+    const aPriority = aIsLive && aHasActiveHunt ? 3 : aHasActiveHunt ? 2 : 1;
+    const bPriority = bIsLive && bHasActiveHunt ? 3 : bHasActiveHunt ? 2 : 1;
+    
+    // Higher priority comes first
+    if (aPriority !== bPriority) {
+      return bPriority - aPriority;
+    }
+    
+    // Same priority: maintain original order (already sorted by created_at from the query)
+    return 0;
+  });
+
   const pageData: PageData = {
-    creators,
+    creators: sortedCreators,
     session,
     error,
     activeHunts,
+    liveStreamUserIds,
   };
 
   return <VillagerHuntClient data={pageData} />;
