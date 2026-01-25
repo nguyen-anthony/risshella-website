@@ -141,3 +141,88 @@ export async function getModeratedChannels(accessToken: string, userId: string) 
 
   return allChannels;
 }
+
+export type TwitchStream = {
+  id: string;
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  game_id: string;
+  game_name: string;
+  type: 'live' | '';
+  title: string;
+  tags: string[];
+  viewer_count: number;
+  started_at: string;
+  language: string;
+  thumbnail_url: string;
+  is_mature: boolean;
+};
+
+/**
+ * Get live streams for given user IDs, optionally filtered by game
+ * @param userIds Array of Twitch user IDs (will batch if more than 100)
+ * @param gameId Optional game ID to filter by (e.g., '130752' for Animal Crossing: New Horizons)
+ */
+export async function getStreams(
+  userIds: string[],
+  gameId?: string
+): Promise<TwitchStream[]> {
+  if (userIds.length === 0) return [];
+
+  // Get app access token for this request
+  const tokenRes = await fetch(`${TWITCH_AUTH}/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.TWITCH_CLIENT_ID!,
+      client_secret: process.env.TWITCH_CLIENT_SECRET!,
+      grant_type: 'client_credentials',
+    }),
+  });
+
+  if (!tokenRes.ok) {
+    throw new Error(`Failed to get app access token: ${tokenRes.status}`);
+  }
+
+  const { access_token } = await tokenRes.json();
+
+  // Batch requests if more than 100 user IDs
+  const allStreams: TwitchStream[] = [];
+  const batchSize = 100;
+  
+  for (let i = 0; i < userIds.length; i += batchSize) {
+    const batch = userIds.slice(i, i + batchSize);
+    
+    const url = new URL(`${TWITCH_API}/streams`);
+    // Add each user_id as a separate query parameter
+    batch.forEach(id => url.searchParams.append('user_id', id));
+    
+    // Filter by game if specified
+    if (gameId) {
+      url.searchParams.set('game_id', gameId);
+    }
+    
+    // Only get live streams
+    url.searchParams.set('type', 'live');
+    url.searchParams.set('first', '100');
+
+    const res = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        'Client-Id': process.env.TWITCH_CLIENT_ID!,
+      },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error(`Failed to fetch streams: ${res.status} ${txt}`);
+    }
+
+    const data = await res.json();
+    allStreams.push(...(data?.data ?? []));
+  }
+
+  return allStreams;
+}

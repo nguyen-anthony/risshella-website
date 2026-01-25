@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Card, CardActionArea, CardContent, CardHeader, Avatar, Typography, Box } from "@mui/material";
+import { Card, CardActionArea, CardContent, CardHeader, Avatar, Typography, Box, Chip } from "@mui/material";
 import Image from "next/image";
 import type { Creator } from "@/types/creator";
 
@@ -9,9 +9,10 @@ type Props = {
   statusText?: string;
   isModerated?: boolean;
   currentIsland?: number;
+  isLive?: boolean;
 };
 
-export default function CreatorCard({ creator, statusText = "Villager hunt in progress", isModerated = false, currentIsland }: Props) {
+export default function CreatorCard({ creator, statusText = "Villager hunt in progress", isModerated = false, currentIsland, isLive = false }: Props) {
   const { twitch_username, display_name, avatar_url } = creator;
 
   return (
@@ -28,6 +29,23 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
             <Typography variant="subtitle1" fontWeight={600} noWrap>
               {display_name || twitch_username}
             </Typography>
+          }
+          action={
+            isLive ? (
+              <Chip 
+                label="LIVE" 
+                color="error" 
+                size="small" 
+                sx={{ 
+                  fontWeight: 700,
+                  animation: 'pulse 2s infinite',
+                  '@keyframes pulse': {
+                    '0%, 100%': { opacity: 1 },
+                    '50%': { opacity: 0.7 }
+                  }
+                }} 
+              />
+            ) : null
           }
           sx={{ pb: 0.5 }}
         />
