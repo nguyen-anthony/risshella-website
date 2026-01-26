@@ -4,7 +4,7 @@ import { Box, Link, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { usePathname } from 'next/navigation';
 
-const LATEST_CHANGELOG_DATE = new Date('2026-01-22');
+const LATEST_CHANGELOG_DATE = new Date('2026-01-25');
 
 export default function ChangelogNotification() {
   const pathname = usePathname();

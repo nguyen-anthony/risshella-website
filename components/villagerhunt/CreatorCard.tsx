@@ -34,6 +34,24 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
 
   const cardContent = (
     <>
+      {isLive && (
+        <Box sx={{ px: 2, pt: 2, pb: 0 }}>
+          <Chip 
+            label="LIVE" 
+            color="error" 
+            size="small" 
+            sx={{ 
+              width: '100%',
+              fontWeight: 700,
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.85 }
+              }
+            }} 
+          />
+        </Box>
+      )}
       <CardHeader
         avatar={<Avatar src={avatar_url ?? undefined} alt={display_name || twitch_username} />}
         title={
@@ -41,29 +59,13 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
             {display_name || twitch_username}
           </Typography>
         }
-        action={
-          isLive ? (
-            <Chip 
-              label="LIVE" 
-              color="error" 
-              size="small" 
-              sx={{ 
-                fontWeight: 700,
-                animation: 'pulse 2s infinite',
-                '@keyframes pulse': {
-                  '0%, 100%': { opacity: 1 },
-                  '50%': { opacity: 0.7 }
-                }
-              }} 
-            />
-          ) : null
-        }
-        sx={{ pb: 0.5 }}
+        sx={{ pb: 0.5, pt: isLive ? 1 : 2 }}
       />
-      <CardContent sx={{ pt: 0.5 }}>
+      <CardContent sx={{ pt: 0.5, pb: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
           {statusText}
         </Typography>
+        <Box sx={{ flexGrow: 1 }} />
         {currentIsland && (
           <Box sx={{ position: 'relative', width: 80, height: 80, mx: 'auto' }}>
             <Image src="/island_image.png" alt="Island" width={80} height={80} style={{ objectFit: 'cover' }} unoptimized />
@@ -89,11 +91,11 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
 
   return (
     <>
-      <Card elevation={3} sx={{ height: "100%", ...(isModerated && { backgroundColor: 'rgba(147, 112, 219, 0.1)' }) }}>
+      <Card elevation={3} sx={{ height: "100%", display: 'flex', flexDirection: 'column', ...(isModerated && { backgroundColor: 'rgba(147, 112, 219, 0.1)' }) }}>
         {isLive && hasActiveHunt ? (
           <CardActionArea
             onClick={handleCardClick}
-            sx={{ height: "100%", alignItems: "stretch" }}
+            sx={{ height: "100%", display: 'flex', flexDirection: 'column', alignItems: "stretch" }}
           >
             {cardContent}
           </CardActionArea>
@@ -101,7 +103,7 @@ export default function CreatorCard({ creator, statusText = "Villager hunt in pr
           <CardActionArea
             component={Link}
             href={`/villagerhunt/${encodeURIComponent(twitch_username)}`}
-            sx={{ height: "100%", alignItems: "stretch" }}
+            sx={{ height: "100%", display: 'flex', flexDirection: 'column', alignItems: "stretch" }}
           >
             {cardContent}
           </CardActionArea>
