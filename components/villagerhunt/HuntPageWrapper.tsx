@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, Chip } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
 import HelpIcon from '@mui/icons-material/Help';
@@ -376,6 +376,7 @@ export default function HuntPageWrapper({
   const [isTempMod, setIsTempMod] = React.useState(false);
   const [islandDetailsModalOpen, setIslandDetailsModalOpen] = React.useState(false);
   const [showInactiveNotification, setShowInactiveNotification] = React.useState(false);
+  const [isLive, setIsLive] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -428,6 +429,32 @@ export default function HuntPageWrapper({
       setShowInactiveNotification(false);
     }
   }, [hunt]);
+
+  // Check if streamer is live
+  React.useEffect(() => {
+    const checkLiveStatus = async () => {
+      try {
+        const response = await fetch('/api/twitch/streams', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ twitchId: initialTwitchId }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setIsLive(data.isLive || false);
+        }
+      } catch (error) {
+        console.error('Failed to check live status:', error);
+      }
+    };
+
+    checkLiveStatus();
+    // Check every 60 seconds
+    const interval = setInterval(checkLiveStatus, 60000);
+    
+    return () => clearInterval(interval);
+  }, [initialTwitchId]);
 
   // Check moderator status client-side
   React.useEffect(() => {
@@ -616,8 +643,33 @@ export default function HuntPageWrapper({
 
       {/* Always present elements */}
       <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h4" component="h1" fontWeight={700}>{initialDisplayName}</Typography>
+          {isLive && (
+            <Chip
+              label="Live on Twitch!"
+              color="error"
+              size="small"
+              component="a"
+              href={`https://www.twitch.tv/${initialUsername}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              clickable
+              sx={{
+                fontWeight: 700,
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%, 100%': { opacity: 1 },
+                  '50%': { opacity: 0.85 }
+                },
+                cursor: 'pointer',
+                textDecoration: 'none',
+                '&:hover': {
+                  backgroundColor: 'error.dark',
+                }
+              }}
+            />
+          )}
           {(initialIsOwner || isModerator || isTempMod) && (
             <>
               <Tooltip title="Hunt Settings">
