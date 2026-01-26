@@ -71,8 +71,27 @@ export default async function VillagerHunt() {
     }
   }
 
-  // Get active hunts with current island
-  const { data: activeHunts } = await supabase.rpc('get_active_hunts_with_island');
+  // Get active hunts with current island - fetch all results using pagination
+  let allActiveHunts: ActiveHunt[] = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data: activeHuntsPage } = await supabase
+      .rpc('get_active_hunts_with_island')
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    if (activeHuntsPage && activeHuntsPage.length > 0) {
+      allActiveHunts = [...allActiveHunts, ...activeHuntsPage];
+      hasMore = activeHuntsPage.length === pageSize;
+      page++;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  const activeHunts = allActiveHunts;
 
   // Get set of twitch IDs with active hunts
   const activeHuntTwitchIds = new Set((activeHunts ?? []).map((hunt: ActiveHunt) => hunt.twitch_id));
