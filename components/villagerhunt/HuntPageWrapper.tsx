@@ -26,6 +26,7 @@ import UpdateTargetVillagersModal from '@/components/villagerhunt/UpdateTargetVi
 import BingoCardModal from '@/components/villagerhunt/BingoCardModal';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import BingoCardControlModal from '@/components/villagerhunt/BingoCardControlModal';
+import InactiveHuntNotification from '@/components/villagerhunt/InactiveHuntNotification';
 import { createClient } from '@/utils/supabase/client';
 
 type Hunt = {
@@ -36,6 +37,7 @@ type Hunt = {
   hotel_tourists: number[];
   is_bingo_enabled: boolean;
   bingo_card_size: number;
+  hunt_status: string;
 };
 
 type Villager = {
@@ -373,18 +375,19 @@ export default function HuntPageWrapper({
   const [dreamieModalOpen, setDreamieModalOpen] = React.useState(false);
   const [isTempMod, setIsTempMod] = React.useState(false);
   const [islandDetailsModalOpen, setIslandDetailsModalOpen] = React.useState(false);
+  const [showInactiveNotification, setShowInactiveNotification] = React.useState(false);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
     const supabase = createClient();
 
     try {
-      // Fetch ACTIVE hunt
+      // Fetch ACTIVE or INACTIVE hunt
       const { data: huntData, error: huntError } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, is_bingo_enabled, bingo_card_size')
+        .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, is_bingo_enabled, bingo_card_size, hunt_status')
         .eq('twitch_id', initialTwitchId)
-        .eq('hunt_status', 'ACTIVE')
+        .in('hunt_status', ['ACTIVE', 'INACTIVE'])
         .order('hunt_id', { ascending: false })
         .maybeSingle();
 
@@ -416,6 +419,15 @@ export default function HuntPageWrapper({
   React.useEffect(() => {
     fetchHuntData();
   }, [fetchHuntData]);
+
+  // Show inactive notification when hunt status is INACTIVE
+  React.useEffect(() => {
+    if (hunt && hunt.hunt_status === 'INACTIVE') {
+      setShowInactiveNotification(true);
+    } else {
+      setShowInactiveNotification(false);
+    }
+  }, [hunt]);
 
   // Check moderator status client-side
   React.useEffect(() => {
@@ -1128,6 +1140,11 @@ export default function HuntPageWrapper({
           }}>Complete Hunt</Button>
         </DialogActions>
       </Dialog>
+
+      <InactiveHuntNotification 
+        isVisible={showInactiveNotification} 
+        onClose={() => setShowInactiveNotification(false)} 
+      />
 
     </Container>
   );
