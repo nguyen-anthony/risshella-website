@@ -39,6 +39,8 @@ type Props = {
   open: boolean;
   onClose: () => void;
   huntId: string;
+  islandVillagerIds?: number[];
+  hotelTouristIds?: number[];
 };
 
 type ChartData = {
@@ -51,7 +53,7 @@ type VillagerStat = {
   count: number;
 };
 
-export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
+export default function HuntStatisticsModal({ open, onClose, huntId, islandVillagerIds, hotelTouristIds }: Props) {
   const [loading, setLoading] = React.useState(false);
   const [speciesData, setSpeciesData] = React.useState<ChartData[]>([]);
   const [personalityData, setPersonalityData] = React.useState<ChartData[]>([]);
@@ -79,6 +81,44 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
       if (encountersError) {
         console.error('Error fetching encounters:', encountersError);
         return;
+      }
+
+      // Use provided IDs or fetch from database
+      let excludedVillagerIds: number[];
+      if (islandVillagerIds !== undefined && hotelTouristIds !== undefined) {
+        // Use provided values
+        excludedVillagerIds = [...islandVillagerIds, ...hotelTouristIds];
+      } else {
+        // Fetch from database
+        const { data: huntData, error: huntError } = await supabase
+          .from('hunts')
+          .select('island_villagers, hotel_tourists')
+          .eq('hunt_id', huntId)
+          .single();
+
+        if (huntError) {
+          console.error('Error fetching hunt data:', huntError);
+          excludedVillagerIds = [];
+        } else {
+          const islandIds = (huntData?.island_villagers as number[]) || [];
+          const hotelIds = (huntData?.hotel_tourists as number[]) || [];
+          excludedVillagerIds = [...islandIds, ...hotelIds];
+        }
+      }
+
+      // Fetch excluded villagers data to get their species
+      let excludedVillagersData: Villager[] = [];
+      if (excludedVillagerIds.length > 0) {
+        const { data: excludedVillagers, error: excludedError } = await supabase
+          .from('villagers')
+          .select('villager_id, name, species, personality, image_url')
+          .in('villager_id', excludedVillagerIds);
+
+        if (excludedError) {
+          console.error('Error fetching excluded villagers:', excludedError);
+        } else {
+          excludedVillagersData = excludedVillagers || [];
+        }
       }
 
       if (!encounters || encounters.length === 0) {
@@ -129,6 +169,12 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
         speciesTotals[row.species] = (speciesTotals[row.species] || 0) + 1;
       });
 
+      // Count island villagers by species to subtract from totals
+      const islandSpeciesCounts: Record<string, number> = {};
+      excludedVillagersData.forEach(villager => {
+        islandSpeciesCounts[villager.species] = (islandSpeciesCounts[villager.species] || 0) + 1;
+      });
+
       // Fetch villager data for all encountered villagers
       const villagerIds = Object.keys(villagerCounts).map(id => parseInt(id));
       const { data: villagers, error: villagersError } = await supabase
@@ -141,10 +187,12 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
         return;
       }
 
-      // Calculate species stats (found vs total)
+      // Calculate species stats (found vs total minus island villagers)
       const speciesStatsData = Object.entries(speciesTotals).map(([species, total]) => {
         const found = villagers?.filter(v => v.species === species).length || 0;
-        return { species, found, total };
+        const onIsland = islandSpeciesCounts[species] || 0;
+        const availableTotal = Math.max(0, total - onIsland); // Total that can be encountered
+        return { species, found, total: availableTotal };
       }).sort((a, b) => a.species.localeCompare(b.species));
 
       // Build statistics
@@ -194,7 +242,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [huntId]);
+  }, [huntId, islandVillagerIds, hotelTouristIds]);
 
   React.useEffect(() => {
     if (open && huntId) {

@@ -143,6 +143,52 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              January 22, 2026 - v0.10.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="The main page now is more organized! Grid now has 30 hunters per page." secondary="Any creators that are live on Twitch will be at the top that have an active hunt. If you are not live but have a hunt active, you are next. Everyone else that does not have an active hunt will be sorted at the end."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="If you are live on Twitch, your card will have a banner for you being live!"/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Hunt statistics now take current island villagers and hotel guests into consideration."/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              What is next?
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="I'm working on a better design to make this page more Animal Crossing friendly rather than a basic dark mode/light mode color theme."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Interactive Bingo Card!" secondary="This is a bit more complex because I am trying to not require everyone to login to do this, but I am working on a hopefully slick solution to make this happen so you can stop saving your bingo cards locally!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Amiibo Villagers!" secondary="This site was originally meant for one person, my wife. Supporting Ammibo characters was not on my priority. I am working on including Amiibo Villager support!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Global Stats!" secondary="Looking to add a global statistics page that will include data across all PUBLIC hunts. Anyone set to private will not be included in these statistics to respect privacy."/>
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               January 22, 2026 - v0.9.0
             </Typography>
           </AccordionSummary>
@@ -195,7 +241,7 @@ export default function ChangelogPage() {
           </AccordionDetails>
         </Accordion>
 
-        <Accordion defaultExpanded>
+        <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               December 21, 2025 - v0.8.0
