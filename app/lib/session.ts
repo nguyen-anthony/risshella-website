@@ -71,7 +71,7 @@ export async function clearSessionCookie() {
  * Returns null if session doesn't exist or refresh fails.
  */
 export async function getValidSession(): Promise<Session | null> {
-  let session = await getSessionFromCookie();
+  const session = await getSessionFromCookie();
   
   if (!session) {
     return null;
