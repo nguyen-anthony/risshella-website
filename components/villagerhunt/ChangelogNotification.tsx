@@ -4,7 +4,7 @@ import { Box, Link, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { usePathname } from 'next/navigation';
 
-const LATEST_CHANGELOG_DATE = new Date('2026-01-25');
+const LATEST_CHANGELOG_DATE = new Date('2026-02-03');
 
 export default function ChangelogNotification() {
   const pathname = usePathname();
@@ -102,7 +102,7 @@ export default function ChangelogNotification() {
           <CloseIcon fontSize="small" />
         </IconButton>
         <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
-          Yo! You can add hotel tourists now and more! Read more in the {' '}
+          There are a few quality of life and bug fixes I just deployed! See them at {' '}
           <Link
             href="/villagerhunt/changelog"
             onClick={handleLinkClick}

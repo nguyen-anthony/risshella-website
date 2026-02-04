@@ -54,6 +54,9 @@ export default function UpdateDeleteEncounterModal({ open, onClose, encounter, v
       if (res.ok) {
         onClose();
         router.replace(window.location.pathname);
+      } else if (res.status === 401) {
+        // Token expired or authentication issue - silently redirect to re-authenticate
+        window.location.href = `/api/auth/twitch?return=${encodeURIComponent(window.location.pathname)}`;
       }
     } finally {
       setSubmitting(false);
@@ -77,6 +80,9 @@ export default function UpdateDeleteEncounterModal({ open, onClose, encounter, v
       if (res.ok) {
         onClose();
         router.replace(window.location.pathname);
+      } else if (res.status === 401) {
+        // Token expired or authentication issue - silently redirect to re-authenticate
+        window.location.href = `/api/auth/twitch?return=${encodeURIComponent(window.location.pathname)}`;
       }
     } finally {
       setSubmitting(false);

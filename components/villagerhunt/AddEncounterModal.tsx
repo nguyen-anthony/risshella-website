@@ -98,6 +98,9 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       if (res.ok) {
         onClose();
         router.replace(window.location.pathname);
+      } else if (res.status === 401) {
+        // Token expired or authentication issue - silently redirect to re-authenticate
+        window.location.href = `/api/auth/twitch?return=${encodeURIComponent(window.location.pathname)}`;
       } else {
         // Try to get error message from response
         try {

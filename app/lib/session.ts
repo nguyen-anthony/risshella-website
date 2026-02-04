@@ -1,6 +1,7 @@
 // app/lib/session.ts
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
+import { refreshAccessToken } from './twitch';
 
 const COOKIE_NAME = 'vh_session';
 const ALGO = 'sha256';
@@ -41,14 +42,16 @@ export function decodeSession(token?: string): Session | null {
 
 export async function setSessionCookie(s: Session) {
   const token = encodeSession(s);
-  const maxAge = s.exp - Math.floor(Date.now() / 1000);
+  // Cookie lasts 30 days - allows silent token refresh while maintaining reasonable security
+  // Access token inside expires sooner (~4 hours from Twitch) and will be auto-refreshed
+  const maxAge = 30 * 24 * 60 * 60; // 30 days
   const store = await cookies();
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: Math.max(60, maxAge),
+    maxAge,
   });
 }
 
@@ -61,4 +64,41 @@ export async function getSessionFromCookie(): Promise<Session | null> {
 export async function clearSessionCookie() {
   const store = await cookies();
   store.set(COOKIE_NAME, '', { path: '/', maxAge: 0 });
+}
+
+/**
+ * Gets the session and automatically refreshes the token if expired.
+ * Returns null if session doesn't exist or refresh fails.
+ */
+export async function getValidSession(): Promise<Session | null> {
+  const session = await getSessionFromCookie();
+  
+  if (!session) {
+    return null;
+  }
+
+  // Check if token is expired
+  if (session.exp < Date.now() / 1000) {
+    // No refresh token available
+    if (!session.refreshToken) {
+      return null;
+    }
+    
+    // Try to refresh
+    try {
+      const newToken = await refreshAccessToken(session.refreshToken);
+      session.accessToken = newToken.access_token;
+      session.refreshToken = newToken.refresh_token;
+      session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
+      await setSessionCookie(session);
+      // Session successfully refreshed - return updated session
+      return session;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      return null;
+    }
+  }
+
+  // Session is still valid
+  return session;
 }
