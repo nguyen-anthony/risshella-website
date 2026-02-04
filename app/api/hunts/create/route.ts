@@ -1,28 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServiceClient } from '@/utils/supabase/server';
-import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
-import { refreshAccessToken } from '@/app/lib/twitch';
+import { getValidSession } from '@/app/lib/session';
 
 export async function POST(req: NextRequest) {
-  const session = await getSessionFromCookie();
+  const session = await getValidSession();
 
-  // Refresh token if expired
-  if (session && session.exp < Date.now() / 1000 && session.refreshToken) {
-    try {
-      const newToken = await refreshAccessToken(session.refreshToken);
-      session.accessToken = newToken.access_token;
-      session.refreshToken = newToken.refresh_token;
-      session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
-      await setSessionCookie(session);
-    } catch (error) {
-      console.error('Failed to refresh token:', error);
-      // If refresh fails, treat as unauthorized
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-    }
-  }
-
-  if (!session || session.exp < Date.now() / 1000) {
+  if (!session) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
