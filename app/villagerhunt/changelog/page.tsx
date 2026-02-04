@@ -143,6 +143,52 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              February 3, 2026 - v0.11.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Less authentication refreshing!" secondary="You may have noticed that you have to Login With Twitch pretty frequently. I've made a change so that you should ideally only have to do this every 30 days-ish?"/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Hunt Disappearing!" secondary="There had been reports of hunts disappearing and inability to start new hunts. This was due to a conflict error in the database. This should be fixed now! Please report if you see this again!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Unauthorized Errors!" secondary="People sometimes encountered an UNAUTHORIZED error. This was due to token expiration timing issues. This should be fixed now!"/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              What is next?
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="I'm working on a better design to make this page more Animal Crossing friendly rather than a basic dark mode/light mode color theme."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Interactive Bingo Card!" secondary="This is a bit more complex because I am trying to not require everyone to login to do this, but I am working on a hopefully slick solution to make this happen so you can stop saving your bingo cards locally!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Amiibo Villagers!" secondary="This site was originally meant for one person, my wife. Supporting Ammibo characters was not on my priority. I am working on including Amiibo Villager support!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Global Stats!" secondary="Looking to add a global statistics page that will include data across all PUBLIC hunts. Anyone set to private will not be included in these statistics to respect privacy."/>
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               January 22, 2026 - v0.10.0
             </Typography>
           </AccordionSummary>
