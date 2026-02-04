@@ -12,6 +12,7 @@ import {
   TextField,
 } from "@mui/material";
 import BingoCardControlModal from "./BingoCardControlModal";
+import { createClient } from "@/utils/supabase/client";
 
 type Villager = { villager_id: number; name: string; image_url: string | null };
 
@@ -55,6 +56,20 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
     if (!selected.length) return;
     setSubmitting(true);
     try {
+      // Double-check for active hunts before creating (using same pattern as HuntPageWrapper)
+      const supabase = createClient();
+      const { data: existingActiveHunt } = await supabase
+        .from('hunts')
+        .select('hunt_id')
+        .eq('hunt_status', 'ACTIVE')
+        .maybeSingle();
+      
+      if (existingActiveHunt) {
+        alert("An active hunt already exists. Refreshing the page to load it...");
+        window.location.reload();
+        return;
+      }
+
       const res = await fetch("/api/hunts/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,8 +85,11 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
       if (res.ok) {
         onCreated?.();
         onClose();
+      } else if (res.status === 409) {
+        // Server-side duplicate check caught it - refresh to load existing hunt
+        window.location.reload();
       } else {
-        // Handle error
+        alert("Failed to create hunt. Please try again.");
       }
     } finally {
       setSubmitting(false);

@@ -51,6 +51,18 @@ export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
   const supabase = createServiceClient(cookieStore);
 
+  // Check if user already has an active hunt
+  const { data: existingActiveHunt } = await supabase
+    .from('hunts')
+    .select('hunt_id')
+    .eq('twitch_id', Number(session.userId))
+    .in('hunt_status', ['ACTIVE', 'INACTIVE'])
+    .maybeSingle();
+
+  if (existingActiveHunt) {
+    return NextResponse.json({ error: 'Active Hunt Already Exists' }, { status: 409 });
+  }
+
   const villagerIds = body.target_villager_id;
   // If hunt_name not provided, fetch villager names for default
   let finalName = body.hunt_name?.trim();

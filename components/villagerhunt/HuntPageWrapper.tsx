@@ -354,6 +354,7 @@ export default function HuntPageWrapper({
   initialUsername,
 }: Props) {
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
+  const [huntLoading, setHuntLoading] = React.useState(true);
   const [villagers, setVillagers] = React.useState<Villager[]>([]);
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
@@ -383,6 +384,7 @@ export default function HuntPageWrapper({
     const supabase = createClient();
 
     try {
+      setHuntLoading(true);
       // Fetch ACTIVE or INACTIVE hunt
       const { data: huntData, error: huntError } = await supabase
         .from('hunts')
@@ -413,6 +415,8 @@ export default function HuntPageWrapper({
         // Handle auth error, e.g., redirect to login
         window.location.href = '/auth'; // or show a login button
       }
+    } finally {
+      setHuntLoading(false);
     }
   }, [initialTwitchId]);
 
@@ -701,7 +705,11 @@ export default function HuntPageWrapper({
       </Stack>
 
       {/* Conditional content based on hunt existence */}
-      {!hunt ? (
+      {huntLoading ? (
+        <Box>
+          <Typography variant="h6" color="text.secondary">Loading hunt data...</Typography>
+        </Box>
+      ) : !hunt ? (
         <Box>
           <Typography variant="h6" color="text.secondary">No active hunt</Typography>
           {initialIsOwner && <OwnerHuntControls showStart onHuntCreated={fetchHuntData} />}
