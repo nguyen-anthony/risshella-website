@@ -40,8 +40,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Create a session with proper expiry and refresh token
+    // TESTING: Set to 30 seconds to test refresh (normally token.expires_in)
     const exp = Math.floor(Date.now() / 1000) + token.expires_in;
-  await setSessionCookie({ userId: user.id, login: user.login, accessToken: token.access_token, refreshToken: token.refresh_token, exp });
+    await setSessionCookie({ userId: user.id, login: user.login, accessToken: token.access_token, refreshToken: token.refresh_token, exp });
 
     const absoluteReturn = /^https?:\/\//i.test(returnPath)
       ? returnPath

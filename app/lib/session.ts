@@ -42,14 +42,16 @@ export function decodeSession(token?: string): Session | null {
 
 export async function setSessionCookie(s: Session) {
   const token = encodeSession(s);
-  const maxAge = s.exp - Math.floor(Date.now() / 1000);
+  // Cookie lasts 30 days - allows silent token refresh while maintaining reasonable security
+  // Access token inside expires sooner (~4 hours from Twitch) and will be auto-refreshed
+  const maxAge = 30 * 24 * 60 * 60; // 30 days
   const store = await cookies();
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: Math.max(60, maxAge),
+    maxAge,
   });
 }
 
