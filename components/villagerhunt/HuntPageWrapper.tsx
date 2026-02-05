@@ -400,7 +400,7 @@ export default function HuntPageWrapper({
         .order('hunt_id', { ascending: false })
         .maybeSingle();
       
-      const { data: huntData, error: huntError } = await Promise.race([huntPromise, timeoutPromise]) as any;
+      const { data: huntData, error: huntError } = await Promise.race([huntPromise, timeoutPromise]) as Awaited<typeof huntPromise>;
 
       if (huntError) {
         console.error('Hunt fetch error:', huntError);
@@ -413,7 +413,7 @@ export default function HuntPageWrapper({
         .from('villagers')
         .select('villager_id, name, image_url');
       
-      const { data: villagersData, error: villagersError } = await Promise.race([villagersPromise, timeoutPromise]) as any;
+      const { data: villagersData, error: villagersError } = await Promise.race([villagersPromise, timeoutPromise]) as Awaited<typeof villagersPromise>;
 
       if (villagersError) {
         console.error('Villagers fetch error:', villagersError);
