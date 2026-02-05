@@ -87,8 +87,6 @@ export default async function CreatorHuntPage(props: PageProps) {
 
   // If not owner, check if user moderates this channel
   if (!isOwner && session?.accessToken) {
-    }
-
     try {
       const mods = await getModeratedChannels(session.accessToken, session.userId);
       console.log(`Moderated channels count: ${mods.length}`)
