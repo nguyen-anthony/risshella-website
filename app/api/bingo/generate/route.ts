@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { registerFont, createCanvas, loadImage } from 'canvas';
 import path from 'path';
+import fs from 'fs';
 
-// Register a font if needed, but for now use default
-registerFont(path.join(process.cwd(), 'public/ARIAL.TTF'), { family: 'Arial' });
+// Register a font if available, otherwise use system defaults
+const fontPath = path.join(process.cwd(), 'public/ARIAL.TTF');
+if (fs.existsSync(fontPath)) {
+  registerFont(fontPath, { family: 'Arial' });
+}
 
 async function fetchImageBuffer(url: string): Promise<Buffer> {
   const response = await fetch(url);

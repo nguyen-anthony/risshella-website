@@ -1,8 +1,8 @@
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
-import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
-import { refreshAccessToken, getStreams } from '@/app/lib/twitch';
+import { getValidSession } from '@/app/lib/session';
+import { getStreams } from '@/app/lib/twitch';
 import VillagerHuntClient from '@/components/villagerhunt/VillagerHuntClient';
 import type { Metadata } from 'next';
 
@@ -14,7 +14,7 @@ type ActiveHunt = { hunt_id: string; hunt_name: string; twitch_id: number; curre
 
 type PageData = {
   creators: Creator[];
-  session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
+  session: ReturnType<typeof getValidSession> extends Promise<infer T> ? T : never;
   error?: Error | null;
   activeHunts: ActiveHunt[];
   liveStreamUserIds: string[];
@@ -23,21 +23,7 @@ type PageData = {
 export default async function VillagerHunt() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
-  const session = await getSessionFromCookie();
-
-  // Refresh token if expired
-  if (session && session.exp < Date.now() / 1000 && session.refreshToken) {
-    try {
-      const newToken = await refreshAccessToken(session.refreshToken);
-      session.accessToken = newToken.access_token;
-      session.refreshToken = newToken.refresh_token;
-      session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
-      await setSessionCookie(session);
-    } catch (error) {
-      console.error('Failed to refresh token:', error);
-      // If refresh fails, proceed with expired session or clear it
-    }
-  }
+  const session = await getValidSession();
 
   // Get all public creators
   const { data: publicCreators, error: publicError } = await supabase

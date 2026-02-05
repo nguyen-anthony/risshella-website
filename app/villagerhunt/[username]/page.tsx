@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { createClient, createServiceClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
-import { getSessionFromCookie, setSessionCookie } from '@/app/lib/session';
-import { getModeratedChannels, refreshAccessToken } from '@/app/lib/twitch';
+import { getValidSession } from '@/app/lib/session';
+import { getModeratedChannels } from '@/app/lib/twitch';
 import HuntPageWrapper from '@/components/villagerhunt/HuntPageWrapper';
 import type { Metadata } from 'next';
 
@@ -57,7 +57,7 @@ export default async function CreatorHuntPage(props: PageProps) {
   const username = decodeURIComponent(rawUsername);
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
-  const session = await getSessionFromCookie();
+  const session = await getValidSession();
   const isOwner = !!session && session.login?.toLowerCase() === username.toLowerCase();
   let isModerator = false;
   let displayName = username; // Default to username, will be updated if creator found
@@ -87,18 +87,6 @@ export default async function CreatorHuntPage(props: PageProps) {
 
   // If not owner, check if user moderates this channel
   if (!isOwner && session?.accessToken) {
-    // Refresh token if expired
-    if (session.exp < Date.now() / 1000 && session.refreshToken) {
-      try {
-        const newToken = await refreshAccessToken(session.refreshToken);
-        session.accessToken = newToken.access_token;
-        session.refreshToken = newToken.refresh_token;
-        session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
-        await setSessionCookie(session);
-      } catch (error) {
-        console.error('Failed to refresh token:', error);
-        // If refresh fails, clear session or ignore
-      }
     }
 
     try {

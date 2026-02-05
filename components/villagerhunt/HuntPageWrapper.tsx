@@ -382,39 +382,57 @@ export default function HuntPageWrapper({
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
     const supabase = createClient();
+    
+    // Add a timeout to prevent hanging forever on iOS
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 15000);
+    });
 
     try {
       setHuntLoading(true);
-      // Fetch ACTIVE or INACTIVE hunt
-      const { data: huntData, error: huntError } = await supabase
+      
+      // Fetch ACTIVE or INACTIVE hunt with timeout
+      const huntPromise = supabase
         .from('hunts')
         .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, is_bingo_enabled, bingo_card_size, hunt_status')
         .eq('twitch_id', initialTwitchId)
         .in('hunt_status', ['ACTIVE', 'INACTIVE'])
         .order('hunt_id', { ascending: false })
         .maybeSingle();
+      
+      const { data: huntData, error: huntError } = await Promise.race([huntPromise, timeoutPromise]) as any;
 
-      if (!huntError) {
+      if (huntError) {
+        console.error('Hunt fetch error:', huntError);
+      } else {
         setHunt(huntData);
       }
 
-      // Fetch villagers for encounter lookup
-      const { data: villagersData } = await supabase
+      // Fetch villagers for encounter lookup with timeout
+      const villagersPromise = supabase
         .from('villagers')
         .select('villager_id, name, image_url');
+      
+      const { data: villagersData, error: villagersError } = await Promise.race([villagersPromise, timeoutPromise]) as any;
 
-      // Exclude villagers that require additional purchases (not part of base game)
-      const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
-      const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
-
-      setVillagers(filteredVillagers);
+      if (villagersError) {
+        console.error('Villagers fetch error:', villagersError);
+      } else {
+        // Exclude villagers that require additional purchases (not part of base game)
+        const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
+        const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+        setVillagers(filteredVillagers);
+      }
     } catch (error) {
       console.error('Error fetching hunt data:', error);
+      // Always stop loading even on error
+      setHuntLoading(false);
       // If 401, perhaps set a flag to show login
       if (error instanceof Error && error.message.includes('401')) {
         // Handle auth error, e.g., redirect to login
         window.location.href = '/auth'; // or show a login button
       }
+      return; // Exit early since finally will set loading false again
     } finally {
       setHuntLoading(false);
     }
