@@ -32,6 +32,10 @@ export default async function VillagerHunt() {
     .eq('is_public', true)
     .order('created_at', { ascending: true });
 
+  if (publicError) {
+    console.error('Error fetching public creators:', publicError);
+  }
+
   let creators = (publicCreators ?? []) as Creator[];
   let error = publicError;
 
@@ -42,6 +46,10 @@ export default async function VillagerHunt() {
       .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
       .eq('twitch_username', session.login)
       .single();
+
+    if (userError && userError.code !== 'PGRST116') {
+      console.error('Error fetching user creator:', userError);
+    }
 
     if (userCreator && !error) {
       // Add user creator to the list if not already included (in case they are public)
