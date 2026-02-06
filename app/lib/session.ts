@@ -1,7 +1,6 @@
 // app/lib/session.ts
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
-import { refreshAccessToken } from './twitch';
 
 const COOKIE_NAME = 'vh_session';
 const ALGO = 'sha256';
