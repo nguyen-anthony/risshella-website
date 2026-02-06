@@ -1,9 +1,8 @@
 // app/lib/session.ts
-import crypto from 'crypto';
 import { cookies } from 'next/headers';
 
 const COOKIE_NAME = 'vh_session';
-const ALGO = 'sha256';
+const ALGO = 'SHA-256';
 
 export type Session = {
   userId: string;
@@ -13,34 +12,86 @@ export type Session = {
   exp: number; // epoch seconds
 };
 
-function sign(payload: string) {
-  const secret = process.env.SESSION_SECRET || 'dev-secret-change-me';
-  const h = crypto.createHmac(ALGO, secret);
-  h.update(payload);
-  return h.digest('base64url');
+// Encode string to Uint8Array
+function encodeText(text: string): Uint8Array {
+  return new TextEncoder().encode(text);
 }
 
-export function encodeSession(s: Session) {
-  const payload = Buffer.from(JSON.stringify(s)).toString('base64url');
-  const sig = sign(payload);
+// Base64url encode (without padding)
+function base64urlEncode(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+// Base64url decode
+function base64urlDecode(str: string): Uint8Array {
+  // Add padding if needed
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) {
+    str += '=';
+  }
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function sign(payload: string): Promise<string> {
+  const secret = process.env.SESSION_SECRET || 'dev-secret-change-me';
+  
+  // Import the secret key
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encodeText(secret),
+    { name: 'HMAC', hash: ALGO },
+    false,
+    ['sign']
+  );
+  
+  // Sign the payload
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encodeText(payload)
+  );
+  
+  return base64urlEncode(signature);
+}
+
+export async function encodeSession(s: Session): Promise<string> {
+  const payload = base64urlEncode(encodeText(JSON.stringify(s)));
+  const sig = await sign(payload);
   return `${payload}.${sig}`;
 }
 
-export function decodeSession(token?: string): Session | null {
+export async function decodeSession(token?: string): Promise<Session | null> {
   if (!token) return null;
   const [payload, sig] = token.split('.');
   if (!payload || !sig) return null;
-  if (sign(payload) !== sig) return null;
+  
+  const expectedSig = await sign(payload);
+  if (expectedSig !== sig) return null;
+  
   try {
-    const json = JSON.parse(Buffer.from(payload, 'base64url').toString());
-    return json as Session;
+    const jsonBytes = base64urlDecode(payload);
+    const json = new TextDecoder().decode(jsonBytes);
+    return JSON.parse(json) as Session;
   } catch {
     return null;
   }
 }
 
 export async function setSessionCookie(s: Session) {
-  const token = encodeSession(s);
+  const token = await encodeSession(s);
   // Cookie lasts 30 days - allows silent token refresh while maintaining reasonable security
   // Access token inside expires sooner (~4 hours from Twitch) and will be auto-refreshed
   const maxAge = 30 * 24 * 60 * 60; // 30 days
@@ -57,7 +108,7 @@ export async function setSessionCookie(s: Session) {
 export async function getSessionFromCookie(): Promise<Session | null> {
   const store = await cookies();
   const token = store.get(COOKIE_NAME)?.value;
-  return decodeSession(token);
+  return await decodeSession(token);
 }
 
 export async function clearSessionCookie() {
