@@ -35,6 +35,8 @@ import ConfirmDeleteModal from '@/components/villagerhunt/ConfirmDeleteModal';
 import DreamieFoundModal from '@/components/villagerhunt/DreamieFoundModal';
 import { createClient } from '@/utils/supabase/client';
 import type { Hunt, Villager, Session } from '@/types/villagerhunt';
+import { filterExcludedVillagers } from '@/utils/villagerhunt';
+import { filterExcludedVillagers } from '@/utils/villagerhunt';
 
 type Props = {
   initialDisplayName: string;
@@ -118,9 +120,7 @@ export default function HuntPageWrapper({
       if (villagersError) {
         console.error('Villagers fetch error:', villagersError);
       } else {
-        // Exclude villagers that require additional purchases (not part of base game)
-        const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
-        const filteredVillagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+        const filteredVillagers = filterExcludedVillagers(villagersData || []);
         setVillagers(filteredVillagers);
       }
     } catch (error) {

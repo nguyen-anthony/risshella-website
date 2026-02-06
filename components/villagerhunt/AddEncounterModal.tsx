@@ -2,8 +2,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar,
-  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -14,6 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { Villager } from "@/types/villagerhunt";
+import VillagerAutocomplete from "./VillagerAutocomplete";
 
 import type { EncounterRow } from "@/components/villagerhunt/EncountersTable";
 

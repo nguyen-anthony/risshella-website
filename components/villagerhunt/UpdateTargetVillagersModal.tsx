@@ -1,18 +1,16 @@
 "use client";
 import * as React from "react";
 import {
-  Avatar,
-  Autocomplete,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { Villager } from "@/types/villagerhunt";
+import VillagerAutocomplete from "./VillagerAutocomplete";
 
 type Props = {
   open: boolean;
@@ -75,28 +73,13 @@ export default function UpdateTargetVillagersModal({
         <Typography variant="body2" component="h1">
             Select the villagers you want to hunt for. These will be displayed as your Dreamie List.
         </Typography>
-        <Autocomplete
+        <VillagerAutocomplete
           multiple
-          options={villagers}
-          getOptionKey={(option) => option.villager_id}
-          getOptionLabel={(v) => v.name}
+          villagers={villagers}
           value={selectedVillagers}
-          onChange={(_, v) => setSelectedVillagers(v)}
-          renderOption={(props, option) => (
-            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
-              {option.name}
-            </Box>
-          )}
-          renderInput={(params) => <TextField {...params} label="Dreamies" helperText="Select villagers you want to hunt for" />}
-          renderTags={(tagValue) =>
-            tagValue.map((option) => (
-              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
-                {option.name}
-              </Box>
-            ))
-          }
+          onChange={(v) => setSelectedVillagers(v as Villager[])}
+          label="Dreamies"
+          helperText="Select villagers you want to hunt for"
         />
         <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
           {selectedVillagers.length} villagers selected
