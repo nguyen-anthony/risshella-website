@@ -13,8 +13,7 @@ import {
 } from "@mui/material";
 import BingoCardControlModal from "./BingoCardControlModal";
 import { createClient } from "@/utils/supabase/client";
-
-type Villager = { villager_id: number; name: string; image_url: string | null };
+import type { Villager } from "@/types/villagerhunt";
 
 type Props = {
   open: boolean;

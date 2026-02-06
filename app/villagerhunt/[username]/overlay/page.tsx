@@ -5,32 +5,13 @@ import { createClient } from '@/utils/supabase/client';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import localFont from 'next/font/local';
+import type { Hunt, Encounter, Villager } from '@/types/villagerhunt';
 
 const tommySoftFont = localFont({
   // Relative to this file: overlay -> [username] -> villagerhunt -> app
   src: '../../../MADE_Tommy_Soft_ExtraBold.otf',
   display: 'swap',
 });
-
-interface Hunt {
-  hunt_id: string;
-  hunt_name: string;
-  hunt_status?: string;
-}
-
-interface Encounter {
-  encounter_id: string;
-  island_number: number;
-  encountered_at: string;
-  villager_id: number;
-  is_deleted: boolean;
-}
-
-interface Villager {
-  villager_id: number;
-  name: string;
-  image_url: string;
-}
 
 type PageProps = {
   params: Promise<{ username: string }>;

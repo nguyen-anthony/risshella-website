@@ -13,8 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-
-type Villager = { villager_id: number; name: string; image_url: string | null };
+import type { Villager } from "@/types/villagerhunt";
 
 import type { EncounterRow } from "@/components/villagerhunt/EncountersTable";
 

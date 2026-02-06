@@ -8,12 +8,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import EncountersTable from '@/components/villagerhunt/EncountersTable';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import ResumeButton from '@/components/villagerhunt/ResumeButton';
-
-type Villager = {
-  villager_id: number;
-  name: string;
-  image_url: string | null;
-};
+import type { Villager } from '@/types/villagerhunt';
 
 type Props = {
   hunt: {

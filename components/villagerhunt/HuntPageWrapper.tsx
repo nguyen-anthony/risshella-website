@@ -27,30 +27,14 @@ import BingoCardModal from '@/components/villagerhunt/BingoCardModal';
 import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
 import BingoCardControlModal from '@/components/villagerhunt/BingoCardControlModal';
 import InactiveHuntNotification from '@/components/villagerhunt/InactiveHuntNotification';
+import AddTempModModal from '@/components/villagerhunt/AddTempModModal';
+import TempModsTable from '@/components/villagerhunt/TempModsTable';
+import IslandDetailsModal from '@/components/villagerhunt/IslandDetailsModal';
+import HuntSettingsModal from '@/components/villagerhunt/HuntSettingsModal';
+import ConfirmDeleteModal from '@/components/villagerhunt/ConfirmDeleteModal';
+import DreamieFoundModal from '@/components/villagerhunt/DreamieFoundModal';
 import { createClient } from '@/utils/supabase/client';
-
-type Hunt = {
-  hunt_id: string;
-  hunt_name: string;
-  target_villager_id: number[];
-  island_villagers: number[];
-  hotel_tourists: number[];
-  is_bingo_enabled: boolean;
-  bingo_card_size: number;
-  hunt_status: string;
-};
-
-type Villager = {
-  villager_id: number;
-  name: string;
-  image_url: string | null;
-};
-
-type Session = {
-  login: string;
-  userId: string;
-  accessToken?: string;
-};
+import type { Hunt, Villager, Session } from '@/types/villagerhunt';
 
 type Props = {
   initialDisplayName: string;
@@ -60,290 +44,6 @@ type Props = {
   initialIsModerator: boolean;
   initialUsername: string;
 };
-
-type TempMod = {
-  temp_mod_twitch_id: number;
-  temp_mod_username: string;
-  expiry_timestamp: string;
-};
-
-function AddTempModModal({ open, onClose, onSuccess, creatorTwitchId }: { 
-  open: boolean; 
-  onClose: () => void; 
-  onSuccess: () => void;
-  creatorTwitchId: number;
-}) {
-  const [username, setUsername] = React.useState('');
-  const [expiryDate, setExpiryDate] = React.useState('');
-  const [expiryTime, setExpiryTime] = React.useState('');
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState('');
-
-  const handleSubmit = async () => {
-    if (!username.trim() || !expiryDate || !expiryTime) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    const expiryTimestamp = new Date(`${expiryDate}T${expiryTime}`).toISOString();
-    
-    if (new Date(expiryTimestamp) <= new Date()) {
-      setError('Expiry time must be in the future');
-      return;
-    }
-
-    setSubmitting(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/temp-mods', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creatorTwitchId,
-          username: username.trim(),
-          expiryTimestamp,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to add temp mod');
-      }
-
-      // Success
-      alert('Successfully added temp mod');
-      setUsername('');
-      setExpiryDate('');
-      setExpiryTime('');
-      onSuccess();
-    } catch (error) {
-      console.error('Error adding temp mod:', error);
-      setError(error instanceof Error ? error.message : 'Failed to add temp mod');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} sx={{ '& .MuiDialog-paper': { minWidth: '400px' } }}>
-      <DialogTitle>Add Temp Mod</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField
-            label="Twitch Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            fullWidth
-            helperText="Enter the Twitch username to add as temporary moderator"
-          />
-          <TextField
-            label="Expiry Date"
-            type="date"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            label="Expiry Time"
-            type="time"
-            value={expiryTime}
-            onChange={(e) => setExpiryTime(e.target.value)}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-          />
-          {error && (
-            <Typography color="error" variant="body2">
-              {error}
-            </Typography>
-          )}
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={submitting}>
-          {submitting ? 'Adding...' : 'Add Temp Mod'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-function TempModsTable({ creatorTwitchId }: { creatorTwitchId: number }) {
-  const [tempMods, setTempMods] = React.useState<TempMod[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [changes, setChanges] = React.useState<{[key: number]: {expiry: string, delete: boolean}}>({});
-  const [saving, setSaving] = React.useState(false);
-
-  React.useEffect(() => {
-    const fetchTempMods = async () => {
-      try {
-        const response = await fetch(`/api/temp-mods?creatorTwitchId=${creatorTwitchId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch temp mods');
-        }
-        const data = await response.json();
-        setTempMods(data.tempMods || []);
-      } catch (error) {
-        console.error('Error fetching temp mods:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTempMods();
-  }, [creatorTwitchId]);
-
-  const handleExpiryChange = (tempModTwitchId: number, newExpiry: string) => {
-    setChanges(prev => ({
-      ...prev,
-      [tempModTwitchId]: {
-        ...prev[tempModTwitchId],
-        expiry: newExpiry
-      }
-    }));
-  };
-
-  const handleDeleteToggle = (tempModTwitchId: number, shouldDelete: boolean) => {
-    setChanges(prev => ({
-      ...prev,
-      [tempModTwitchId]: {
-        ...prev[tempModTwitchId],
-        delete: shouldDelete
-      }
-    }));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const updates = [];
-      const deletions = [];
-
-      for (const [tempModTwitchId, change] of Object.entries(changes)) {
-        if (change.delete) {
-          deletions.push(parseInt(tempModTwitchId));
-        } else if (change.expiry) {
-          updates.push({
-            tempModTwitchId: parseInt(tempModTwitchId),
-            expiryTimestamp: change.expiry
-          });
-        }
-      }
-
-      // Process updates
-      for (const update of updates) {
-        await fetch('/api/temp-mods', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tempModTwitchId: update.tempModTwitchId,
-            expiryTimestamp: update.expiryTimestamp,
-            creatorTwitchId
-          }),
-        });
-      }
-
-      // Process deletions
-      for (const tempModTwitchId of deletions) {
-        await fetch(`/api/temp-mods?tempModTwitchId=${tempModTwitchId}&creatorTwitchId=${creatorTwitchId}`, {
-          method: 'DELETE',
-        });
-      }
-
-      // Refresh the table
-      const response = await fetch(`/api/temp-mods?creatorTwitchId=${creatorTwitchId}`);
-      const data = await response.json();
-      setTempMods(data.tempMods || []);
-      setChanges({});
-
-      alert('Changes saved successfully!');
-    } catch (error) {
-      console.error('Error saving changes:', error);
-      alert('Failed to save changes');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const hasChanges = Object.keys(changes).length > 0;
-
-  if (loading) {
-    return <Typography>Loading temp mods...</Typography>;
-  }
-
-  if (tempMods.length === 0) {
-    return <Typography>No temporary moderators found.</Typography>;
-  }
-
-  return (
-    <Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Username</TableCell>
-              <TableCell>Expires</TableCell>
-              <TableCell>Delete</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {tempMods.map((mod) => {
-              const change = changes[mod.temp_mod_twitch_id] || {};
-              const currentExpiry = change.expiry || mod.expiry_timestamp;
-              
-              return (
-                <TableRow key={mod.temp_mod_twitch_id}>
-                  <TableCell>{mod.temp_mod_username}</TableCell>
-                  <TableCell>
-                    <TextField
-                      type="datetime-local"
-                      size="small"
-                      value={(() => {
-                        const date = new Date(currentExpiry + (currentExpiry.includes('Z') ? '' : 'Z'));
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const hours = String(date.getHours()).padStart(2, '0');
-                        const minutes = String(date.getMinutes()).padStart(2, '0');
-                        return `${year}-${month}-${day}T${hours}:${minutes}`;
-                      })()}
-                      onChange={(e) => {
-                        // The input value is in local time, convert to UTC for storage
-                        const localDate = new Date(e.target.value);
-                        handleExpiryChange(mod.temp_mod_twitch_id, localDate.toISOString());
-                      }}
-                      fullWidth
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Checkbox
-                      checked={change.delete || false}
-                      onChange={(e) => handleDeleteToggle(mod.temp_mod_twitch_id, e.target.checked)}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {hasChanges && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button 
-            variant="contained" 
-            onClick={handleSave} 
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </Box>
-      )}
-    </Box>
-  );
-}
 
 export default function HuntPageWrapper({
   initialDisplayName,
@@ -1032,109 +732,39 @@ export default function HuntPageWrapper({
         huntId={hunt?.hunt_id || ''}
       />
 
-      <Dialog open={islandDetailsModalOpen} onClose={() => setIslandDetailsModalOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Island Details</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          {islandVillagersData.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
-              <Typography variant="h6" color="text.secondary">Current Island Villagers:</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {islandVillagersData.map((villager) => (
-                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
-                      <Image
-                        src={villager.image_url || '/placeholder.png'}
-                        alt={villager.name}
-                        width={60}
-                        height={60}
-                        style={{ objectFit: 'contain', borderRadius: 4 }}
-                        unoptimized
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          )}
-          {hotelTouristsData.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="h6" color="text.secondary">Current Hotel Tourists:</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {hotelTouristsData.map((villager) => (
-                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
-                      <Image
-                        src={villager.image_url || '/placeholder.png'}
-                        alt={villager.name}
-                        width={60}
-                        height={60}
-                        style={{ objectFit: 'contain', borderRadius: 4 }}
-                        unoptimized
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          )}
-          {islandVillagersData.length === 0 && hotelTouristsData.length === 0 && (
-            <Typography variant="body1" color="text.secondary">
-              No island villagers or hotel tourists currently set.
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIslandDetailsModalOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      <IslandDetailsModal
+        open={islandDetailsModalOpen}
+        onClose={() => setIslandDetailsModalOpen(false)}
+        islandVillagers={islandVillagersData}
+        hotelTourists={hotelTouristsData}
+      />
 
-      <Dialog open={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '300px' } }}>
-        <DialogTitle>Hunt Settings</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            {hunt && (<>
-              {(initialIsOwner || isModerator || isTempMod) && (
-                <>
-                  <Button variant="outlined" onClick={() => { setUpdateTargetModalOpen(true); setSettingsModalOpen(false); }}>Update Dreamies</Button>
-                  <Button variant="outlined" onClick={() => { setUpdateIslandModalOpen(true); setSettingsModalOpen(false); }}>Update Island Villagers/Tourists</Button>
-                  <Button variant="outlined" onClick={() => setBingoSettingsModalOpen(true)}>Bingo Settings</Button>
-                </>
-              )}
-              {initialIsOwner && (
-                <>
-                  <Button variant="outlined" onClick={() => { setTempModsModalOpen(true); setSettingsModalOpen(false); }}>Temp Mods</Button>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="subtitle1">Update Hunt Status</Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
-                      <Tooltip title="Marks as completed and saves to history. Cannot be resumed.">
-                        <Button variant="contained" color="success" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/complete'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Complete Hunt</Button>
-                      </Tooltip>
-                      <Tooltip title="Marks as paused and can be resumed from hunt history">
-                        <Button variant="contained" color="warning" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/pause'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Pause Hunt</Button>
-                      </Tooltip>
-                      <Tooltip title="Marks as abandoned and saves to history. Cannot be resumed. Quitter">
-                        <Button variant="contained" color="error" onClick={() => { const form = document.createElement('form'); form.method = 'post'; form.action = '/api/hunts/abandon'; const input = document.createElement('input'); input.type = 'hidden'; input.name = 'hunt_id'; input.value = hunt.hunt_id; form.appendChild(input); document.body.appendChild(form); form.submit(); }}>Abandon Hunt</Button>
-                      </Tooltip>
-                    </Box>
-                  </Box>
-                  <Button variant="contained" color="error" size="large" onClick={() => { setDeleteModalOpen(true); setSettingsModalOpen(false); }} sx={{ fontWeight: 'bold' }}>Delete Hunt</Button>
-                  <TextField 
-                    disabled
-                    fullWidth
-                    value={overlayUrl}
-                    helperText="Overlay: Set this URL as a browser source in OBS"
-                  />
-                </>
-              )}
-            </>)}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSettingsModalOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      <HuntSettingsModal
+        open={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        hunt={hunt}
+        isOwner={initialIsOwner}
+        isModerator={isModerator}
+        isTempMod={isTempMod}
+        overlayUrl={overlayUrl}
+        onUpdateTargetOpen={() => {
+          setUpdateTargetModalOpen(true);
+          setSettingsModalOpen(false);
+        }}
+        onUpdateIslandOpen={() => {
+          setUpdateIslandModalOpen(true);
+          setSettingsModalOpen(false);
+        }}
+        onBingoSettingsOpen={() => setBingoSettingsModalOpen(true)}
+        onTempModsOpen={() => {
+          setTempModsModalOpen(true);
+          setSettingsModalOpen(false);
+        }}
+        onDeleteOpen={() => {
+          setDeleteModalOpen(true);
+          setSettingsModalOpen(false);
+        }}
+      />
 
       {/* Temp Mods Modal */}
       <Dialog open={tempModsModalOpen} onClose={() => setTempModsModalOpen(false)} sx={{ '& .MuiDialog-paper': { minWidth: '600px' } }}>
@@ -1195,29 +825,42 @@ export default function HuntPageWrapper({
         }}
       />
 
-      <Dialog open={dreamieModalOpen} onClose={() => { setDreamieModalOpen(false); if (hunt) localStorage.setItem(`dreamiePopupShown_${hunt.hunt_id}`, 'true'); }}>
-        <DialogTitle>Looks like you found a dreamie!</DialogTitle>
-        <DialogContent>
-          <Typography>Would you like to mark this hunt as Complete?</Typography>
-          <Typography>You can complete this later in the settings/gear icon.</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setDreamieModalOpen(false); if (hunt) localStorage.setItem(`dreamiePopupShown_${hunt.hunt_id}`, 'true'); }}>Not Now</Button>
-          <Button variant="contained" color="success" onClick={() => { 
-            setDreamieModalOpen(false); 
-            const form = document.createElement('form'); 
-            form.method = 'post'; 
-            form.action = '/api/hunts/complete'; 
-            const input = document.createElement('input'); 
-            input.type = 'hidden'; 
-            input.name = 'hunt_id'; 
-            input.value = hunt!.hunt_id; 
-            form.appendChild(input); 
-            document.body.appendChild(form); 
-            form.submit(); 
-          }}>Complete Hunt</Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={() => {
+          if (!hunt) return;
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = '/api/hunts/delete';
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'hunt_id';
+          input.value = hunt.hunt_id;
+          form.appendChild(input);
+          document.body.appendChild(form);
+          form.submit();
+        }}
+      />
+
+      <DreamieFoundModal
+        open={dreamieModalOpen}
+        onClose={() => setDreamieModalOpen(false)}
+        huntId={hunt?.hunt_id || ''}
+        onComplete={() => {
+          if (!hunt) return;
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = '/api/hunts/complete';
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'hunt_id';
+          input.value = hunt.hunt_id;
+          form.appendChild(input);
+          document.body.appendChild(form);
+          form.submit();
+        }}
+      />
 
       <InactiveHuntNotification 
         isVisible={showInactiveNotification} 

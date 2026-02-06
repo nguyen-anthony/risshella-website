@@ -20,20 +20,11 @@ import {
 } from '@mui/material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
+import type { VillagerDetailed, Encounter } from '@/types/villagerhunt';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-type Villager = {
-  villager_id: number;
-  name: string;
-  species: string;
-  personality: string;
-  image_url: string | null;
-};
-
-type Encounter = {
-  villager_id: number;
-};
+type Villager = VillagerDetailed;
 
 type Props = {
   open: boolean;

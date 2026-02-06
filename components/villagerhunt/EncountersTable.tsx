@@ -5,15 +5,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import UpdateDeleteEncounterModal from "@/components/villagerhunt/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/villagerhunt/AddEncounterModal";
 import { createClient } from '@/utils/supabase/client';
+import type { EncounterRow, Villager } from "@/types/villagerhunt";
 
-export type EncounterRow = {
-  encounter_id: string;
-  island_number: number;
-  encountered_at: string; // ISO timestamp
-  villager_id: number | null;
-};
-
-type Villager = { villager_id: number; name: string; image_url: string | null };
+// Re-export for backwards compatibility
+export type { EncounterRow };
 type VillagersIndex = Record<number, { name: string; image_url: string | null }>;
 
 type Props = {

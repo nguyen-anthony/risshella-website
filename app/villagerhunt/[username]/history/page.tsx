@@ -7,16 +7,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HuntStatusFilter from '@/components/villagerhunt/HuntStatusFilter';
 import HuntCard from '@/components/villagerhunt/HuntCard';
 import { getSessionFromCookie } from '@/app/lib/session';
+import type { Villager } from '@/types/villagerhunt';
 
 type PageProps = {
   params: Promise<{ username: string }>;
   searchParams?: Promise<{ status?: string }>;
-};
-
-type Villager = {
-  villager_id: number;
-  name: string;
-  image_url: string | null;
 };
 
 export default async function HuntHistoryPage(props: PageProps) {
