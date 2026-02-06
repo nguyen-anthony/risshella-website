@@ -67,8 +67,11 @@ export async function clearSessionCookie() {
 }
 
 /**
- * Gets the session and automatically refreshes the token if expired.
- * Returns null if session doesn't exist or refresh fails.
+ * Gets the session from cookie without any modifications.
+ * Returns null if session doesn't exist or is expired.
+ * 
+ * Note: This function is read-only and won't refresh expired tokens.
+ * For token refresh, use the refreshSessionToken Server Action from app/lib/actions.ts
  */
 export async function getValidSession(): Promise<Session | null> {
   const session = await getSessionFromCookie();
@@ -77,26 +80,10 @@ export async function getValidSession(): Promise<Session | null> {
     return null;
   }
 
-  // Check if token is expired
+  // Check if token is expired - return null if so
+  // (refresh must be done via Server Action, not in page rendering)
   if (session.exp < Date.now() / 1000) {
-    // No refresh token available
-    if (!session.refreshToken) {
-      return null;
-    }
-    
-    // Try to refresh
-    try {
-      const newToken = await refreshAccessToken(session.refreshToken);
-      session.accessToken = newToken.access_token;
-      session.refreshToken = newToken.refresh_token;
-      session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
-      await setSessionCookie(session);
-      // Session successfully refreshed - return updated session
-      return session;
-    } catch (error) {
-      console.error('Failed to refresh token:', error);
-      return null;
-    }
+    return null;
   }
 
   // Session is still valid
