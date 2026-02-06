@@ -5,32 +5,13 @@ import { createClient } from '@/utils/supabase/client';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import localFont from 'next/font/local';
+import type { Hunt, Encounter, Villager } from '@/types/villagerhunt';
 
 const tommySoftFont = localFont({
   // Relative to this file: overlay -> [username] -> villagerhunt -> app
   src: '../../../MADE_Tommy_Soft_ExtraBold.otf',
   display: 'swap',
 });
-
-interface Hunt {
-  hunt_id: string;
-  hunt_name: string;
-  hunt_status?: string;
-}
-
-interface Encounter {
-  encounter_id: string;
-  island_number: number;
-  encountered_at: string;
-  villager_id: number;
-  is_deleted: boolean;
-}
-
-interface Villager {
-  villager_id: number;
-  name: string;
-  image_url: string;
-}
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -60,7 +41,7 @@ export default function OverlayPage({ params }: PageProps) {
       // Get the active hunt
       const { data: huntData } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name')
+        .select('*')
         .eq('twitch_id', creator.twitch_id)
         .eq('hunt_status', 'ACTIVE')
         .maybeSingle();
@@ -72,7 +53,7 @@ export default function OverlayPage({ params }: PageProps) {
         // Get the 3 most recent encounters
         const { data: encountersData } = await supabase
           .from('encounters')
-          .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
+          .select('*')
           .eq('hunt_id', huntData.hunt_id)
           .eq('is_deleted', false)
           .order('encountered_at', { ascending: false })
@@ -113,7 +94,7 @@ export default function OverlayPage({ params }: PageProps) {
                 // Fetch encounters for the new active hunt
                 const { data: encountersData } = await supabase
                   .from('encounters')
-                  .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
+                  .select('*')
                   .eq('hunt_id', newHunt.hunt_id)
                   .eq('is_deleted', false)
                   .order('encountered_at', { ascending: false })
@@ -187,7 +168,7 @@ export default function OverlayPage({ params }: PageProps) {
             // Refetch the top 3 encounters to account for soft deletes
             const { data: encountersData } = await supabase
               .from('encounters')
-              .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
+              .select('*')
               .eq('hunt_id', hunt.hunt_id)
               .eq('is_deleted', false)
               .order('encountered_at', { ascending: false })
@@ -300,6 +281,7 @@ export default function OverlayPage({ params }: PageProps) {
           maxWidth: '600px'
         }}>
           {encounters.map((encounter) => {
+            if (!encounter.villager_id) return null;
             const villager = villagerMap.get(encounter.villager_id);
             return (
               <Box

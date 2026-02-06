@@ -1,9 +1,9 @@
 "use client";
 import * as React from "react";
 import { Box, Button } from "@mui/material";
-import AddEncounterModal from "@/components/villagerhunt/AddEncounterModal";
+import AddEncounterModal from "@/components/villagerhunt/modals/AddEncounterModal";
 
-import type { EncounterRow } from "@/components/villagerhunt/EncountersTable";
+import type { EncounterRow } from "@/components/villagerhunt/tables/EncountersTable";
 
 type Props = {
   huntId: string;

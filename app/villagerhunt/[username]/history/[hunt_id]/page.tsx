@@ -2,7 +2,8 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
 import { getSessionFromCookie } from '@/app/lib/session';
-import HuntHistoryDetailClient from '@/components/villagerhunt/HuntHistoryDetailClient';
+import HuntHistoryDetailClient from '@/components/villagerhunt/pages/HuntHistoryDetailClient';
+import { filterExcludedVillagers } from '@/utils/villagerhunt';
 
 type PageProps = {
   params: Promise<{ username: string; hunt_id: string }>;
@@ -45,9 +46,7 @@ export default async function HuntDetailPage(props: PageProps) {
     .from('villagers')
     .select('villager_id, name, image_url');
 
-  // Exclude villagers that require additional purchases (not part of base game)
-  const excludedVillagerIds = [627, 573, 571, 731, 811, 876];
-  const villagers = (villagersData || []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+  const villagers = filterExcludedVillagers(villagersData || []);
 
   // Resolve target villagers data
   const targetVillagers = villagers.filter(v => hunt.target_villager_id.includes(v.villager_id));

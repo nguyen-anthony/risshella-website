@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { Box, Button } from "@mui/material";
-import StartHuntModal from "@/components/villagerhunt/StartHuntModal";
+import StartHuntModal from "@/components/villagerhunt/modals/StartHuntModal";
 
 type Props = {
   showStart?: boolean;

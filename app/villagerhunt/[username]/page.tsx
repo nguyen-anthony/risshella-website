@@ -3,7 +3,7 @@ import { createClient, createServiceClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
 import { getValidSession } from '@/app/lib/session';
 import { getModeratedChannels } from '@/app/lib/twitch';
-import HuntPageWrapper from '@/components/villagerhunt/HuntPageWrapper';
+import HuntPageWrapper from '@/components/villagerhunt/pages/HuntPageWrapper';
 import type { Metadata } from 'next';
 
 type PageProps = {

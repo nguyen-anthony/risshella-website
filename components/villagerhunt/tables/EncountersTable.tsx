@@ -2,18 +2,13 @@
 import * as React from "react";
 import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination, TextField, InputAdornment, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import UpdateDeleteEncounterModal from "@/components/villagerhunt/UpdateDeleteEncounterModal";
-import AddEncounterModal from "@/components/villagerhunt/AddEncounterModal";
+import UpdateDeleteEncounterModal from "@/components/villagerhunt/modals/UpdateDeleteEncounterModal";
+import AddEncounterModal from "@/components/villagerhunt/modals/AddEncounterModal";
 import { createClient } from '@/utils/supabase/client';
+import type { EncounterRow, Villager } from "@/types/villagerhunt";
 
-export type EncounterRow = {
-  encounter_id: string;
-  island_number: number;
-  encountered_at: string; // ISO timestamp
-  villager_id: number | null;
-};
-
-type Villager = { villager_id: number; name: string; image_url: string | null };
+// Re-export for backwards compatibility
+export type { EncounterRow };
 type VillagersIndex = Record<number, { name: string; image_url: string | null }>;
 
 type Props = {
@@ -107,7 +102,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
       while (true) {
         const { data, error } = await supabase
           .from('encounters')
-          .select('encounter_id, island_number, encountered_at, villager_id')
+          .select('*')
           .eq('hunt_id', huntId)
           .eq('is_deleted', false)
           .order('island_number', { ascending: false })

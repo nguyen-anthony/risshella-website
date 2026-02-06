@@ -1,19 +1,16 @@
 "use client";
 import * as React from "react";
 import {
-  Avatar,
-  Autocomplete,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Typography,
 } from "@mui/material";
-
-type Villager = { villager_id: number; name: string; image_url: string | null };
+import type { Villager } from "@/types/villagerhunt";
+import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
 
 type Props = {
   open: boolean;
@@ -82,54 +79,34 @@ export default function UpdateIslandVillagersModal({
         <Typography variant="body2" component="h1">
             Villagers in this list will not be included on generated Bingo cards for your community.
         </Typography>
-        <Autocomplete
+        <VillagerAutocomplete
           multiple
-          options={villagers.filter(v => !selectedHotelTourists.some(h => h.villager_id === v.villager_id))}
-          getOptionKey={(option) => option.villager_id}
-          getOptionLabel={(v) => v.name}
+          villagers={villagers}
           value={selectedVillagers}
-          onChange={(_, v) => setSelectedVillagers(v.slice(0, 9))} // Limit to 9 villagers
-          renderOption={(props, option) => (
-            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
-              {option.name}
-            </Box>
-          )}
-          renderInput={(params) => <TextField {...params} label="Island Villagers (max 9)" helperText="Select villagers currently on your island" />}
-          renderTags={(tagValue) =>
-            tagValue.map((option) => (
-              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
-                {option.name}
-              </Box>
-            ))
-          }
+          onChange={(v) => {
+            const newValue = v as Villager[];
+            setSelectedVillagers(newValue.slice(0, 9));
+          }}
+          label="Island Villagers (max 9)"
+          helperText="Select villagers currently on your island"
+          maxSelection={9}
+          excludeVillagerIds={selectedHotelTourists.map(h => h.villager_id)}
         />
         <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
           {selectedVillagers.length}/9 villagers selected
         </Box>
-        <Autocomplete
+        <VillagerAutocomplete
           multiple
-          options={villagers.filter(v => !selectedVillagers.some(s => s.villager_id === v.villager_id))}
-          getOptionKey={(option) => option.villager_id}
-          getOptionLabel={(v) => v.name}
+          villagers={villagers}
           value={selectedHotelTourists}
-          onChange={(_, v) => setSelectedHotelTourists(v.slice(0, 9))} // Limit to 9 tourists
-          renderOption={(props, option) => (
-            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
-              {option.name}
-            </Box>
-          )}
-          renderInput={(params) => <TextField {...params} label="Current Hotel Tourists (max 9)" helperText="Select villagers currently visiting as hotel tourists" />}
-          renderTags={(tagValue) =>
-            tagValue.map((option) => (
-              <Box key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 20, height: 20 }} />
-                {option.name}
-              </Box>
-            ))
-          }
+          onChange={(v) => {
+            const newValue = v as Villager[];
+            setSelectedHotelTourists(newValue.slice(0, 9));
+          }}
+          label="Current Hotel Tourists (max 9)"
+          helperText="Select villagers currently visiting as hotel tourists"
+          maxSelection={9}
+          excludeVillagerIds={selectedVillagers.map(s => s.villager_id)}
         />
         <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
           {selectedHotelTourists.length}/9 tourists selected

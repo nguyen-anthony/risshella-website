@@ -2,9 +2,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar,
-  Autocomplete,
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -12,10 +9,10 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
+import type { Villager } from "@/types/villagerhunt";
+import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
 
-type Villager = { villager_id: number; name: string; image_url: string | null };
-
-import type { EncounterRow } from "@/components/villagerhunt/EncountersTable";
+import type { EncounterRow } from "@/components/villagerhunt/tables/EncountersTable";
 
 type Props = {
   open: boolean;
@@ -103,19 +100,12 @@ export default function UpdateDeleteEncounterModal({ open, onClose, encounter, v
           onChange={(e) => setIslandNumber(e.target.value)}
           required
         />
-        <Autocomplete
-          options={villagers}
-          getOptionKey={(option) => option.villager_id}
-          getOptionLabel={(v) => v.name}
+        <VillagerAutocomplete
+          villagers={villagers}
           value={selected}
-          onChange={(_, v) => setSelected(v)}
-          renderOption={(props, option) => (
-            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
-              {option.name}
-            </Box>
-          )}
-          renderInput={(params) => <TextField {...params} label="Villager" required />}
+          onChange={(v) => setSelected(v as Villager | null)}
+          label="Villager"
+          required
         />
       </DialogContent>
       <DialogActions>

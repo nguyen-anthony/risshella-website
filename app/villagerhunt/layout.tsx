@@ -1,5 +1,5 @@
 "use client";
-import ChangelogNotification from '@/components/villagerhunt/ChangelogNotification';
+import ChangelogNotification from '@/components/villagerhunt/notifications/ChangelogNotification';
 import Navigation from '@/components/common/Navigation';
 import { usePathname } from 'next/navigation';
 
