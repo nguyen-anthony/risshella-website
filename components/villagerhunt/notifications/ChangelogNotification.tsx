@@ -1,6 +1,6 @@
 "use client";
 import * as React from 'react';
-import { Box, Link, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { usePathname } from 'next/navigation';
 
@@ -28,10 +28,10 @@ export default function ChangelogNotification() {
     }
   }, [pathname]);
 
-  const handleLinkClick = () => {
-    localStorage.setItem('lastChangelogView', new Date().toISOString());
-    setShowNotification(false);
-  };
+  // const handleLinkClick = () => {
+  //   localStorage.setItem('lastChangelogView', new Date().toISOString());
+  //   setShowNotification(false);
+  // };
 
   const handleClose = () => {
     localStorage.setItem('lastChangelogView', new Date().toISOString());
@@ -102,8 +102,8 @@ export default function ChangelogNotification() {
           <CloseIcon fontSize="small" />
         </IconButton>
         <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
-          Hey! I just did a major refactor. Should not impact usability of the site but it'll help me maintain the code going forward.
-          Please report if there are any issues and I'll revert it back.
+          Hey! I just did a major refactor. Should not impact usability of the site but it will help me maintain the code going forward.
+          Please report if there are any issues and I will revert it back.
         </Typography>
         {/* <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
           There are a few quality of life and bug fixes I just deployed! See them at {' '}
