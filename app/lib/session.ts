@@ -12,14 +12,9 @@ export type Session = {
   exp: number; // epoch seconds
 };
 
-// Encode string to Uint8Array
-function encodeText(text: string): Uint8Array {
-  return new TextEncoder().encode(text);
-}
-
 // Base64url encode (without padding)
-function base64urlEncode(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
+function base64urlEncode(buffer: ArrayBuffer | Uint8Array): string {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   let binary = '';
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
@@ -47,11 +42,12 @@ function base64urlDecode(str: string): Uint8Array {
 
 async function sign(payload: string): Promise<string> {
   const secret = process.env.SESSION_SECRET || 'dev-secret-change-me';
+  const encoder = new TextEncoder();
   
   // Import the secret key
   const key = await crypto.subtle.importKey(
     'raw',
-    encodeText(secret),
+    encoder.encode(secret),
     { name: 'HMAC', hash: ALGO },
     false,
     ['sign']
@@ -61,14 +57,15 @@ async function sign(payload: string): Promise<string> {
   const signature = await crypto.subtle.sign(
     'HMAC',
     key,
-    encodeText(payload)
+    encoder.encode(payload)
   );
   
   return base64urlEncode(signature);
 }
 
 export async function encodeSession(s: Session): Promise<string> {
-  const payload = base64urlEncode(encodeText(JSON.stringify(s)));
+  const encoder = new TextEncoder();
+  const payload = base64urlEncode(encoder.encode(JSON.stringify(s)));
   const sig = await sign(payload);
   return `${payload}.${sig}`;
 }
