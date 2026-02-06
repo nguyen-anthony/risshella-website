@@ -7,7 +7,7 @@ type Props = {
   villagers: Villager[];
   value: Villager | Villager[] | null;
   onChange: (value: Villager | Villager[] | null) => void;
-  label: string;
+  label?: string;
   multiple?: boolean;
   loading?: boolean;
   required?: boolean;
@@ -16,13 +16,15 @@ type Props = {
   maxSelection?: number;
   excludeVillagerIds?: number[];
   showTagAvatars?: boolean;
+  inputRef?: React.Ref<HTMLInputElement>;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 export default function VillagerAutocomplete({
   villagers,
   value,
   onChange,
-  label,
+  label = "Villager",
   multiple = false,
   loading = false,
   required = false,
@@ -31,6 +33,8 @@ export default function VillagerAutocomplete({
   maxSelection,
   excludeVillagerIds = [],
   showTagAvatars = false,
+  inputRef,
+  onKeyDown,
 }: Props) {
   const filteredVillagers = excludeVillagerIds.length > 0
     ? villagers.filter(v => !excludeVillagerIds.includes(v.villager_id))
@@ -74,6 +78,11 @@ export default function VillagerAutocomplete({
         <TextField
           {...params}
           label={label}
+          inputRef={inputRef}
+          inputProps={{
+            ...params.inputProps,
+            onKeyDown: onKeyDown,
+          }}
           required={required}
           helperText={helperText}
         />

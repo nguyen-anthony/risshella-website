@@ -1,7 +1,6 @@
 "use client";
 import * as React from "react";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -13,6 +12,7 @@ import BingoCardControlModal from "./BingoCardControlModal";
 import { createClient } from "@/utils/supabase/client";
 import type { Villager } from "@/types/villagerhunt";
 import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
+import { useVillagers } from "@/components/villagerhunt/hooks";
 
 type Props = {
   open: boolean;
@@ -21,8 +21,7 @@ type Props = {
 };
 
 export default function StartHuntModal({ open, onClose, onCreated }: Props) {
-  const [villagers, setVillagers] = React.useState<Villager[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const { villagers, loading } = useVillagers();
   const [huntName, setHuntName] = React.useState("");
   const [selected, setSelected] = React.useState<Villager[]>([]);
   const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
@@ -31,24 +30,6 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
   const [bingoCardSize, setBingoCardSize] = React.useState(5);
   const [bingoSettingsModalOpen, setBingoSettingsModalOpen] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        // Bust any client-side stale list by preventing HTTP caching; rely on in-memory state only.
-        const res = await fetch("/api/villagers/index", { cache: "no-store" });
-        if (!res.ok) return;
-        const json = await res.json();
-        if (!cancelled) setVillagers(json.villagers as Villager[]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [open]);
 
   const handleCreate = async () => {
     if (!selected.length) return;

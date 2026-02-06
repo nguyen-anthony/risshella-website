@@ -1,9 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, TextField, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, Chip } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip } from '@mui/material';
 import Link from 'next/link';
-import Image from 'next/image';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -33,10 +32,10 @@ import IslandDetailsModal from '@/components/villagerhunt/modals/IslandDetailsMo
 import HuntSettingsModal from '@/components/villagerhunt/modals/HuntSettingsModal';
 import ConfirmDeleteModal from '@/components/villagerhunt/modals/ConfirmDeleteModal';
 import DreamieFoundModal from '@/components/villagerhunt/modals/DreamieFoundModal';
+import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
+import { useVillagers } from '@/components/villagerhunt/hooks';
 import { createClient } from '@/utils/supabase/client';
 import type { Hunt, Villager, Session } from '@/types/villagerhunt';
-import { filterExcludedVillagers } from '@/utils/villagerhunt';
-import { filterExcludedVillagers } from '@/utils/villagerhunt';
 
 type Props = {
   initialDisplayName: string;
@@ -57,7 +56,7 @@ export default function HuntPageWrapper({
 }: Props) {
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
   const [huntLoading, setHuntLoading] = React.useState(true);
-  const [villagers, setVillagers] = React.useState<Villager[]>([]);
+  const { villagers } = useVillagers();
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
   const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
@@ -96,7 +95,7 @@ export default function HuntPageWrapper({
       // Fetch ACTIVE or INACTIVE hunt with timeout
       const huntPromise = supabase
         .from('hunts')
-        .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, is_bingo_enabled, bingo_card_size, hunt_status')
+        .select('*')
         .eq('twitch_id', initialTwitchId)
         .in('hunt_status', ['ACTIVE', 'INACTIVE'])
         .order('hunt_id', { ascending: false })
@@ -108,20 +107,6 @@ export default function HuntPageWrapper({
         console.error('Hunt fetch error:', huntError);
       } else {
         setHunt(huntData);
-      }
-
-      // Fetch villagers for encounter lookup with timeout
-      const villagersPromise = supabase
-        .from('villagers')
-        .select('villager_id, name, image_url');
-      
-      const { data: villagersData, error: villagersError } = await Promise.race([villagersPromise, timeoutPromise]) as Awaited<typeof villagersPromise>;
-
-      if (villagersError) {
-        console.error('Villagers fetch error:', villagersError);
-      } else {
-        const filteredVillagers = filterExcludedVillagers(villagersData || []);
-        setVillagers(filteredVillagers);
       }
     } catch (error) {
       console.error('Error fetching hunt data:', error);
@@ -441,19 +426,7 @@ export default function HuntPageWrapper({
               <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {targetVillagers.map((villager) => (
-                  <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ position: 'relative', width: 60, height: 60 }}>
-                      <Image
-                        src={villager.image_url || '/placeholder.png'}
-                        alt={villager.name}
-                        width={60}
-                        height={60}
-                        style={{ objectFit: 'contain', borderRadius: 4 }}
-                        unoptimized
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                  </Box>
+                  <VillagerDisplay key={villager.villager_id} villager={villager} variant="image" />
                 ))}
               </Box>
             </Box>

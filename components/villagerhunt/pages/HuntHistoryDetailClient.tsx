@@ -8,6 +8,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import HuntStatisticsModal from '@/components/villagerhunt/modals/HuntStatisticsModal';
 import ResumeButton from '@/components/villagerhunt/controls/ResumeButton';
+import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
 import type { Villager } from '@/types/villagerhunt';
 
 type Props = {
@@ -69,15 +70,7 @@ export default function HuntHistoryDetailClient({
           <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {targetVillagers.map((villager) => (
-              <Box key={villager.villager_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box
-                  component="img"
-                  src={villager.image_url || undefined}
-                  alt={villager.name}
-                  sx={{ maxWidth: 60, maxHeight: 60, borderRadius: 1 }}
-                />
-                <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-              </Box>
+              <VillagerDisplay key={villager.villager_id} villager={villager} variant="image" />
             ))}
           </Box>
         </Box>

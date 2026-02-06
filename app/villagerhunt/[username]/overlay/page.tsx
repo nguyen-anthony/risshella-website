@@ -41,7 +41,7 @@ export default function OverlayPage({ params }: PageProps) {
       // Get the active hunt
       const { data: huntData } = await supabase
         .from('hunts')
-        .select('hunt_id, hunt_name')
+        .select('*')
         .eq('twitch_id', creator.twitch_id)
         .eq('hunt_status', 'ACTIVE')
         .maybeSingle();
@@ -53,7 +53,7 @@ export default function OverlayPage({ params }: PageProps) {
         // Get the 3 most recent encounters
         const { data: encountersData } = await supabase
           .from('encounters')
-          .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
+          .select('*')
           .eq('hunt_id', huntData.hunt_id)
           .eq('is_deleted', false)
           .order('encountered_at', { ascending: false })
@@ -94,7 +94,7 @@ export default function OverlayPage({ params }: PageProps) {
                 // Fetch encounters for the new active hunt
                 const { data: encountersData } = await supabase
                   .from('encounters')
-                  .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
+                  .select('*')
                   .eq('hunt_id', newHunt.hunt_id)
                   .eq('is_deleted', false)
                   .order('encountered_at', { ascending: false })
@@ -168,7 +168,7 @@ export default function OverlayPage({ params }: PageProps) {
             // Refetch the top 3 encounters to account for soft deletes
             const { data: encountersData } = await supabase
               .from('encounters')
-              .select('encounter_id, island_number, encountered_at, villager_id, is_deleted')
+              .select('*')
               .eq('hunt_id', hunt.hunt_id)
               .eq('is_deleted', false)
               .order('encountered_at', { ascending: false })
@@ -281,6 +281,7 @@ export default function OverlayPage({ params }: PageProps) {
           maxWidth: '600px'
         }}>
           {encounters.map((encounter) => {
+            if (!encounter.villager_id) return null;
             const villager = villagerMap.get(encounter.villager_id);
             return (
               <Box

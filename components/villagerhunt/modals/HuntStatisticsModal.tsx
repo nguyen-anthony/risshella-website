@@ -20,7 +20,8 @@ import {
 } from '@mui/material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
-import type { VillagerDetailed, Encounter } from '@/types/villagerhunt';
+import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
+import type { VillagerDetailed } from '@/types/villagerhunt';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -126,8 +127,10 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
 
       // Get unique villager IDs and their counts
       const villagerCounts: Record<number, number> = {};
-      encounters.forEach((encounter: Encounter) => {
-        villagerCounts[encounter.villager_id] = (villagerCounts[encounter.villager_id] || 0) + 1;
+      encounters.forEach((encounter) => {
+        if (encounter.villager_id) {
+          villagerCounts[encounter.villager_id] = (villagerCounts[encounter.villager_id] || 0) + 1;
+        }
       });
 
       // Calculate villager statistics
@@ -460,15 +463,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
                     {topVillagers.map((stat) => (
                       <TableRow key={stat.villager.villager_id}>
                         <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box
-                              component="img"
-                              src={stat.villager.image_url || undefined}
-                              alt={stat.villager.name}
-                              sx={{ width: 40, height: 40, borderRadius: 1 }}
-                            />
-                            <Typography>{stat.villager.name}</Typography>
-                          </Box>
+                          <VillagerDisplay villager={stat.villager} variant="avatar" avatarSize={40} />
                         </TableCell>
                         <TableCell align="right">{stat.count}</TableCell>
                       </TableRow>

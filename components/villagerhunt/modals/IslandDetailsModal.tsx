@@ -9,7 +9,7 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
-import Image from "next/image";
+import VillagerDisplay from "@/components/villagerhunt/displays/VillagerDisplay";
 import type { Villager } from "@/types/villagerhunt";
 
 type Props = {
@@ -29,19 +29,7 @@ export default function IslandDetailsModal({ open, onClose, islandVillagers, hot
             <Typography variant="h6" color="text.secondary">Current Island Villagers:</Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {islandVillagers.map((villager) => (
-                <Box key={villager.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box sx={{ position: "relative", width: 60, height: 60 }}>
-                    <Image
-                      src={villager.image_url || "/placeholder.png"}
-                      alt={villager.name}
-                      width={60}
-                      height={60}
-                      style={{ objectFit: "contain", borderRadius: 4 }}
-                      unoptimized
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                </Box>
+                <VillagerDisplay key={villager.villager_id} villager={villager} variant="image" />
               ))}
             </Box>
           </Box>
@@ -51,19 +39,7 @@ export default function IslandDetailsModal({ open, onClose, islandVillagers, hot
             <Typography variant="h6" color="text.secondary">Current Hotel Tourists:</Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {hotelTourists.map((villager) => (
-                <Box key={villager.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box sx={{ position: "relative", width: 60, height: 60 }}>
-                    <Image
-                      src={villager.image_url || "/placeholder.png"}
-                      alt={villager.name}
-                      width={60}
-                      height={60}
-                      style={{ objectFit: "contain", borderRadius: 4 }}
-                      unoptimized
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">{villager.name}</Typography>
-                </Box>
+                <VillagerDisplay key={villager.villager_id} villager={villager} variant="image" />
               ))}
             </Box>
           </Box>

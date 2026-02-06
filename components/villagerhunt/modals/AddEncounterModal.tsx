@@ -2,7 +2,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -13,6 +12,7 @@ import {
 } from "@mui/material";
 import type { Villager } from "@/types/villagerhunt";
 import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
+import { useVillagers } from "@/components/villagerhunt/hooks";
 
 import type { EncounterRow } from "@/components/villagerhunt/tables/EncountersTable";
 
@@ -25,13 +25,11 @@ type Props = {
 
 export default function AddEncounterModal({ open, onClose, huntId, encounters }: Props) {
   const router = useRouter();
-  const [villagers, setVillagers] = React.useState<Villager[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const { villagers, loading } = useVillagers();
   const [islandNumber, setIslandNumber] = React.useState("");
   const [selected, setSelected] = React.useState<Villager | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && selected && islandNumber) {
       handleAdd();
@@ -41,7 +39,6 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       const filtered = villagers.filter(v => v.name.toLowerCase().includes(inputValue));
       if (filtered.length > 0) {
         setSelected(filtered[0]);
-        setDropdownOpen(false);
       }
     }
   };
@@ -53,7 +50,6 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       setIslandNumber((maxIsland + 1).toString());
       setSelected(null);
       setError(null); // Clear error when modal opens
-      setDropdownOpen(true);
       
       // Focus the villager input after a short delay to ensure the modal is fully rendered
       setTimeout(() => {
@@ -61,23 +57,6 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
       }, 100);
     }
   }, [open, encounters]);
-
-  React.useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/villagers/index", { cache: "no-store" });
-        if (!res.ok) return;
-        const json = await res.json();
-        if (!cancelled) setVillagers(json.villagers as Villager[]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [open]);
 
   const handleAdd = async () => {
     if (!selected || !islandNumber) return;
@@ -130,25 +109,13 @@ export default function AddEncounterModal({ open, onClose, huntId, encounters }:
           onChange={(e) => setIslandNumber(e.target.value)}
           required
         />
-        <Autocomplete
+        <VillagerAutocomplete
+          villagers={villagers}
           loading={loading}
-          open={dropdownOpen}
-          options={villagers}
-          getOptionKey={(option) => option.villager_id}
-          getOptionLabel={(v) => v.name}
           value={selected}
-          onChange={(_, v) => {
-            setSelected(v);
-            setDropdownOpen(false);
-          }}
-          renderOption={(props, option) => (
-            <Box component="li" {...props} key={option.villager_id} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={option.image_url ?? undefined} alt={option.name} sx={{ width: 24, height: 24 }} />
-              {option.name}
-            </Box>
-          )}
-          renderInput={(params) => <TextField {...params} inputRef={villagerInputRef} label="Villager" required inputProps={{...params.inputProps, onKeyDown: handleKeyDown}} />}
-          
+          onChange={(v) => setSelected(Array.isArray(v) ? v[0] || null : v)}
+          inputRef={villagerInputRef}
+          onKeyDown={handleKeyDown}
         />
         {loading && (
           <Typography variant="caption" color="text.secondary">

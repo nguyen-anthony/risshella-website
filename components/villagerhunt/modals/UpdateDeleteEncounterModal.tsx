@@ -2,7 +2,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -10,7 +9,7 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import type { Villager } from "@/types/vilagerhunt";
+import type { Villager } from "@/types/villagerhunt";
 import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
 
 import type { EncounterRow } from "@/components/villagerhunt/tables/EncountersTable";

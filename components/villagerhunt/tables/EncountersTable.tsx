@@ -102,7 +102,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
       while (true) {
         const { data, error } = await supabase
           .from('encounters')
-          .select('encounter_id, island_number, encountered_at, villager_id')
+          .select('*')
           .eq('hunt_id', huntId)
           .eq('is_deleted', false)
           .order('island_number', { ascending: false })
