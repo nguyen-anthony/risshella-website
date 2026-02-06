@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 import { Alert, Container } from '@mui/material';
 import { getSessionFromCookie } from '@/app/lib/session';
-import HuntHistoryDetailClient from '@/components/villagerhunt/HuntHistoryDetailClient';
+import HuntHistoryDetailClient from '@/components/villagerhunt/pages/HuntHistoryDetailClient';
 import { filterExcludedVillagers } from '@/utils/villagerhunt';
 
 type PageProps = {

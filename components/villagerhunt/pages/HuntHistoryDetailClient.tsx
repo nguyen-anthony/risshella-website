@@ -5,9 +5,9 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HistoryIcon from '@mui/icons-material/History';
-import EncountersTable from '@/components/villagerhunt/EncountersTable';
-import HuntStatisticsModal from '@/components/villagerhunt/HuntStatisticsModal';
-import ResumeButton from '@/components/villagerhunt/ResumeButton';
+import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
+import HuntStatisticsModal from '@/components/villagerhunt/modals/HuntStatisticsModal';
+import ResumeButton from '@/components/villagerhunt/controls/ResumeButton';
 import type { Villager } from '@/types/villagerhunt';
 
 type Props = {

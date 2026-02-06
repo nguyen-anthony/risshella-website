@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { Villager } from "@/types/villagerhunt";
-import VillagerAutocomplete from "./VillagerAutocomplete";
+import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
 
 type Props = {
   open: boolean;

@@ -10,10 +10,10 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import type { Villager } from "@/types/villagerhunt";
-import VillagerAutocomplete from "./VillagerAutocomplete";
+import type { Villager } from "@/types/vilagerhunt";
+import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
 
-import type { EncounterRow } from "@/components/villagerhunt/EncountersTable";
+import type { EncounterRow } from "@/components/villagerhunt/tables/EncountersTable";
 
 type Props = {
   open: boolean;

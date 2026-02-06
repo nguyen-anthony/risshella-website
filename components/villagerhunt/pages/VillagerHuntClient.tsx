@@ -1,12 +1,12 @@
 "use client";
 import * as React from 'react';
 import LoginWithTwitch from '@/components/common/LoginWithTwitch';
-import CreatorsSearchGrid from '@/components/villagerhunt/CreatorsSearchGrid';
+import CreatorsSearchGrid from '@/components/villagerhunt/grids/CreatorsSearchGrid';
 import { Alert, Box, Button, Container, Stack, Typography } from '@mui/material';
 import type { Creator } from '@/types/creator';
 import { getSessionFromCookie } from '@/app/lib/session';
-import CreatorCard from '@/components/villagerhunt/CreatorCard';
-import InfoDialog from '@/components/villagerhunt/InfoDialog';
+import CreatorCard from '@/components/villagerhunt/cards/CreatorCard';
+import InfoDialog from '@/components/villagerhunt/modals/InfoDialog';
 
 type PageData = {
   creators: Creator[];

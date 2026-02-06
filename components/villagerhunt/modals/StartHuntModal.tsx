@@ -12,7 +12,7 @@ import {
 import BingoCardControlModal from "./BingoCardControlModal";
 import { createClient } from "@/utils/supabase/client";
 import type { Villager } from "@/types/villagerhunt";
-import VillagerAutocomplete from "./VillagerAutocomplete";
+import VillagerAutocomplete from "@/components/villagerhunt/inputs/VillagerAutocomplete";
 
 type Props = {
   open: boolean;

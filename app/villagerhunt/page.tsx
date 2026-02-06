@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import type { Creator } from '@/types/creator';
 import { getValidSession } from '@/app/lib/session';
 import { getStreams } from '@/app/lib/twitch';
-import VillagerHuntClient from '@/components/villagerhunt/VillagerHuntClient';
+import VillagerHuntClient from '@/components/villagerhunt/pages/VillagerHuntClient';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

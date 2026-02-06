@@ -4,8 +4,8 @@ import { Alert, Container, Typography, Box, Stack } from '@mui/material';
 import Link from 'next/link';
 import { Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import HuntStatusFilter from '@/components/villagerhunt/HuntStatusFilter';
-import HuntCard from '@/components/villagerhunt/HuntCard';
+import HuntStatusFilter from '@/components/villagerhunt/inputs/HuntStatusFilter';
+import HuntCard from '@/components/villagerhunt/cards/HuntCard';
 import { getSessionFromCookie } from '@/app/lib/session';
 import type { Villager } from '@/types/villagerhunt';
 
