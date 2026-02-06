@@ -13,7 +13,7 @@ const COOKIE_NAME = 'vh_session';
 export async function refreshSessionToken(): Promise<Session | null> {
   const store = await cookies();
   const token = store.get(COOKIE_NAME)?.value;
-  const session = decodeSession(token);
+  const session = await decodeSession(token);
   
   if (!session) {
     return null;
@@ -34,7 +34,7 @@ export async function refreshSessionToken(): Promise<Session | null> {
       session.exp = Math.floor(Date.now() / 1000) + newToken.expires_in;
       
       // Update the cookie
-      const updatedToken = encodeSession(session);
+      const updatedToken = await encodeSession(session);
       const maxAge = 30 * 24 * 60 * 60; // 30 days
       store.set(COOKIE_NAME, updatedToken, {
         httpOnly: true,
