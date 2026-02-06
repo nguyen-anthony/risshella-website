@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSupabaseMiddlewareClient } from '@/utils/supabase/middleware';
 import { decodeSession, encodeSession, type Session } from '@/app/lib/session';
+import { refreshAccessToken } from '@/app/lib/twitch';
 
 const COOKIE_NAME = 'vh_session';
 
@@ -25,27 +26,7 @@ async function refreshSessionIfNeeded(request: NextRequest, response: NextRespon
 
   // Try to refresh the token
   try {
-    const refreshResponse = await fetch('https://id.twitch.tv/oauth2/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: process.env.TWITCH_CLIENT_ID!,
-        client_secret: process.env.TWITCH_CLIENT_SECRET!,
-        refresh_token: session.refreshToken,
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    if (!refreshResponse.ok) {
-      console.error('Token refresh failed:', refreshResponse.status);
-      return response;
-    }
-
-    const newToken = await refreshResponse.json() as {
-      access_token: string;
-      refresh_token: string;
-      expires_in: number;
-    };
+    const newToken = await refreshAccessToken(session.refreshToken);
 
     // Update session with new tokens
     const updatedSession: Session = {
