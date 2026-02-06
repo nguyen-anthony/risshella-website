@@ -11,7 +11,7 @@ const COOKIE_NAME = 'vh_session';
  */
 async function refreshSessionIfNeeded(request: NextRequest, response: NextResponse): Promise<NextResponse> {
   const token = request.cookies.get(COOKIE_NAME)?.value;
-  const session = decodeSession(token);
+  const session = await decodeSession(token);
 
   if (!session) {
     return response;
@@ -37,7 +37,7 @@ async function refreshSessionIfNeeded(request: NextRequest, response: NextRespon
     };
 
     // Set the updated session cookie on the response
-    const updatedToken = encodeSession(updatedSession);
+    const updatedToken = await encodeSession(updatedSession);
     const maxAge = 30 * 24 * 60 * 60; // 30 days
     
     response.cookies.set(COOKIE_NAME, updatedToken, {
