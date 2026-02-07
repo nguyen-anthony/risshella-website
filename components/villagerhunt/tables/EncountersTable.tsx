@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
-import { Avatar, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination, TextField, InputAdornment, IconButton } from "@mui/material";
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination, TextField, InputAdornment, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import Image from "next/image";
 import UpdateDeleteEncounterModal from "@/components/villagerhunt/modals/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/villagerhunt/modals/AddEncounterModal";
 import { createClient } from '@/utils/supabase/client';
@@ -300,7 +301,16 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
                 <TableCell>{e.island_number}</TableCell>
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Avatar src={image_url ?? undefined} alt={name} sx={{ width: 28, height: 28 }} />
+                    {image_url && (
+                      <Box sx={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
+                        <Image
+                          src={image_url}
+                          alt={name}
+                          fill
+                          style={{ objectFit: 'contain' }}
+                        />
+                      </Box>
+                    )}
                     <Typography variant="body2">{name}</Typography>
                   </Box>
                 </TableCell>

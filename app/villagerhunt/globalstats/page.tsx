@@ -13,11 +13,11 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Grid,
   Card,
   CardContent,
   Divider,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
@@ -256,7 +256,7 @@ export default function GlobalStatsPage() {
           Overview
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Typography variant="h4" color="primary">
@@ -268,7 +268,7 @@ export default function GlobalStatsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Typography variant="h4" color="secondary">
@@ -280,7 +280,7 @@ export default function GlobalStatsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Typography variant="h4" color="success.main">
@@ -292,7 +292,7 @@ export default function GlobalStatsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Typography variant="h4" color="info.main">
@@ -316,7 +316,7 @@ export default function GlobalStatsPage() {
         </Typography>
         <Grid container spacing={3}>
           {/* Longest Active Hunt */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Longest Active Hunt
@@ -339,7 +339,7 @@ export default function GlobalStatsPage() {
           </Grid>
 
           {/* Longest Completed Hunt */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Longest Completed Hunt
@@ -362,7 +362,7 @@ export default function GlobalStatsPage() {
           </Grid>
 
           {/* Most Encountered Villager */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Most Encountered Villager
@@ -387,7 +387,7 @@ export default function GlobalStatsPage() {
           </Grid>
 
           {/* Least Encountered Villager */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Least Encountered Villager
@@ -467,7 +467,7 @@ export default function GlobalStatsPage() {
               Species Distribution
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2, height: 400 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -490,7 +490,7 @@ export default function GlobalStatsPage() {
                   </ResponsiveContainer>
                 </Paper>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
                   <Table stickyHeader size="small">
                     <TableHead>
@@ -527,7 +527,7 @@ export default function GlobalStatsPage() {
               Personality Distribution
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2, height: 400 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -550,7 +550,7 @@ export default function GlobalStatsPage() {
                   </ResponsiveContainer>
                 </Paper>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
                   <Table stickyHeader size="small">
                     <TableHead>
@@ -587,7 +587,7 @@ export default function GlobalStatsPage() {
               Zodiac Sign Distribution
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2, height: 400 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -610,7 +610,7 @@ export default function GlobalStatsPage() {
                   </ResponsiveContainer>
                 </Paper>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
                   <Table stickyHeader size="small">
                     <TableHead>
