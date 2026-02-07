@@ -16,7 +16,10 @@ import {
   Card,
   CardContent,
   Divider,
+  Button,
 } from '@mui/material';
+import Link from 'next/link';
+import HomeIcon from '@mui/icons-material/Home';
 import Grid from '@mui/material/Grid2';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
@@ -242,6 +245,11 @@ export default function GlobalStatsPage() {
       <Typography variant="h3" component="h1" gutterBottom>
         Global Villager Hunt Statistics
       </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Button component={Link} href="/villagerhunt" variant="outlined" startIcon={<HomeIcon />}>
+          Home
+        </Button>
+      </Box>
       <Typography variant="body1" color="text.secondary" paragraph>
         Statistics across all public creators and their villager hunts.
         This data is refreshed twice daily around 9AM and 9PM Eastern.
@@ -317,48 +325,88 @@ export default function GlobalStatsPage() {
         <Grid container spacing={3}>
           {/* Longest Active Hunt */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Longest Active Hunt
-              </Typography>
-              {longestActiveHunt ? (
-                <Box>
-                  <Typography variant="h3" color="primary">
-                    {longestActiveHunt.encounter_count} encounters
+            {longestActiveHunt ? (
+              <Link 
+                href={`/villagerhunt/${encodeURIComponent(longestActiveHunt.username)}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Paper 
+                  sx={{ 
+                    p: 3,
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    }
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Longest Active Hunt
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    by {longestActiveHunt.username}
-                  </Typography>
-                </Box>
-              ) : (
+                  <Box>
+                    <Typography variant="h3" color="primary">
+                      {longestActiveHunt.encounter_count} encounters
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                      by {longestActiveHunt.username}
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Link>
+            ) : (
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Longest Active Hunt
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   No active hunts found
                 </Typography>
-              )}
-            </Paper>
+              </Paper>
+            )}
           </Grid>
 
           {/* Longest Completed Hunt */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Longest Completed Hunt
-              </Typography>
-              {longestCompletedHunt ? (
-                <Box>
-                  <Typography variant="h3" color="secondary">
-                    {longestCompletedHunt.encounter_count} encounters
+            {longestCompletedHunt ? (
+              <Link 
+                href={`/villagerhunt/${encodeURIComponent(longestCompletedHunt.username)}/history/${longestCompletedHunt.hunt_id}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Paper 
+                  sx={{ 
+                    p: 3,
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    }
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Longest Completed Hunt
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    by {longestCompletedHunt.username}
-                  </Typography>
-                </Box>
-              ) : (
+                  <Box>
+                    <Typography variant="h3" color="secondary">
+                      {longestCompletedHunt.encounter_count} encounters
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                      by {longestCompletedHunt.username}
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Link>
+            ) : (
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Longest Completed Hunt
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   No completed hunts found
                 </Typography>
-              )}
-            </Paper>
+              </Paper>
+            )}
           </Grid>
 
           {/* Most Encountered Villager */}
