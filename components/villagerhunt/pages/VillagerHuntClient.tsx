@@ -7,6 +7,8 @@ import type { Creator } from '@/types/creator';
 import { getSessionFromCookie } from '@/app/lib/session';
 import CreatorCard from '@/components/villagerhunt/cards/CreatorCard';
 import InfoDialog from '@/components/villagerhunt/modals/InfoDialog';
+import Link from 'next/link';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 type PageData = {
   creators: Creator[];
@@ -75,9 +77,20 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
         </Stack>
 
         <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" component="h2" fontWeight={600} gutterBottom>
-            Active Hunts!
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="h5" component="h2" fontWeight={600}>
+              Active Hunts!
+            </Typography>
+            <Button
+              component={Link}
+              href="/villagerhunt/globalstats"
+              variant="outlined"
+              startIcon={<BarChartIcon />}
+              size="small"
+            >
+              Global Statistics
+            </Button>
+          </Box>
           {error ? (
             <Alert severity="error">Error loading creators.</Alert>
           ) : (
