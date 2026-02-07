@@ -103,7 +103,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
       if (excludedVillagerIds.length > 0) {
         const { data: excludedVillagers, error: excludedError } = await supabase
           .from('villagers')
-          .select('villager_id, name, species, personality, image_url')
+          .select('villager_id, name, species, personality, sign, image_url')
           .in('villager_id', excludedVillagerIds);
 
         if (excludedError) {
@@ -173,7 +173,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
       const villagerIds = Object.keys(villagerCounts).map(id => parseInt(id));
       const { data: villagers, error: villagersError } = await supabase
         .from('villagers')
-        .select('villager_id, name, species, personality, image_url')
+        .select('villager_id, name, species, personality, sign, image_url')
         .in('villager_id', villagerIds);
 
       if (villagersError) {

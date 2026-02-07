@@ -13,6 +13,7 @@ export interface VillagerBase {
 export interface VillagerDetailed extends VillagerBase {
   species: string;
   personality: string;
+  sign: string;
 }
 
 /**
