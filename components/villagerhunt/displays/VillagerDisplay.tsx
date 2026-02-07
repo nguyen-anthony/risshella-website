@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Avatar, Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Image from "next/image";
 import type { Villager } from "@/types/villagerhunt";
 
@@ -26,11 +26,23 @@ export default function VillagerDisplay({
   if (variant === "minimal") {
     return (
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        <Avatar
-          src={villager.image_url ?? undefined}
-          alt={villager.name}
-          sx={{ width: 16, height: 16 }}
-        />
+        <Box 
+          sx={{ 
+            position: "relative", 
+            width: 16, 
+            height: 16,
+            flexShrink: 0,
+          }}
+        >
+          <Image
+            src={villager.image_url || "/placeholder.png"}
+            alt={villager.name}
+            width={16}
+            height={16}
+            style={{ objectFit: "contain" }}
+            unoptimized
+          />
+        </Box>
         {showName && (
           <Typography variant="caption">{villager.name}</Typography>
         )}
@@ -63,11 +75,23 @@ export default function VillagerDisplay({
   // Default: avatar variant
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Avatar
-        src={villager.image_url ?? undefined}
-        alt={villager.name}
-        sx={{ width: avatarSize, height: avatarSize }}
-      />
+      <Box 
+        sx={{ 
+          position: "relative", 
+          width: avatarSize, 
+          height: avatarSize,
+          flexShrink: 0,
+        }}
+      >
+        <Image
+          src={villager.image_url || "/placeholder.png"}
+          alt={villager.name}
+          width={avatarSize}
+          height={avatarSize}
+          style={{ objectFit: "contain", borderRadius: 4 }}
+          unoptimized
+        />
+      </Box>
       {showName && (
         <Typography variant="body2">{villager.name}</Typography>
       )}

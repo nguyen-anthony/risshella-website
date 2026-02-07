@@ -143,6 +143,44 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              February 7, 2026 - v0.12.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Global statistics!" secondary="I'm proud to announce that global statistics are available via the button on the landing page!
+                  This pulls data from all hunt data for people that are listed as 'public' in your settings.
+                  If you are marked private, your data will not be included as I assume you don't want your hunt data publicly accessible.
+                  This is NOT updated in realtime, it gets updated twice daily at 9:00 AM and 9:00 PM Eastern US time."/>
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              What is next?
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="I'm working on a better design to make this page more Animal Crossing friendly rather than a basic dark mode/light mode color theme."/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Interactive Bingo Card!" secondary="This is a bit more complex because I am trying to not require everyone to login to do this, but I am working on a hopefully slick solution to make this happen so you can stop saving your bingo cards locally!"/>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Amiibo Villagers!" secondary="This site was originally meant for one person, my wife. Supporting Ammibo characters was not on my priority. I am working on including Amiibo Villager support!"/>
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               February 3, 2026 - v0.11.0
             </Typography>
           </AccordionSummary>
