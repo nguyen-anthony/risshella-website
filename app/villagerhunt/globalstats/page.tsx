@@ -17,9 +17,14 @@ import {
   CardContent,
   Divider,
   Button,
+  Collapse,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import Link from 'next/link';
 import HomeIcon from '@mui/icons-material/Home';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Grid from '@mui/material/Grid2';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
@@ -52,8 +57,17 @@ export default function GlobalStatsPage() {
   const [loading, setLoading] = React.useState(true);
   const [longestActiveHunt, setLongestActiveHunt] = React.useState<HuntStat | null>(null);
   const [longestCompletedHunt, setLongestCompletedHunt] = React.useState<HuntStat | null>(null);
+  const [topActiveHunts, setTopActiveHunts] = React.useState<HuntStat[]>([]);
+  const [topCompletedHunts, setTopCompletedHunts] = React.useState<HuntStat[]>([]);
+  const [activeHuntsExpanded, setActiveHuntsExpanded] = React.useState(false);
+  const [completedHuntsExpanded, setCompletedHuntsExpanded] = React.useState(false);
   const [mostEncounteredVillager, setMostEncounteredVillager] = React.useState<VillagerEncounterStat | null>(null);
   const [leastEncounteredVillager, setLeastEncounteredVillager] = React.useState<VillagerEncounterStat | null>(null);
+  const [topEncounteredVillagers, setTopEncounteredVillagers] = React.useState<VillagerEncounterStat[]>([]);
+  const [leastEncounteredVillagers, setLeastEncounteredVillagers] = React.useState<VillagerEncounterStat[]>([]);
+  const [mostEncounteredExpanded, setMostEncounteredExpanded] = React.useState(false);
+  const [leastEncounteredExpanded, setLeastEncounteredExpanded] = React.useState(false);
+  const [dreamiesExpanded, setDreamiesExpanded] = React.useState(false);
   const [topDreamies, setTopDreamies] = React.useState<VillagerEncounterStat[]>([]);
   const [speciesData, setSpeciesData] = React.useState<ChartData[]>([]);
   const [personalityData, setPersonalityData] = React.useState<ChartData[]>([]);
@@ -211,6 +225,38 @@ export default function GlobalStatsPage() {
             .sort((a, b) => b.value - a.value)
         );
 
+        // Set top active hunts (skip the first one since it's already the longest)
+        if (cachedStats.top_active_hunts && Array.isArray(cachedStats.top_active_hunts)) {
+          setTopActiveHunts(cachedStats.top_active_hunts.slice(1, 10));
+        }
+
+        // Set top completed hunts (skip the first one since it's already the longest)
+        if (cachedStats.top_completed_hunts && Array.isArray(cachedStats.top_completed_hunts)) {
+          setTopCompletedHunts(cachedStats.top_completed_hunts.slice(1, 10));
+        }
+
+        // Set top encountered villagers (skip the first one since it's already shown)
+        if (cachedStats.top_encountered_villagers && Array.isArray(cachedStats.top_encountered_villagers)) {
+          const topEncountered = cachedStats.top_encountered_villagers.slice(1, 10)
+            .map((d: { villager_id: number; count: number }) => {
+              const villager = villagerMap.get(d.villager_id);
+              return villager ? { villager, count: d.count } : null;
+            })
+            .filter((d: VillagerEncounterStat | null): d is VillagerEncounterStat => d !== null);
+          setTopEncounteredVillagers(topEncountered);
+        }
+
+        // Set least encountered villagers (skip the first one since it's already shown)
+        if (cachedStats.least_encountered_villagers && Array.isArray(cachedStats.least_encountered_villagers)) {
+          const leastEncountered = cachedStats.least_encountered_villagers.slice(1, 10)
+            .map((d: { villager_id: number; count: number }) => {
+              const villager = villagerMap.get(d.villager_id);
+              return villager ? { villager, count: d.count } : null;
+            })
+            .filter((d: VillagerEncounterStat | null): d is VillagerEncounterStat => d !== null);
+          setLeastEncounteredVillagers(leastEncountered);
+        }
+
         setLoading(false);
         return;
       }
@@ -326,34 +372,100 @@ export default function GlobalStatsPage() {
           {/* Longest Active Hunt */}
           <Grid size={{ xs: 12, md: 6 }}>
             {longestActiveHunt ? (
-              <Link 
-                href={`/villagerhunt/${encodeURIComponent(longestActiveHunt.username)}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <Paper 
-                  sx={{ 
-                    p: 3,
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 4,
-                    }
-                  }}
+              <Paper sx={{ overflow: 'hidden' }}>
+                <Link 
+                  href={`/villagerhunt/${encodeURIComponent(longestActiveHunt.username)}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
                 >
-                  <Typography variant="h6" gutterBottom>
-                    Longest Active Hunt
-                  </Typography>
-                  <Box>
-                    <Typography variant="h3" color="primary">
-                      {longestActiveHunt.encounter_count} encounters
+                  <Box
+                    sx={{ 
+                      p: 3,
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      }
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      Longest Active Hunt
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      by {longestActiveHunt.username}
-                    </Typography>
+                    <Box>
+                      <Typography variant="h3" color="primary">
+                        {longestActiveHunt.encounter_count} encounters
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        by {longestActiveHunt.username}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Paper>
-              </Link>
+                </Link>
+                {topActiveHunts.length > 0 && (
+                  <>
+                    <Divider />
+                    <Box 
+                      onClick={() => setActiveHuntsExpanded(!activeHuntsExpanded)}
+                      sx={{ 
+                        px: 3, 
+                        py: 1, 
+                        display: 'flex', 
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <Button
+                        endIcon={
+                          <ExpandMoreIcon
+                            sx={{
+                              transform: activeHuntsExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transition: '0.3s',
+                            }}
+                          />
+                        }
+                        size="small"
+                        sx={{ pointerEvents: 'none' }}
+                      >
+                        {activeHuntsExpanded ? 'Hide' : 'Show'} Top 10
+                      </Button>
+                    </Box>
+                    <Collapse in={activeHuntsExpanded} timeout="auto" unmountOnExit>
+                      <Divider />
+                      <List dense>
+                        {topActiveHunts.map((hunt, index) => (
+                          <ListItem
+                            key={hunt.hunt_id}
+                            component={Link}
+                            href={`/villagerhunt/${encodeURIComponent(hunt.username)}`}
+                            sx={{
+                              textDecoration: 'none',
+                              color: 'inherit',
+                              '&:hover': {
+                                backgroundColor: 'action.hover',
+                              },
+                            }}
+                          >
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography variant="body2">
+                                    #{index + 2}. {hunt.username}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {hunt.encounter_count} encounters
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Collapse>
+                  </>
+                )}
+              </Paper>
             ) : (
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
@@ -369,34 +481,100 @@ export default function GlobalStatsPage() {
           {/* Longest Completed Hunt */}
           <Grid size={{ xs: 12, md: 6 }}>
             {longestCompletedHunt ? (
-              <Link 
-                href={`/villagerhunt/${encodeURIComponent(longestCompletedHunt.username)}/history/${longestCompletedHunt.hunt_id}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <Paper 
-                  sx={{ 
-                    p: 3,
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 4,
-                    }
-                  }}
+              <Paper sx={{ overflow: 'hidden' }}>
+                <Link 
+                  href={`/villagerhunt/${encodeURIComponent(longestCompletedHunt.username)}/history/${longestCompletedHunt.hunt_id}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
                 >
-                  <Typography variant="h6" gutterBottom>
-                    Longest Completed Hunt
-                  </Typography>
-                  <Box>
-                    <Typography variant="h3" color="secondary">
-                      {longestCompletedHunt.encounter_count} encounters
+                  <Box
+                    sx={{ 
+                      p: 3,
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      }
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      Longest Completed Hunt
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      by {longestCompletedHunt.username}
-                    </Typography>
+                    <Box>
+                      <Typography variant="h3" color="secondary">
+                        {longestCompletedHunt.encounter_count} encounters
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        by {longestCompletedHunt.username}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Paper>
-              </Link>
+                </Link>
+                {topCompletedHunts.length > 0 && (
+                  <>
+                    <Divider />
+                    <Box 
+                      onClick={() => setCompletedHuntsExpanded(!completedHuntsExpanded)}
+                      sx={{ 
+                        px: 3, 
+                        py: 1, 
+                        display: 'flex', 
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      }}
+                    >
+                      <Button
+                        endIcon={
+                          <ExpandMoreIcon
+                            sx={{
+                              transform: completedHuntsExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transition: '0.3s',
+                            }}
+                          />
+                        }
+                        size="small"
+                        sx={{ pointerEvents: 'none' }}
+                      >
+                        {completedHuntsExpanded ? 'Hide' : 'Show'} Top 10
+                      </Button>
+                    </Box>
+                    <Collapse in={completedHuntsExpanded} timeout="auto" unmountOnExit>
+                      <Divider />
+                      <List dense>
+                        {topCompletedHunts.map((hunt, index) => (
+                          <ListItem
+                            key={hunt.hunt_id}
+                            component={Link}
+                            href={`/villagerhunt/${encodeURIComponent(hunt.username)}/history/${hunt.hunt_id}`}
+                            sx={{
+                              textDecoration: 'none',
+                              color: 'inherit',
+                              '&:hover': {
+                                backgroundColor: 'action.hover',
+                              },
+                            }}
+                          >
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Typography variant="body2">
+                                    #{index + 2}. {hunt.username}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {hunt.encounter_count} encounters
+                                  </Typography>
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Collapse>
+                  </>
+                )}
+              </Paper>
             ) : (
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
@@ -411,61 +589,201 @@ export default function GlobalStatsPage() {
 
           {/* Most Encountered Villager */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Most Encountered Villager
-              </Typography>
-              {mostEncounteredVillager ? (
-                <Box>
-                  <VillagerDisplay 
-                    villager={mostEncounteredVillager.villager} 
-                    variant="avatar" 
-                    avatarSize={80} 
-                  />
-                  <Typography variant="h4" color="success.main" sx={{ mt: 2 }}>
-                    {mostEncounteredVillager.count} encounters
-                  </Typography>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No data available
+            <Paper sx={{ overflow: 'hidden' }}>
+              <Box sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Most Encountered Villager
                 </Typography>
+                {mostEncounteredVillager ? (
+                  <Box>
+                    <VillagerDisplay 
+                      villager={mostEncounteredVillager.villager} 
+                      variant="avatar" 
+                      avatarSize={80} 
+                    />
+                    <Typography variant="h4" color="success.main" sx={{ mt: 2 }}>
+                      {mostEncounteredVillager.count} encounters
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No data available
+                  </Typography>
+                )}
+              </Box>
+              {topEncounteredVillagers.length > 0 && (
+                <>
+                  <Divider />
+                  <Box 
+                    onClick={() => setMostEncounteredExpanded(!mostEncounteredExpanded)}
+                    sx={{ 
+                      px: 3, 
+                      py: 1, 
+                      display: 'flex', 
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <Button
+                      endIcon={
+                        <ExpandMoreIcon
+                          sx={{
+                            transform: mostEncounteredExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: '0.3s',
+                          }}
+                        />
+                      }
+                      size="small"
+                      sx={{ pointerEvents: 'none' }}
+                    >
+                      {mostEncounteredExpanded ? 'Hide' : 'Show'} Top 10
+                    </Button>
+                  </Box>
+                  <Collapse in={mostEncounteredExpanded} timeout="auto" unmountOnExit>
+                    <Divider />
+                    <List dense>
+                      {topEncounteredVillagers.map((stat, index) => (
+                        <ListItem
+                          key={stat.villager.villager_id}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemText
+                            primary={
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2">
+                                    #{index + 2}.
+                                  </Typography>
+                                  <VillagerDisplay 
+                                    villager={stat.villager} 
+                                    variant="avatar" 
+                                    avatarSize={40} 
+                                  />
+                                </Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  {stat.count} encounters
+                                </Typography>
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                </>
               )}
             </Paper>
           </Grid>
 
           {/* Least Encountered Villager */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Least Encountered Villager
-              </Typography>
-              {leastEncounteredVillager ? (
-                <Box>
-                  <VillagerDisplay 
-                    villager={leastEncounteredVillager.villager} 
-                    variant="avatar" 
-                    avatarSize={80} 
-                  />
-                  <Typography variant="h4" color="warning.main" sx={{ mt: 2 }}>
-                    {leastEncounteredVillager.count} {leastEncounteredVillager.count === 1 ? 'encounter' : 'encounters'}
-                  </Typography>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No data available
+            <Paper sx={{ overflow: 'hidden' }}>
+              <Box sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Least Encountered Villager
                 </Typography>
+                {leastEncounteredVillager ? (
+                  <Box>
+                    <VillagerDisplay 
+                      villager={leastEncounteredVillager.villager} 
+                      variant="avatar" 
+                      avatarSize={80} 
+                    />
+                    <Typography variant="h4" color="warning.main" sx={{ mt: 2 }}>
+                      {leastEncounteredVillager.count} {leastEncounteredVillager.count === 1 ? 'encounter' : 'encounters'}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No data available
+                  </Typography>
+                )}
+              </Box>
+              {leastEncounteredVillagers.length > 0 && (
+                <>
+                  <Divider />
+                  <Box 
+                    onClick={() => setLeastEncounteredExpanded(!leastEncounteredExpanded)}
+                    sx={{ 
+                      px: 3, 
+                      py: 1, 
+                      display: 'flex', 
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <Button
+                      endIcon={
+                        <ExpandMoreIcon
+                          sx={{
+                            transform: leastEncounteredExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: '0.3s',
+                          }}
+                        />
+                      }
+                      size="small"
+                      sx={{ pointerEvents: 'none' }}
+                    >
+                      {leastEncounteredExpanded ? 'Hide' : 'Show'} Top 10
+                    </Button>
+                  </Box>
+                  <Collapse in={leastEncounteredExpanded} timeout="auto" unmountOnExit>
+                    <Divider />
+                    <List dense>
+                      {leastEncounteredVillagers.map((stat, index) => (
+                        <ListItem
+                          key={stat.villager.villager_id}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemText
+                            primary={
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2">
+                                    #{index + 2}.
+                                  </Typography>
+                                  <VillagerDisplay 
+                                    villager={stat.villager} 
+                                    variant="avatar" 
+                                    avatarSize={40} 
+                                  />
+                                </Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  {stat.count} {stat.count === 1 ? 'encounter' : 'encounters'}
+                                </Typography>
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                </>
               )}
             </Paper>
           </Grid>
         </Grid>
       </Box>
 
-      {/* Top 5 Dreamies */}
+      {/* Most Desired Dreamies */}
       {topDreamies.length > 0 && (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h5" gutterBottom>
-            Top 5 Most Popular Dreamies
+            Most Desired Dreamies
           </Typography>
           <TableContainer component={Paper}>
             <Table>
@@ -477,7 +795,7 @@ export default function GlobalStatsPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {topDreamies.map((stat, index) => (
+                {topDreamies.slice(0, 5).map((stat, index) => (
                   <TableRow key={stat.villager.villager_id}>
                     <TableCell>
                       <Typography variant="h6">#{index + 1}</Typography>
@@ -494,6 +812,63 @@ export default function GlobalStatsPage() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {topDreamies.length > 5 && (
+                  <>
+                    <TableRow>
+                      <TableCell colSpan={3} sx={{ p: 0, border: 0 }}>
+                        <Divider />
+                        <Box 
+                          onClick={() => setDreamiesExpanded(!dreamiesExpanded)}
+                          sx={{ 
+                            px: 3, 
+                            py: 1, 
+                            display: 'flex', 
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <Button
+                            endIcon={
+                              <ExpandMoreIcon
+                                sx={{
+                                  transform: dreamiesExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                  transition: '0.3s',
+                                }}
+                              />
+                            }
+                            size="small"
+                            sx={{ pointerEvents: 'none' }}
+                          >
+                            {dreamiesExpanded ? 'Hide' : 'Show'} Next {topDreamies.length - 5}
+                          </Button>
+                        </Box>
+                        <Collapse in={dreamiesExpanded} timeout="auto" unmountOnExit>
+                          <Divider />
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                    {dreamiesExpanded && topDreamies.slice(5).map((stat, index) => (
+                      <TableRow key={stat.villager.villager_id}>
+                        <TableCell>
+                          <Typography variant="h6">#{index + 6}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <VillagerDisplay 
+                            villager={stat.villager} 
+                            variant="avatar" 
+                            avatarSize={50} 
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="h6">{stat.count}</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
