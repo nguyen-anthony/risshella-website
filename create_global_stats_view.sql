@@ -87,6 +87,48 @@ SELECT
         LIMIT 1
     ) as longest_completed_hunt,
     
+    -- Top 10 active hunts
+    (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'hunt_id', hunt_id,
+                'twitch_id', twitch_id,
+                'username', twitch_username,
+                'encounter_count', total_encounters,
+                'status', hunt_status
+            )
+            ORDER BY total_encounters DESC
+        )
+        FROM (
+            SELECT hunt_id, twitch_id, twitch_username, total_encounters, hunt_status
+            FROM hunt_totals
+            WHERE hunt_status = 'ACTIVE'
+            ORDER BY total_encounters DESC
+            LIMIT 10
+        ) top_active
+    ) as top_active_hunts,
+    
+    -- Top 10 completed hunts
+    (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'hunt_id', hunt_id,
+                'twitch_id', twitch_id,
+                'username', twitch_username,
+                'encounter_count', total_encounters,
+                'status', hunt_status
+            )
+            ORDER BY total_encounters DESC
+        )
+        FROM (
+            SELECT hunt_id, twitch_id, twitch_username, total_encounters, hunt_status
+            FROM hunt_totals
+            WHERE hunt_status = 'COMPLETED'
+            ORDER BY total_encounters DESC
+            LIMIT 10
+        ) top_completed
+    ) as top_completed_hunts,
+    
     -- Most encountered villager
     (
         SELECT jsonb_build_object(
@@ -109,6 +151,40 @@ SELECT
         LIMIT 1
     ) as least_encountered_villager,
     
+    -- Top 10 most encountered villagers
+    (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'villager_id', villager_id,
+                'count', total_count
+            )
+            ORDER BY total_count DESC
+        )
+        FROM (
+            SELECT villager_id, total_count
+            FROM villager_totals
+            ORDER BY total_count DESC
+            LIMIT 10
+        ) top_encountered
+    ) as top_encountered_villagers,
+    
+    -- Top 10 least encountered villagers
+    (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'villager_id', villager_id,
+                'count', total_count
+            )
+            ORDER BY total_count ASC
+        )
+        FROM (
+            SELECT villager_id, total_count
+            FROM villager_totals
+            ORDER BY total_count ASC
+            LIMIT 10
+        ) least_encountered
+    ) as least_encountered_villagers,
+    
     -- Top 5 dreamies
     (
         SELECT jsonb_agg(
@@ -122,7 +198,7 @@ SELECT
             SELECT villager_id, dreamie_count
             FROM dreamie_totals
             ORDER BY dreamie_count DESC
-            LIMIT 5
+            LIMIT 10
         ) top_dreamies
     ) as top_dreamies,
     
