@@ -1,10 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip, Paper } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import CasinoIcon from '@mui/icons-material/Casino';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -32,6 +34,7 @@ import IslandDetailsModal from '@/components/villagerhunt/modals/IslandDetailsMo
 import HuntSettingsModal from '@/components/villagerhunt/modals/HuntSettingsModal';
 import ConfirmDeleteModal from '@/components/villagerhunt/modals/ConfirmDeleteModal';
 import DreamieFoundModal from '@/components/villagerhunt/modals/DreamieFoundModal';
+import PublicPrivateToggleModal from '@/components/villagerhunt/modals/PublicPrivateToggleModal';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
 import { useVillagers } from '@/components/villagerhunt/hooks';
 import { createClient } from '@/utils/supabase/client';
@@ -79,6 +82,9 @@ export default function HuntPageWrapper({
   const [islandDetailsModalOpen, setIslandDetailsModalOpen] = React.useState(false);
   const [showInactiveNotification, setShowInactiveNotification] = React.useState(false);
   const [isLive, setIsLive] = React.useState(false);
+  const [publicToggleModalOpen, setPublicToggleModalOpen] = React.useState(false);
+  const [pendingPublicValue, setPendingPublicValue] = React.useState<boolean | null>(null);
+  const [showPublicTooltip, setShowPublicTooltip] = React.useState<boolean>(true);
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -258,16 +264,26 @@ export default function HuntPageWrapper({
     setHuntStatsModalOpen(true);
   };
 
-  // Handle public toggle
-  const handlePublicToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle public toggle - show confirmation modal
+  const handlePublicToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.checked;
+    setPendingPublicValue(newValue);
+    setPublicToggleModalOpen(true);
+  };
+
+  // Handle confirmed public toggle
+  const handleConfirmPublicToggle = async () => {
+    if (pendingPublicValue === null) return;
+    
     const previousValue = isPublic;
-    setIsPublic(newValue);
+    setIsPublic(pendingPublicValue);
+    setPublicToggleModalOpen(false);
+    
     try {
       const res = await fetch('/api/creators/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_public: newValue }),
+        body: JSON.stringify({ is_public: pendingPublicValue }),
       });
       if (!res.ok) {
         throw new Error('Failed to update');
@@ -276,6 +292,8 @@ export default function HuntPageWrapper({
       console.error('Failed to update public status:', error);
       // Revert on error
       setIsPublic(previousValue);
+    } finally {
+      setPendingPublicValue(null);
     }
   };
 
@@ -327,6 +345,21 @@ export default function HuntPageWrapper({
   React.useEffect(() => {
     setOverlayUrl(`${window.location.href.replace(/\/$/, '')}/overlay`);
   }, []);
+
+  // Load tooltip visibility from localStorage
+  React.useEffect(() => {
+    const stored = localStorage.getItem('showPublicPrivateTooltip');
+    if (stored !== null) {
+      setShowPublicTooltip(stored === 'true');
+    }
+  }, []);
+
+  // Toggle tooltip visibility and save to localStorage
+  const toggleTooltipVisibility = () => {
+    const newValue = !showPublicTooltip;
+    setShowPublicTooltip(newValue);
+    localStorage.setItem('showPublicPrivateTooltip', String(newValue));
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
@@ -382,7 +415,7 @@ export default function HuntPageWrapper({
               <Tooltip title="Hunt Settings">
                 <IconButton onClick={() => setSettingsModalOpen(true)}><SettingsIcon /></IconButton>
               </Tooltip>
-              <Tooltip title="Determines if you want your name on the landing page or not">
+              <Box sx={{ position: 'relative', display: 'inline-block' }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -392,7 +425,69 @@ export default function HuntPageWrapper({
                   }
                   label={isPublic ? "Public" : "Private"}
                 />
-              </Tooltip>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: 'calc(100% + 15px)',
+                    transform: 'translateY(-50%)',
+                    bgcolor: 'grey.800',
+                    color: 'white',
+                    px: showPublicTooltip ? 2 : 1,
+                    py: 1,
+                    borderRadius: 1,
+                    minWidth: showPublicTooltip ? '280px' : 'auto',
+                    maxWidth: '400px',
+                    width: showPublicTooltip ? 'max-content' : 'auto',
+                    zIndex: 1,
+                    textAlign: 'center',
+                    whiteSpace: 'normal',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '50%',
+                      left: '-8px',
+                      transform: 'translateY(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderTop: '8px solid transparent',
+                      borderBottom: '8px solid transparent',
+                      borderRight: '8px solid',
+                      borderRightColor: 'grey.800',
+                    }
+                  }}
+                >
+                  {showPublicTooltip ? (
+                    <>
+                      <Typography variant="caption" sx={{ fontSize: '0.75rem', lineHeight: 1.4, flex: 1 }}>
+                        {isPublic 
+                          ? "Set this to Private to make your hunts private!" 
+                          : "Set this to Public to be searchable on the home page and your data will be used in global stats!"
+                        }
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={toggleTooltipVisibility}
+                        sx={{ color: 'white', p: 0.5 }}
+                      >
+                        <VisibilityOffIcon fontSize="small" />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <IconButton
+                      size="small"
+                      onClick={toggleTooltipVisibility}
+                      sx={{ color: 'white', p: 0.5 }}
+                    >
+                      <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </Paper>
+              </Box>
             </>
           )}
         </Box>
@@ -838,6 +933,16 @@ export default function HuntPageWrapper({
       <InactiveHuntNotification 
         isVisible={showInactiveNotification} 
         onClose={() => setShowInactiveNotification(false)} 
+      />
+
+      <PublicPrivateToggleModal
+        open={publicToggleModalOpen}
+        onClose={() => {
+          setPublicToggleModalOpen(false);
+          setPendingPublicValue(null);
+        }}
+        onConfirm={handleConfirmPublicToggle}
+        isTogglingToPublic={pendingPublicValue ?? false}
       />
 
     </Container>
