@@ -43,7 +43,7 @@ async function refreshSessionIfNeeded(request: NextRequest, response: NextRespon
     response.cookies.set(COOKIE_NAME, updatedToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
       maxAge,
     });

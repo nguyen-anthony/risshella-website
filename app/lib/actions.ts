@@ -39,7 +39,7 @@ export async function refreshSessionToken(): Promise<Session | null> {
       store.set(COOKIE_NAME, updatedToken, {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         maxAge,
       });
