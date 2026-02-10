@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 
 type PageProps = {
   params: Promise<{ username: string }>;
-  searchParams?: Promise<{ id?: string }>;
+  searchParams?: Promise<{ id?: string; modembed?: string }>;
 };
 
 type ModeratedChannel = {
@@ -111,6 +111,9 @@ export default async function CreatorHuntPage(props: PageProps) {
     }
   }
 
+  // Check for modembed parameter
+  const isModEmbed = sp?.modembed === 'true';
+
   return (
     <HuntPageWrapper
       initialDisplayName={displayName}
@@ -119,6 +122,7 @@ export default async function CreatorHuntPage(props: PageProps) {
       initialIsOwner={isOwner}
       initialIsModerator={isModerator}
       initialUsername={username}
+      isModEmbed={isModEmbed}
     />
   );
 }
