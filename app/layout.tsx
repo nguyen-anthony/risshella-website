@@ -6,7 +6,7 @@ import { CacheProvider } from "@emotion/react";
 import createEmotionCache from "@/utils/createEmotionCache";
 import { createAppTheme } from "@/utils/theme";
 import IssueReportButton from "@/components/common/IssueReportButton";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider as CustomThemeProvider, useThemeMode } from "@/utils/ThemeContext";
 
@@ -24,14 +24,21 @@ function ThemeWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ConditionalIssueReportButton() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isOverlay = pathname.includes('/overlay');
+  const isModEmbed = searchParams.get('modembed') === 'true';
+
+  if (isOverlay || isModEmbed) return null;
+  return <IssueReportButton />;
+}
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isOverlay = pathname.includes('/overlay');
-
   return (
     <html lang="en">
       <body>
@@ -39,7 +46,9 @@ export default function RootLayout({
           <CustomThemeProvider>
             <ThemeWrapper>
               {children}
-              {!isOverlay && <IssueReportButton />}
+              <React.Suspense fallback={null}>
+                <ConditionalIssueReportButton />
+              </React.Suspense>
               <Analytics />
             </ThemeWrapper>
           </CustomThemeProvider>
