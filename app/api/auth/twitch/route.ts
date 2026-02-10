@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   res.cookies.set(STATE_COOKIE, state, {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     path: '/',
     maxAge: 10 * 60, // 10 minutes
   });

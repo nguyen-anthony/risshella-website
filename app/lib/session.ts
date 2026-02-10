@@ -96,7 +96,7 @@ export async function setSessionCookie(s: Session) {
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     path: '/',
     maxAge,
   });

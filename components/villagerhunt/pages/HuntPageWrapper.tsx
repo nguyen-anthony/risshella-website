@@ -47,6 +47,7 @@ type Props = {
   initialIsOwner: boolean;
   initialIsModerator: boolean;
   initialUsername: string;
+  isModEmbed?: boolean;
 };
 
 export default function HuntPageWrapper({
@@ -56,6 +57,7 @@ export default function HuntPageWrapper({
   initialIsOwner,
   initialIsModerator,
   initialUsername,
+  isModEmbed = false,
 }: Props) {
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
   const [huntLoading, setHuntLoading] = React.useState(true);
@@ -360,6 +362,50 @@ export default function HuntPageWrapper({
     setShowPublicTooltip(newValue);
     localStorage.setItem('showPublicPrivateTooltip', String(newValue));
   };
+
+  // Render minimal mod-embed view
+  if (isModEmbed) {
+    return (
+      <Box sx={{ p: 2 }}>
+        {huntLoading ? (
+          <Typography variant="body2" color="text.secondary">Loading...</Typography>
+        ) : !hunt ? (
+          <Typography variant="body2" color="text.secondary">No active hunt</Typography>
+        ) : (
+          <>
+            <EncountersTable 
+              villagers={villagers} 
+              isOwner={initialIsOwner} 
+              isModerator={isModerator} 
+              huntId={hunt.hunt_id} 
+              targetVillagerIds={hunt.target_villager_id} 
+              onDreamieFound={() => { 
+                if (hunt && !localStorage.getItem(`dreamiePopupShown_${hunt.hunt_id}`)) 
+                  setDreamieModalOpen(true); 
+              }} 
+            />
+            <DreamieFoundModal
+              open={dreamieModalOpen}
+              onClose={() => setDreamieModalOpen(false)}
+              huntId={hunt.hunt_id}
+              onComplete={() => {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/api/hunts/complete';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'hunt_id';
+                input.value = hunt.hunt_id;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+              }}
+            />
+          </>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
