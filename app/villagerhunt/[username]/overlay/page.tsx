@@ -56,7 +56,7 @@ export default function OverlayPage({ params }: PageProps) {
           .select('*')
           .eq('hunt_id', huntData.hunt_id)
           .eq('is_deleted', false)
-          .order('encountered_at', { ascending: false })
+          .order('island_number', { ascending: false })
           .limit(3);
 
         if (encountersData) {
@@ -97,7 +97,7 @@ export default function OverlayPage({ params }: PageProps) {
                   .select('*')
                   .eq('hunt_id', newHunt.hunt_id)
                   .eq('is_deleted', false)
-                  .order('encountered_at', { ascending: false })
+                  .order('island_number', { ascending: false })
                   .limit(3);
                 if (encountersData) {
                   setEncounters(encountersData);
@@ -136,6 +136,32 @@ export default function OverlayPage({ params }: PageProps) {
 
     const supabase = createClient();
 
+    // Function to refetch the top 3 encounters
+    const refetchEncounters = async () => {
+      const { data: encountersData } = await supabase
+        .from('encounters')
+        .select('*')
+        .eq('hunt_id', hunt.hunt_id)
+        .eq('is_deleted', false)
+        .order('island_number', { ascending: false })
+        .limit(3);
+      
+      if (encountersData) {
+        setEncounters(encountersData);
+        // Update villagers based on current encounters
+        const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
+        if (villagerIds.length > 0) {
+          const { data: villagersData } = await supabase
+            .from('villagers')
+            .select('villager_id, name, image_url')
+            .in('villager_id', villagerIds);
+          setVillagers(villagersData || []);
+        } else {
+          setVillagers([]);
+        }
+      }
+    };
+
     // Subscribe to real-time updates
     const channel = supabase
       .channel('encounters-updates')
@@ -148,44 +174,9 @@ export default function OverlayPage({ params }: PageProps) {
           filter: `hunt_id=eq.${hunt.hunt_id}`,
         },
         async (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const newEncounter = payload.new as Encounter;
-            if (!newEncounter.is_deleted) {
-              // Add new encounter to the list
-              setEncounters((prev) => [newEncounter, ...prev.slice(0, 2)]);
-              // Update villagers if needed
-              const newVillagerId = newEncounter.villager_id;
-              if (newVillagerId && !villagers.find(v => v.villager_id === newVillagerId)) {
-                const { data } = await supabase
-                  .from('villagers')
-                  .select('villager_id, name, image_url')
-                  .eq('villager_id', newVillagerId)
-                  .single();
-                if (data) setVillagers((prev) => [...prev, data]);
-              }
-            }
-          } else if (payload.eventType === 'UPDATE') {
-            // Refetch the top 3 encounters to account for soft deletes
-            const { data: encountersData } = await supabase
-              .from('encounters')
-              .select('*')
-              .eq('hunt_id', hunt.hunt_id)
-              .eq('is_deleted', false)
-              .order('encountered_at', { ascending: false })
-              .limit(3);
-            if (encountersData) {
-              setEncounters(encountersData);
-              // Update villagers
-              const villagerIds = encountersData.map((e) => e.villager_id).filter((id) => id !== null);
-              if (villagerIds.length > 0) {
-                const { data: villagersData } = await supabase
-                  .from('villagers')
-                  .select('villager_id, name, image_url')
-                  .in('villager_id', villagerIds);
-                setVillagers(villagersData || []);
-              }
-            }
-          }
+          // On any change (INSERT, UPDATE, or DELETE), refetch to ensure consistency
+          console.log('Encounter change detected:', payload.eventType);
+          await refetchEncounters();
         }
       )
       .subscribe();
@@ -193,7 +184,7 @@ export default function OverlayPage({ params }: PageProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [hunt, villagers]);
+  }, [hunt]);
 
   const villagerMap = new Map(villagers.map(v => [v.villager_id, v]));
 
