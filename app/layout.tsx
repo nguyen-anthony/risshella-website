@@ -6,7 +6,7 @@ import { CacheProvider } from "@emotion/react";
 import createEmotionCache from "@/utils/createEmotionCache";
 import { createAppTheme } from "@/utils/theme";
 import IssueReportButton from "@/components/common/IssueReportButton";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider as CustomThemeProvider, useThemeMode } from "@/utils/ThemeContext";
 
@@ -30,7 +30,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isOverlay = pathname.includes('/overlay');
+  const isModEmbed = searchParams.get('modembed') === 'true';
 
   return (
     <html lang="en">
@@ -39,7 +41,7 @@ export default function RootLayout({
           <CustomThemeProvider>
             <ThemeWrapper>
               {children}
-              {!isOverlay && <IssueReportButton />}
+              {!isOverlay && !isModEmbed && <IssueReportButton />}
               <Analytics />
             </ThemeWrapper>
           </CustomThemeProvider>
