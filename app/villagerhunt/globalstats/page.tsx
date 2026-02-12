@@ -142,8 +142,9 @@ export default function GlobalStatsPage() {
           const batchIds = allVillagerIds.slice(i, i + BATCH_SIZE);
           const { data: batchVillagers } = await supabase
             .from('villagers')
-            .select('villager_id, name, species, personality, sign, image_url')
-            .in('villager_id', batchIds);
+            .select('villager_id, name, species, personality, sign, image_url, amiibo_only')
+            .in('villager_id', batchIds)
+            .order('name');
 
           if (batchVillagers) {
             allVillagers = allVillagers.concat(batchVillagers);

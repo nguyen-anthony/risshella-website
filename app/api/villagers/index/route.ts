@@ -9,15 +9,17 @@ export async function GET() {
   const supabase = createClient(cookieStore);
   const { data, error } = await supabase
     .from('villagers')
-    .select('villager_id, name, image_url');
+    .select('villager_id, name, image_url, amiibo_only')
+    .order('name');
 
   if (error) {
     return NextResponse.json({ villagers: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
   }
 
-  // Exclude villagers that require additional purchases (not part of base game)
-  const excludedVillagerIds = [627, 573, 571, 731, 811, 876, 880, 738 ];
-  const filteredVillagers = (data ?? []).filter(villager => !excludedVillagerIds.includes(villager.villager_id));
+  // Exclude amiibo-only villagers (cannot appear on mystery islands)
+  const filteredVillagers = (data ?? []).filter(villager => 
+    villager.amiibo_only !== true
+  );
 
   return NextResponse.json(
     { villagers: filteredVillagers },

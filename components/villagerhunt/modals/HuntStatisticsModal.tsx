@@ -103,8 +103,9 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
       if (excludedVillagerIds.length > 0) {
         const { data: excludedVillagers, error: excludedError } = await supabase
           .from('villagers')
-          .select('villager_id, name, species, personality, sign, image_url')
-          .in('villager_id', excludedVillagerIds);
+          .select('villager_id, name, species, personality, sign, image_url, amiibo_only')
+          .in('villager_id', excludedVillagerIds)
+          .order('name');
 
         if (excludedError) {
           console.error('Error fetching excluded villagers:', excludedError);
@@ -138,19 +139,21 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
       const repeatVillagers = Object.values(villagerCounts).filter(count => count > 1).length;
       const totalUnique = Object.keys(villagerCounts).length;
 
-      // Fetch total villagers in game
+      // Fetch total villagers in game (exclude amiibo-only)
       const { count: totalVillagers, error: totalError } = await supabase
         .from('villagers')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .or('amiibo_only.is.null,amiibo_only.eq.false');
 
       if (totalError) {
         console.error('Error fetching total villagers:', totalError);
       }
 
-      // Fetch all distinct species and their counts
+      // Fetch all distinct species and their counts (exclude amiibo-only)
       const { data: allSpeciesData, error: speciesError } = await supabase
         .from('villagers')
         .select('species')
+        .or('amiibo_only.is.null,amiibo_only.eq.false')
         .order('species');
 
       if (speciesError) {
@@ -173,8 +176,9 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
       const villagerIds = Object.keys(villagerCounts).map(id => parseInt(id));
       const { data: villagers, error: villagersError } = await supabase
         .from('villagers')
-        .select('villager_id, name, species, personality, sign, image_url')
-        .in('villager_id', villagerIds);
+        .select('villager_id, name, species, personality, sign, image_url, amiibo_only')
+        .in('villager_id', villagerIds)
+        .order('name');
 
       if (villagersError) {
         console.error('Error fetching villagers:', villagersError);

@@ -1,20 +1,14 @@
 /**
- * Excluded villager IDs that require additional purchases (not part of base game)
+ * Filter villagers by optionally excluding amiibo-only villagers
  */
-export const EXCLUDED_VILLAGER_IDS = [627, 573, 571, 731, 811, 876];
-
-/**
- * Filter villagers by excluding specific IDs
- */
-export function filterExcludedVillagers<T extends { villager_id: number }>(
-  villagers: T[]
+export function filterExcludedVillagers<T extends { villager_id: number; amiibo_only?: boolean | null }>(
+  villagers: T[],
+  options: { includeAmiiboOnly?: boolean } = {}
 ): T[] {
-  return villagers.filter(v => !EXCLUDED_VILLAGER_IDS.includes(v.villager_id));
-}
-
-/**
- * Check if a villager ID is excluded
- */
-export function isVillagerExcluded(villagerId: number): boolean {
-  return EXCLUDED_VILLAGER_IDS.includes(villagerId);
+  return villagers.filter(v => {
+    // Optionally exclude amiibo-only villagers
+    if (!options.includeAmiiboOnly && v.amiibo_only === true) return false;
+    
+    return true;
+  });
 }
