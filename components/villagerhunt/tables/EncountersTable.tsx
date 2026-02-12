@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, TableSortLabel, TablePagination, TextField, InputAdornment, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import FiberNewIcon from "@mui/icons-material/FiberNew";
 import Image from "next/image";
 import UpdateDeleteEncounterModal from "@/components/villagerhunt/modals/UpdateDeleteEncounterModal";
 import AddEncounterModal from "@/components/villagerhunt/modals/AddEncounterModal";
@@ -214,6 +215,22 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
     });
   }, [encounters, orderBy, order, searchTerm, index]);
 
+  // Identify first sightings of each villager
+  const firstSightings = React.useMemo(() => {
+    const firstEncounterMap = new Map<number, string>();
+    
+    // Sort all encounters by island number (ascending) to find the first occurrence
+    const sortedByIsland = [...encounters].sort((a, b) => a.island_number - b.island_number);
+    
+    sortedByIsland.forEach(encounter => {
+      if (encounter.villager_id != null && !firstEncounterMap.has(encounter.villager_id)) {
+        firstEncounterMap.set(encounter.villager_id, encounter.encounter_id);
+      }
+    });
+    
+    return firstEncounterMap;
+  }, [encounters]);
+  
   // Paginate encounters
   const paginatedEncounters = React.useMemo(() => {
     const startIndex = page * rowsPerPage;
@@ -296,6 +313,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
           {paginatedEncounters.map((e) => {
             const { name, image_url } = getVillager(e.villager_id);
             const isDreamie = targetVillagerIds?.includes(e.villager_id || 0) || false;
+            const isFirstSighting = e.villager_id != null && firstSightings.get(e.villager_id) === e.encounter_id;
             return (
               <TableRow key={e.encounter_id} sx={{ bgcolor: isDreamie ? 'success.light' : 'inherit' }}>
                 <TableCell>{e.island_number}</TableCell>
@@ -312,6 +330,9 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
                       </Box>
                     )}
                     <Typography variant="body2">{name}</Typography>
+                    {isFirstSighting && (
+                      <FiberNewIcon />
+                    )}
                   </Box>
                 </TableCell>
                 <TableCell>{new Date(e.encountered_at).toLocaleString()}</TableCell>
