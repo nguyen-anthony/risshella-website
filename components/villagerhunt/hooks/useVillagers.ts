@@ -5,7 +5,7 @@ import type { Villager } from "@/types/villagerhunt";
 import { filterExcludedVillagers } from "@/utils/villagerhunt";
 import { getLocalStorage, setLocalStorage } from "@/utils/villagerhunt";
 
-const LS_KEY_BASE = "villagersIndex.v2";
+const LS_KEY_BASE = "villagersIndex.v3";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 export function useVillagers(options: { includeAmiiboOnly?: boolean } = {}) {
@@ -33,7 +33,7 @@ export function useVillagers(options: { includeAmiiboOnly?: boolean } = {}) {
         const supabase = createClient();
         const { data, error: fetchError } = await supabase
           .from("villagers")
-          .select("villager_id, name, image_url, amiibo_only")
+          .select("villager_id, name, image_url, amiibo_only, species, personality, sign")
           .order("name");
 
         if (fetchError) throw fetchError;

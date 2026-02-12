@@ -22,7 +22,7 @@ type Props = {
   onDreamieFound?: () => void;
 };
 
-const LS_KEY = "villagersIndex.v1";
+const LS_KEY = "villagersIndex.v3";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 export default function EncountersTable({ villagers, isOwner, isModerator, huntId, targetVillagerIds, onDreamieFound }: Props) {

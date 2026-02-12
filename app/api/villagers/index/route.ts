@@ -9,7 +9,7 @@ export async function GET() {
   const supabase = createClient(cookieStore);
   const { data, error } = await supabase
     .from('villagers')
-    .select('villager_id, name, image_url, amiibo_only')
+    .select('villager_id, name, image_url, amiibo_only, species, personality, sign')
     .order('name');
 
   if (error) {

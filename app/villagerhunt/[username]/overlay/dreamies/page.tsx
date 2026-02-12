@@ -4,12 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Box } from '@mui/material';
 import Image from 'next/image';
-
-interface Villager {
-  villager_id: number;
-  name: string;
-  image_url: string;
-}
+import type { Villager } from '@/types/villagerhunt';
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -45,7 +40,7 @@ export default function DreamiesOverlayPage({ params }: PageProps) {
         // Get villager data for dreamies
         const { data: villagersData } = await supabase
           .from('villagers')
-          .select('villager_id, name, image_url, amiibo_only')
+          .select('villager_id, name, image_url, amiibo_only, species, personality, sign')
           .in('villager_id', huntData.target_villager_id)
           .order('name');
 
