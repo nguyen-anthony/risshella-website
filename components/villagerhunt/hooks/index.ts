@@ -7,3 +7,4 @@ export * from './useHuntData';
 export * from './useHuntPermissions';
 export * from './useLocalStorage';
 export * from './useTableSort';
+export * from './useBingoCard';

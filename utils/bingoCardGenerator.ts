@@ -1,22 +1,20 @@
-export async function generateBingoCard({
-  huntId,
-  huntName,
-  creatorName,
+/**
+ * Select random villagers for a bingo card (without generating an image)
+ * Returns an array of villager IDs to be used in the interactive card
+ */
+export function selectBingoVillagers({
   targetVillagers,
   islandVillagers,
   hotelTourists,
   villagers,
   bingoCardSize = 5,
 }: {
-  huntId: string;
-  huntName: string;
-  creatorName: string;
-  targetVillagers: { villager_id: number; name: string; image_url: string | null }[];
+  targetVillagers: { villager_id: number }[];
   islandVillagers: number[];
   hotelTourists: number[];
-  villagers: { villager_id: number; name: string; image_url: string | null }[];
+  villagers: { villager_id: number }[];
   bingoCardSize?: number;
-}): Promise<string> {
+}): number[] {
   // Get available villagers (exclude target, island, and hotel tourists)
   const excludedIds = new Set([
     ...targetVillagers.map(v => v.villager_id),
@@ -28,42 +26,18 @@ export async function generateBingoCard({
 
   // Calculate required villagers based on size and free spaces
   const totalSquares = bingoCardSize * bingoCardSize;
-  const freeSpaces = bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0; // 3x3 and 5x5 have 1 free space, 4x4 has none
+  const freeSpaces = bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0;
   const requiredVillagers = totalSquares - freeSpaces;
 
   if (availableVillagers.length < requiredVillagers) {
-    alert(`Not enough villagers available for ${bingoCardSize}x${bingoCardSize} bingo card generation. Need ${requiredVillagers}, have ${availableVillagers.length}.`);
-    throw new Error('Not enough villagers');
+    throw new Error(
+      `Not enough villagers available for ${bingoCardSize}x${bingoCardSize} bingo card. Need ${requiredVillagers}, have ${availableVillagers.length}.`
+    );
   }
 
   // Shuffle and select required villagers
   const shuffled = [...availableVillagers].sort(() => Math.random() - 0.5);
-  const bingoVillagers = shuffled.slice(0, requiredVillagers);
-
-  // Call server-side API to generate the image
-  const response = await fetch('/api/bingo/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      huntId,
-      huntName,
-      creatorName,
-      targetVillagers,
-      islandVillagers,
-      hotelTourists,
-      bingoVillagers,
-      bingoCardSize,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to generate bingo card');
-  }
-
-  const blob = await response.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
+  const selected = shuffled.slice(0, requiredVillagers);
+  
+  return selected.map(v => v.villager_id);
 }

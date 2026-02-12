@@ -21,7 +21,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import OwnerHuntControls from '@/components/villagerhunt/controls/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import AuthLink from '@/components/villagerhunt/controls/AuthLink';
-import { generateBingoCard } from '@/utils/bingoCardGenerator';
+import { selectBingoVillagers } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/modals/UpdateIslandVillagersModal';
 import UpdateTargetVillagersModal from '@/components/villagerhunt/modals/UpdateTargetVillagersModal';
 import BingoCardModal from '@/components/villagerhunt/modals/BingoCardModal';
@@ -36,8 +36,9 @@ import ConfirmDeleteModal from '@/components/villagerhunt/modals/ConfirmDeleteMo
 import DreamieFoundModal from '@/components/villagerhunt/modals/DreamieFoundModal';
 import PublicPrivateToggleModal from '@/components/villagerhunt/modals/PublicPrivateToggleModal';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
-import { useVillagers } from '@/components/villagerhunt/hooks';
+import { useVillagers, useBingoCard } from '@/components/villagerhunt/hooks';
 import { createClient } from '@/utils/supabase/client';
+import { cleanupOldBingoCards } from '@/utils/villagerhunt/bingoCardCleanup';
 import type { Hunt, Villager, Session } from '@/types/villagerhunt';
 
 type Props = {
@@ -67,7 +68,6 @@ export default function HuntPageWrapper({
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
   const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
   const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
-  const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
@@ -88,6 +88,9 @@ export default function HuntPageWrapper({
   const [publicToggleModalOpen, setPublicToggleModalOpen] = React.useState(false);
   const [pendingPublicValue, setPendingPublicValue] = React.useState<boolean | null>(null);
   const [showPublicTooltip, setShowPublicTooltip] = React.useState<boolean>(true);
+
+  // Bingo card hook - uses localStorage
+  const bingoCard = useBingoCard(hunt?.hunt_id || '');
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -135,6 +138,8 @@ export default function HuntPageWrapper({
   // Initial fetch
   React.useEffect(() => {
     fetchHuntData();
+    // Clean up old bingo cards from localStorage
+    cleanupOldBingoCards();
   }, [fetchHuntData]);
 
   // Show inactive notification when hunt status is INACTIVE
@@ -238,14 +243,10 @@ export default function HuntPageWrapper({
     if (!hunt) return;
 
     setGeneratingBingo(true);
-    setBingoCardImage(null); // Clear previous image
     setBingoCardModalOpen(true);
 
     try {
-      const imageDataUrl = await generateBingoCard({
-        huntId: hunt.hunt_id,
-        huntName: hunt.hunt_name,
-        creatorName: initialDisplayName,
+      const villagerIds = selectBingoVillagers({
         targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
         hotelTourists: hunt.hotel_tourists,
@@ -253,10 +254,10 @@ export default function HuntPageWrapper({
         bingoCardSize: hunt.bingo_card_size,
       });
 
-      setBingoCardImage(imageDataUrl);
+      bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
     } catch (error) {
       console.error('Failed to generate bingo card:', error);
-      setBingoCardImage(null);
+      alert(error instanceof Error ? error.message : 'Failed to generate bingo card');
     } finally {
       setGeneratingBingo(false);
     }
@@ -627,7 +628,10 @@ export default function HuntPageWrapper({
             open={bingoCardModalOpen}
             onClose={() => setBingoCardModalOpen(false)}
             onRegenerate={handleGenerateBingoCard}
-            bingoCardImage={bingoCardImage}
+            onClear={bingoCard.clearCard}
+            cardData={bingoCard.cardData}
+            villagers={allVillagers}
+            onSquareClick={bingoCard.toggleSquare}
             loading={generatingBingo}
           />
 
@@ -840,7 +844,11 @@ export default function HuntPageWrapper({
       <BingoCardModal
         open={bingoCardModalOpen}
         onClose={() => setBingoCardModalOpen(false)}
-        bingoCardImage={bingoCardImage}
+        onRegenerate={handleGenerateBingoCard}
+        onClear={bingoCard.clearCard}
+        cardData={bingoCard.cardData}
+        villagers={allVillagers}
+        onSquareClick={bingoCard.toggleSquare}
         loading={generatingBingo}
       />
       <HuntStatisticsModal
