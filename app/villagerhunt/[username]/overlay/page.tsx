@@ -69,7 +69,7 @@ export default function OverlayPage({ params }: PageProps) {
           if (villagerIds.length > 0) {
             const { data: villagersData } = await supabase
               .from('villagers')
-              .select('villager_id, name, image_url, amiibo_only')
+              .select('villager_id, name, image_url, amiibo_only, species, personality, sign')
               .in('villager_id', villagerIds)
               .order('name');
             setVillagers(villagersData || []);
@@ -129,7 +129,7 @@ export default function OverlayPage({ params }: PageProps) {
                   if (villagerIds.length > 0) {
                     const { data: villagersData } = await supabase
                       .from('villagers')
-                      .select('villager_id, name, image_url, amiibo_only')
+                      .select('villager_id, name, image_url, amiibo_only, species, personality, sign')
                       .in('villager_id', villagerIds)
                       .order('name');
                     setVillagers(villagersData || []);
@@ -201,7 +201,7 @@ export default function OverlayPage({ params }: PageProps) {
         if (villagerIds.length > 0) {
           const { data: villagersData } = await supabase
             .from('villagers')
-            .select('villager_id, name, image_url, amiibo_only')
+            .select('villager_id, name, image_url, amiibo_only, species, personality, sign')
             .in('villager_id', villagerIds)
             .order('name');
           setVillagers(villagersData || []);
