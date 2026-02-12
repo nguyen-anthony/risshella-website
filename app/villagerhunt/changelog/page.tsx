@@ -14,6 +14,7 @@ import {
   Box,
   Chip,
   CircularProgress,
+  Divider,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -143,10 +144,39 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
-              February 11, 2026 - v0.13.0
+              All v0.13.x Updates
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
+            <Typography variant="h5" fontWeight="semibold">
+              February 12, 2026 - v0.13.1
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="New villager encounter indicator!" 
+                  secondary="On the encounters table AND on the overlay, you should now see when you've seen any given villager for the first time on your hunt!"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Filter for villager lists!" 
+                  secondary="Added the capability to filter villagers by species, personality, or sign in areas where the list of villagers appears (e.g. Add Encounter).
+                    This should make things easier to find the villager you're looking for if you can't remember the name of the villager!"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Sorting statistics" 
+                  secondary="I've added some sorting capabilities to hunt statistics and global statistics!"
+                />
+              </ListItem>
+              
+            </List>
+            <Divider/>
+            <Typography variant="h5" fontWeight="semibold">
+              February 11, 2026 - v0.13.0
+            </Typography>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Enhancements
             </Typography>
@@ -170,6 +200,7 @@ export default function ChangelogPage() {
                 />
               </ListItem>
             </List>
+            <Divider/>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               What is next?
             </Typography>
