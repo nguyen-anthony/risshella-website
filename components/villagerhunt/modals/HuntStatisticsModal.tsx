@@ -15,12 +15,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Paper,
   CircularProgress,
 } from '@mui/material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
+import { useTableSort } from '@/components/villagerhunt/hooks';
 import type { VillagerDetailed } from '@/types/villagerhunt';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -57,6 +59,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
   const [totalUniqueSeen, setTotalUniqueSeen] = React.useState(0);
   const [totalVillagersInGame, setTotalVillagersInGame] = React.useState(0);
   const [speciesStats, setSpeciesStats] = React.useState<Array<{species: string, found: number, total: number}>>([]);
+  const [speciesStatsSort, setSpeciesStatsSort] = React.useState<{field: 'species' | 'found' | 'total', direction: 'asc' | 'desc'}>({field: 'species', direction: 'asc'});
 
   const fetchStatistics = React.useCallback(async () => {
     setLoading(true);
@@ -248,6 +251,46 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
     }
   }, [open, huntId, fetchStatistics]);
 
+  // Sorting for distribution tables
+  const speciesDistributionSort = useTableSort(speciesData);
+  const personalityDistributionSort = useTableSort(personalityData);
+
+  // Sort species stats
+  const sortedSpeciesStats = React.useMemo(() => {
+    const sorted = [...speciesStats];
+    sorted.sort((a, b) => {
+      let aVal: string | number;
+      let bVal: string | number;
+
+      if (speciesStatsSort.field === 'species') {
+        aVal = a.species.toLowerCase();
+        bVal = b.species.toLowerCase();
+      } else if (speciesStatsSort.field === 'found') {
+        aVal = a.found;
+        bVal = b.found;
+      } else {
+        aVal = a.total;
+        bVal = b.total;
+      }
+
+      if (aVal < bVal) {
+        return speciesStatsSort.direction === 'asc' ? -1 : 1;
+      }
+      if (aVal > bVal) {
+        return speciesStatsSort.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+    return sorted;
+  }, [speciesStats, speciesStatsSort]);
+
+  const handleSpeciesStatsSort = (field: 'species' | 'found' | 'total') => {
+    setSpeciesStatsSort((current) => ({
+      field,
+      direction: current.field === field && current.direction === 'desc' ? 'asc' : 'desc',
+    }));
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>Hunt Statistics</DialogTitle>
@@ -288,14 +331,38 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Species</TableCell>
-                        <TableCell align="right">Found</TableCell>
-                        <TableCell align="right">Total</TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={speciesStatsSort.field === 'species'}
+                            direction={speciesStatsSort.field === 'species' ? speciesStatsSort.direction : 'asc'}
+                            onClick={() => handleSpeciesStatsSort('species')}
+                          >
+                            Species
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell align="right">
+                          <TableSortLabel
+                            active={speciesStatsSort.field === 'found'}
+                            direction={speciesStatsSort.field === 'found' ? speciesStatsSort.direction : 'asc'}
+                            onClick={() => handleSpeciesStatsSort('found')}
+                          >
+                            Found
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell align="right">
+                          <TableSortLabel
+                            active={speciesStatsSort.field === 'total'}
+                            direction={speciesStatsSort.field === 'total' ? speciesStatsSort.direction : 'asc'}
+                            onClick={() => handleSpeciesStatsSort('total')}
+                          >
+                            Total
+                          </TableSortLabel>
+                        </TableCell>
                         <TableCell align="right">Progress</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {speciesStats.map((stat) => (
+                      {sortedSpeciesStats.map((stat) => (
                         <TableRow key={stat.species}>
                           <TableCell>{stat.species}</TableCell>
                           <TableCell align="right">{stat.found}</TableCell>
@@ -345,15 +412,29 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
                     <Table stickyHeader size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Species</TableCell>
-                          <TableCell align="right">Count</TableCell>
+                          <TableCell>
+                            <TableSortLabel
+                              active={speciesDistributionSort.sortConfig.field === 'name'}
+                              direction={speciesDistributionSort.sortConfig.field === 'name' ? speciesDistributionSort.sortConfig.direction : 'asc'}
+                              onClick={() => speciesDistributionSort.handleSort('name')}
+                            >
+                              Species
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={speciesDistributionSort.sortConfig.field === 'value'}
+                              direction={speciesDistributionSort.sortConfig.field === 'value' ? speciesDistributionSort.sortConfig.direction : 'asc'}
+                              onClick={() => speciesDistributionSort.handleSort('value')}
+                            >
+                              Count
+                            </TableSortLabel>
+                          </TableCell>
                           <TableCell align="right">Percentage</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {[...speciesData]
-                          .sort((a, b) => b.value - a.value)
-                          .map((row) => {
+                        {speciesDistributionSort.sortedData.map((row) => {
                             const total = speciesData.reduce((sum, item) => sum + item.value, 0);
                             const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
                             return (
@@ -414,15 +495,29 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
                     <Table stickyHeader size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Personality</TableCell>
-                          <TableCell align="right">Count</TableCell>
+                          <TableCell>
+                            <TableSortLabel
+                              active={personalityDistributionSort.sortConfig.field === 'name'}
+                              direction={personalityDistributionSort.sortConfig.field === 'name' ? personalityDistributionSort.sortConfig.direction : 'asc'}
+                              onClick={() => personalityDistributionSort.handleSort('name')}
+                            >
+                              Personality
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={personalityDistributionSort.sortConfig.field === 'value'}
+                              direction={personalityDistributionSort.sortConfig.field === 'value' ? personalityDistributionSort.sortConfig.direction : 'asc'}
+                              onClick={() => personalityDistributionSort.handleSort('value')}
+                            >
+                              Count
+                            </TableSortLabel>
+                          </TableCell>
                           <TableCell align="right">Percentage</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {[...personalityData]
-                          .sort((a, b) => b.value - a.value)
-                          .map((row) => {
+                        {personalityDistributionSort.sortedData.map((row) => {
                             const total = personalityData.reduce((sum, item) => sum + item.value, 0);
                             const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
                             return (

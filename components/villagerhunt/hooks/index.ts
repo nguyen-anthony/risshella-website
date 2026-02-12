@@ -6,3 +6,4 @@ export * from './useVillagers';
 export * from './useHuntData';
 export * from './useHuntPermissions';
 export * from './useLocalStorage';
+export * from './useTableSort';

@@ -12,6 +12,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   CircularProgress,
   Card,
   CardContent,
@@ -29,6 +30,7 @@ import Grid from '@mui/material/Grid2';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createClient } from '@/utils/supabase/client';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
+import { useTableSort } from '@/components/villagerhunt/hooks';
 import type { VillagerDetailed } from '@/types/villagerhunt';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7c7c'];
@@ -276,6 +278,11 @@ export default function GlobalStatsPage() {
   React.useEffect(() => {
     fetchGlobalStatistics();
   }, [fetchGlobalStatistics]);
+
+  // Sorting for trait distributions
+  const speciesSort = useTableSort(speciesData);
+  const personalitySort = useTableSort(personalityData);
+  const signSort = useTableSort(signData);
 
   if (loading) {
     return (
@@ -919,13 +926,29 @@ export default function GlobalStatsPage() {
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Species</TableCell>
-                        <TableCell align="right">Encounters</TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={speciesSort.sortConfig.field === 'name'}
+                            direction={speciesSort.sortConfig.field === 'name' ? speciesSort.sortConfig.direction : 'asc'}
+                            onClick={() => speciesSort.handleSort('name')}
+                          >
+                            Species
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell align="right">
+                          <TableSortLabel
+                            active={speciesSort.sortConfig.field === 'value'}
+                            direction={speciesSort.sortConfig.field === 'value' ? speciesSort.sortConfig.direction : 'asc'}
+                            onClick={() => speciesSort.handleSort('value')}
+                          >
+                            Encounters
+                          </TableSortLabel>
+                        </TableCell>
                         <TableCell align="right">Percentage</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {speciesData.map((row) => {
+                      {speciesSort.sortedData.map((row) => {
                         const total = speciesData.reduce((sum, item) => sum + item.value, 0);
                         const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
                         return (
@@ -979,13 +1002,29 @@ export default function GlobalStatsPage() {
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Personality</TableCell>
-                        <TableCell align="right">Encounters</TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={personalitySort.sortConfig.field === 'name'}
+                            direction={personalitySort.sortConfig.field === 'name' ? personalitySort.sortConfig.direction : 'asc'}
+                            onClick={() => personalitySort.handleSort('name')}
+                          >
+                            Personality
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell align="right">
+                          <TableSortLabel
+                            active={personalitySort.sortConfig.field === 'value'}
+                            direction={personalitySort.sortConfig.field === 'value' ? personalitySort.sortConfig.direction : 'asc'}
+                            onClick={() => personalitySort.handleSort('value')}
+                          >
+                            Encounters
+                          </TableSortLabel>
+                        </TableCell>
                         <TableCell align="right">Percentage</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {personalityData.map((row) => {
+                      {personalitySort.sortedData.map((row) => {
                         const total = personalityData.reduce((sum, item) => sum + item.value, 0);
                         const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
                         return (
@@ -1039,13 +1078,29 @@ export default function GlobalStatsPage() {
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Sign</TableCell>
-                        <TableCell align="right">Encounters</TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={signSort.sortConfig.field === 'name'}
+                            direction={signSort.sortConfig.field === 'name' ? signSort.sortConfig.direction : 'asc'}
+                            onClick={() => signSort.handleSort('name')}
+                          >
+                            Sign
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell align="right">
+                          <TableSortLabel
+                            active={signSort.sortConfig.field === 'value'}
+                            direction={signSort.sortConfig.field === 'value' ? signSort.sortConfig.direction : 'asc'}
+                            onClick={() => signSort.handleSort('value')}
+                          >
+                            Encounters
+                          </TableSortLabel>
+                        </TableCell>
                         <TableCell align="right">Percentage</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {signData.map((row) => {
+                      {signSort.sortedData.map((row) => {
                         const total = signData.reduce((sum, item) => sum + item.value, 0);
                         const percentage = total > 0 ? ((row.value / total) * 100).toFixed(1) : '0';
                         return (
