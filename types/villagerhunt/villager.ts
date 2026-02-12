@@ -20,4 +20,4 @@ export interface VillagerDetailed extends VillagerBase {
 /**
  * Default villager type used throughout the application
  */
-export type Villager = VillagerBase;
+export type Villager = VillagerDetailed;
