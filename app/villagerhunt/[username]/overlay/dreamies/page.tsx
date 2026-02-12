@@ -4,12 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Box } from '@mui/material';
 import Image from 'next/image';
-
-interface Villager {
-  villager_id: number;
-  name: string;
-  image_url: string;
-}
+import type { Villager } from '@/types/villagerhunt';
 
 type PageProps = {
   params: Promise<{ username: string }>;

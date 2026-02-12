@@ -5,12 +5,7 @@ import { Card, CardContent, Typography, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
 import ResumeButton from '@/components/villagerhunt/controls/ResumeButton';
-
-type Villager = {
-  villager_id: number;
-  name: string;
-  image_url: string | null;
-};
+import type { Villager } from '@/types/villagerhunt';
 
 type Hunt = {
   hunt_id: string;
