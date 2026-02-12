@@ -143,6 +143,61 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              February 11, 2026 - v0.13.0
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Amiibo Characters!" 
+                  secondary="Amiibo characters from Sanrio, Zelda, and Splatoon are now available on the site. 
+                    These characters can ONLY appear in the current island villagers list. 
+                    These cannot appear in the hotel, bingo cards, or dreamies lists. These will not impact statistics either. 
+                    This is only for the 'accuracy' for your current island villager lists when creating a hunt."
+                />
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Villager list ordering" 
+                  secondary="Not sure why the villagers lists were never in alphabetical order. They are now!"
+                />
+              </ListItem>
+            </List>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              What is next?
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText 
+                  primary="I'm working on a better design to make this page more Animal Crossing friendly rather than a basic dark mode/light mode color theme."
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText 
+                  primary="Interactive Bingo Card!" 
+                  secondary="This is a bit more complex because I am trying to not require everyone to login to do this, but I am working on a hopefully slick solution to make this happen so you can stop saving your bingo cards locally!"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText 
+                  primary="Data Exporting" 
+                  secondary="I am working on allowing users to export their hunt data to keep for yourselves!"
+                />
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               February 7, 2026 - v0.12.0
             </Typography>
           </AccordionSummary>

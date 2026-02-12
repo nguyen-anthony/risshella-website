@@ -9,7 +9,8 @@ export async function GET() {
   const supabase = createClient(cookieStore);
   const { data, error } = await supabase
     .from('villagers')
-    .select('villager_id, name, image_url, amiibo_only');
+    .select('villager_id, name, image_url, amiibo_only')
+    .order('name');
 
   if (error) {
     return NextResponse.json({ villagers: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });

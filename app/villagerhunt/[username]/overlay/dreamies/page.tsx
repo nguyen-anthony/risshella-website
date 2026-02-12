@@ -46,7 +46,8 @@ export default function DreamiesOverlayPage({ params }: PageProps) {
         const { data: villagersData } = await supabase
           .from('villagers')
           .select('villager_id, name, image_url, amiibo_only')
-          .in('villager_id', huntData.target_villager_id);
+          .in('villager_id', huntData.target_villager_id)
+          .order('name');
 
         if (villagersData) {
           setDreamies(villagersData);

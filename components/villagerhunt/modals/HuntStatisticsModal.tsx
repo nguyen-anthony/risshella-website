@@ -104,7 +104,8 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
         const { data: excludedVillagers, error: excludedError } = await supabase
           .from('villagers')
           .select('villager_id, name, species, personality, sign, image_url, amiibo_only')
-          .in('villager_id', excludedVillagerIds);
+          .in('villager_id', excludedVillagerIds)
+          .order('name');
 
         if (excludedError) {
           console.error('Error fetching excluded villagers:', excludedError);
@@ -176,7 +177,8 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
       const { data: villagers, error: villagersError } = await supabase
         .from('villagers')
         .select('villager_id, name, species, personality, sign, image_url, amiibo_only')
-        .in('villager_id', villagerIds);
+        .in('villager_id', villagerIds)
+        .order('name');
 
       if (villagersError) {
         console.error('Error fetching villagers:', villagersError);

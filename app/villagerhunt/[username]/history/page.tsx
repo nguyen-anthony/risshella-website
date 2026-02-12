@@ -79,7 +79,8 @@ export default async function HuntHistoryPage(props: PageProps) {
   // Fetch villagers for dreamie lookup
   const { data: villagersData } = await supabase
     .from('villagers')
-    .select('villager_id, name, image_url, amiibo_only');
+    .select('villager_id, name, image_url, amiibo_only')
+    .order('name');
 
   const villagersMap: Record<number, Villager> = {};
   (villagersData || []).forEach(v => {
