@@ -14,6 +14,7 @@ import {
   Box,
   Chip,
   CircularProgress,
+  Divider,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -142,11 +143,14 @@ export default function ChangelogPage() {
 
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5" fontWeight="semibold">
-              February 12, 2026 - v0.13.1 Update
+            <Typography variant="h5" fontWeight="semibold">
+              All v0.13.x Updates
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
+            <Typography variant="h5" fontWeight="semibold">
+              February 12, 2026 - v0.13.1
+            </Typography>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               Enhancements
             </Typography>
@@ -169,6 +173,7 @@ export default function ChangelogPage() {
               </ListItem>
               
             </List>
+            <Divider/>
             <Typography variant="h5" fontWeight="semibold">
               February 11, 2026 - v0.13.0
             </Typography>
@@ -195,6 +200,7 @@ export default function ChangelogPage() {
                 />
               </ListItem>
             </List>
+            <Divider/>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
               What is next?
             </Typography>
