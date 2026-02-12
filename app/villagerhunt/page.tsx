@@ -16,6 +16,7 @@ type PageData = {
   creators: Creator[];
   session: ReturnType<typeof getValidSession> extends Promise<infer T> ? T : never;
   error?: Error | null;
+  isCriticalError?: boolean;
   activeHunts: ActiveHunt[];
   liveStreamUserIds: string[];
 };
@@ -25,63 +26,93 @@ export default async function VillagerHunt() {
   const supabase = createClient(cookieStore);
   const session = await getValidSession();
 
-  // Get all public creators
-  const { data: publicCreators, error: publicError } = await supabase
-    .from('creators')
-    .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
-    .eq('is_public', true)
-    .order('created_at', { ascending: true });
+  let creators: Creator[] = [];
+  let error: Error | null = null;
+  let isCriticalError = false;
 
-  if (publicError) {
-    console.error('Error fetching public creators:', publicError);
-  }
-
-  let creators = (publicCreators ?? []) as Creator[];
-  let error = publicError;
-
-  // If user is authenticated, also fetch their creator record (even if private)
-  if (session) {
-    const { data: userCreator, error: userError } = await supabase
+  // Wrap in try-catch to handle connection errors (like 522 when Supabase is down)
+  try {
+    // Get all public creators
+    const { data: publicCreators, error: publicError } = await supabase
       .from('creators')
       .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
-      .eq('twitch_username', session.login)
-      .single();
+      .eq('is_public', true)
+      .order('created_at', { ascending: true });
 
-    if (userError && userError.code !== 'PGRST116') {
-      console.error('Error fetching user creator:', userError);
+    if (publicError) {
+      console.error('Error fetching public creators:', publicError);
+      error = publicError;
+      // Check if it's a connection error (hint field often contains network error info)
+      if (publicError.message?.toLowerCase().includes('fetch') || 
+          publicError.message?.toLowerCase().includes('network') ||
+          publicError.message?.toLowerCase().includes('connect')) {
+        isCriticalError = true;
+      }
+    } else {
+      creators = (publicCreators ?? []) as Creator[];
     }
 
-    if (userCreator && !error) {
-      // Add user creator to the list if not already included (in case they are public)
-      const userExists = creators.some(c => c.twitch_id === userCreator.twitch_id);
-      if (!userExists) {
-        creators = [userCreator, ...creators];
+    // If user is authenticated, also fetch their creator record (even if private)
+    if (session && !isCriticalError) {
+      const { data: userCreator, error: userError } = await supabase
+        .from('creators')
+        .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
+        .eq('twitch_username', session.login)
+        .single();
+
+      if (userError && userError.code !== 'PGRST116') {
+        console.error('Error fetching user creator:', userError);
+      }
+
+      if (userCreator && !error) {
+        // Add user creator to the list if not already included (in case they are public)
+        const userExists = creators.some(c => c.twitch_id === userCreator.twitch_id);
+        if (!userExists) {
+          creators = [userCreator, ...creators];
+        }
+      }
+
+      // Use user error if public query succeeded but user query failed
+      if (!error && userError && userError.code !== 'PGRST116') { // PGRST116 is "not found"
+        error = userError;
       }
     }
-
-    // Use user error if public query succeeded but user query failed
-    if (!error && userError && userError.code !== 'PGRST116') { // PGRST116 is "not found"
-      error = userError;
-    }
+  } catch (err) {
+    // Catch any network/connection errors
+    console.error('Critical error connecting to database:', err);
+    error = err instanceof Error ? err : new Error('Failed to connect to backend services');
+    isCriticalError = true;
   }
 
   // Get active hunts with current island - fetch all results using pagination
   let allActiveHunts: ActiveHunt[] = [];
-  let page = 0;
-  const pageSize = 1000;
-  let hasMore = true;
+  
+  if (!isCriticalError) {
+    try {
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-  while (hasMore) {
-    const { data: activeHuntsPage } = await supabase
-      .rpc('get_active_hunts_with_island')
-      .range(page * pageSize, (page + 1) * pageSize - 1);
-    
-    if (activeHuntsPage && activeHuntsPage.length > 0) {
-      allActiveHunts = [...allActiveHunts, ...activeHuntsPage];
-      hasMore = activeHuntsPage.length === pageSize;
-      page++;
-    } else {
-      hasMore = false;
+      while (hasMore) {
+        const { data: activeHuntsPage } = await supabase
+          .rpc('get_active_hunts_with_island')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        
+        if (activeHuntsPage && activeHuntsPage.length > 0) {
+          allActiveHunts = [...allActiveHunts, ...activeHuntsPage];
+          hasMore = activeHuntsPage.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching active hunts:', err);
+      // Don't mark as critical if we already have creators data
+      if (creators.length === 0) {
+        isCriticalError = true;
+        error = err instanceof Error ? err : new Error('Failed to fetch hunt data');
+      }
     }
   }
 
@@ -131,6 +162,7 @@ export default async function VillagerHunt() {
     creators: sortedCreators,
     session,
     error,
+    isCriticalError,
     activeHunts,
     liveStreamUserIds,
   };
