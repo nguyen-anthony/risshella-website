@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Box, Typography } from '@mui/material';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
 import Image from 'next/image';
 import localFont from 'next/font/local';
 import type { Hunt, Encounter, Villager } from '@/types/villagerhunt';
@@ -24,6 +25,7 @@ export default function OverlayPage({ params }: PageProps) {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [villagers, setVillagers] = useState<Villager[]>([]);
   const [huntName, setHuntName] = useState<string>('');
+  const [firstSightings, setFirstSightings] = useState<Map<number, number>>(new Map());
 
   useEffect(() => {
     const supabase = createClient();
@@ -71,6 +73,27 @@ export default function OverlayPage({ params }: PageProps) {
               .in('villager_id', villagerIds)
               .order('name');
             setVillagers(villagersData || []);
+            
+            // Fetch first sighting for each villager
+            const firstSightingsMap = new Map<number, number>();
+            await Promise.all(
+              villagerIds.map(async (villagerId) => {
+                const { data } = await supabase
+                  .from('encounters')
+                  .select('island_number')
+                  .eq('hunt_id', huntData.hunt_id)
+                  .eq('villager_id', villagerId)
+                  .eq('is_deleted', false)
+                  .order('island_number', { ascending: true })
+                  .limit(1)
+                  .single();
+                
+                if (data) {
+                  firstSightingsMap.set(villagerId as number, data.island_number);
+                }
+              })
+            );
+            setFirstSightings(firstSightingsMap);
           }
         }
       }
@@ -110,15 +133,38 @@ export default function OverlayPage({ params }: PageProps) {
                       .in('villager_id', villagerIds)
                       .order('name');
                     setVillagers(villagersData || []);
+                    
+                    // Fetch first sighting for each villager
+                    const firstSightingsMap = new Map<number, number>();
+                    await Promise.all(
+                      villagerIds.map(async (villagerId) => {
+                        const { data } = await supabase
+                          .from('encounters')
+                          .select('island_number')
+                          .eq('hunt_id', newHunt.hunt_id)
+                          .eq('villager_id', villagerId)
+                          .eq('is_deleted', false)
+                          .order('island_number', { ascending: true })
+                          .limit(1)
+                          .single();
+                        
+                        if (data) {
+                          firstSightingsMap.set(villagerId as number, data.island_number);
+                        }
+                      })
+                    );
+                    setFirstSightings(firstSightingsMap);
                   }
                 } else {
                   setEncounters([]);
                   setVillagers([]);
+                  setFirstSightings(new Map());
                 }
               } else if (newHunt.hunt_status === 'COMPLETED' || newHunt.hunt_status === 'PAUSED') {
                 setHunt(null);
                 setEncounters([]);
                 setVillagers([]);
+                setFirstSightings(new Map());
               }
             }
           }
@@ -159,8 +205,30 @@ export default function OverlayPage({ params }: PageProps) {
             .in('villager_id', villagerIds)
             .order('name');
           setVillagers(villagersData || []);
+          
+          // Fetch first sighting (minimum island_number) for each villager
+          const firstSightingsMap = new Map<number, number>();
+          await Promise.all(
+            villagerIds.map(async (villagerId) => {
+              const { data } = await supabase
+                .from('encounters')
+                .select('island_number')
+                .eq('hunt_id', hunt.hunt_id)
+                .eq('villager_id', villagerId)
+                .eq('is_deleted', false)
+                .order('island_number', { ascending: true })
+                .limit(1)
+                .single();
+              
+              if (data) {
+                firstSightingsMap.set(villagerId as number, data.island_number);
+              }
+            })
+          );
+          setFirstSightings(firstSightingsMap);
         } else {
           setVillagers([]);
+          setFirstSightings(new Map());
         }
       }
     };
@@ -277,6 +345,7 @@ export default function OverlayPage({ params }: PageProps) {
           {encounters.map((encounter) => {
             if (!encounter.villager_id) return null;
             const villager = villagerMap.get(encounter.villager_id);
+            const isFirstSighting = firstSightings.get(encounter.villager_id) === encounter.island_number;
             return (
               <Box
                 key={encounter.encounter_id}
@@ -344,6 +413,14 @@ export default function OverlayPage({ params }: PageProps) {
                   }}>
                     {villager?.name || `Unknown #${encounter.villager_id}`}
                   </Typography>
+                  {isFirstSighting && (
+                    <FiberNewIcon 
+                      sx={{ 
+                        fontSize: '48px',
+                        filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'
+                      }} 
+                    />
+                  )}
                 </Box>
                 <Typography sx={{
                   color: 'white',
