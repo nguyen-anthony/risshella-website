@@ -5,6 +5,7 @@ export interface VillagerBase {
   villager_id: number;
   name: string;
   image_url: string | null;
+  amiibo_only?: boolean | null;
 }
 
 /**

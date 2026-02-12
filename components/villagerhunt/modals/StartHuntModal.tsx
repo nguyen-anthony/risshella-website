@@ -21,7 +21,8 @@ type Props = {
 };
 
 export default function StartHuntModal({ open, onClose, onCreated }: Props) {
-  const { villagers, loading } = useVillagers();
+  const { villagers, loading } = useVillagers(); // Exclude amiibo-only for dreamies/hotel tourists
+  const { villagers: allVillagers, loading: loadingAll } = useVillagers({ includeAmiiboOnly: true }); // Include all for island villagers
   const [huntName, setHuntName] = React.useState("");
   const [selected, setSelected] = React.useState<Villager[]>([]);
   const [islandVillagers, setIslandVillagers] = React.useState<Villager[]>([]);
@@ -94,13 +95,13 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
           onChange={(v) => setSelected(v as Villager[])}
           label="Dreamie List"
           required
-          helperText="Select the villagers you're hunting for"
+          helperText="Select the villagers you're hunting for (amiibo-only villagers excluded)"
           showTagAvatars
         />
         <VillagerAutocomplete
           multiple
-          loading={loading}
-          villagers={villagers}
+          loading={loadingAll}
+          villagers={allVillagers}
           value={islandVillagers}
           onChange={(v) => {
             const newValue = v as Villager[];
@@ -121,7 +122,7 @@ export default function StartHuntModal({ open, onClose, onCreated }: Props) {
             setHotelTourists(newValue.slice(0, 9));
           }}
           label="Current Hotel Tourists (max 9)"
-          helperText="Select villagers currently visiting as hotel tourists. These villagers cannot be found during hunts and will be excluded from bingo cards."
+          helperText="Select villagers currently visiting as hotel tourists. These villagers cannot be found during hunts and will be excluded from bingo cards (amiibo-only villagers excluded)."
           maxSelection={9}
           excludeVillagerIds={[...selected.map(s => s.villager_id), ...islandVillagers.map(i => i.villager_id)]}
         />

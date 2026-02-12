@@ -19,6 +19,7 @@ type Props = {
   currentIslandVillagers: number[];
   currentHotelTourists: number[];
   villagers: Villager[];
+  allVillagers: Villager[]; // All villagers including amiibo-only
   onUpdated?: () => void;
 };
 
@@ -29,6 +30,7 @@ export default function UpdateIslandVillagersModal({
   currentIslandVillagers,
   currentHotelTourists,
   villagers,
+  allVillagers,
   onUpdated
 }: Props) {
   const [selectedVillagers, setSelectedVillagers] = React.useState<Villager[]>([]);
@@ -38,12 +40,12 @@ export default function UpdateIslandVillagersModal({
   // Initialize selected villagers when modal opens
   React.useEffect(() => {
     if (open) {
-      const current = villagers.filter(v => currentIslandVillagers.includes(v.villager_id));
+      const current = allVillagers.filter(v => currentIslandVillagers.includes(v.villager_id));
       setSelectedVillagers(current);
       const currentTourists = villagers.filter(v => currentHotelTourists.includes(v.villager_id));
       setSelectedHotelTourists(currentTourists);
     }
-  }, [open, currentIslandVillagers, currentHotelTourists, villagers]);
+  }, [open, currentIslandVillagers, currentHotelTourists, villagers, allVillagers]);
 
   const handleUpdate = async () => {
     setSubmitting(true);
@@ -81,7 +83,7 @@ export default function UpdateIslandVillagersModal({
         </Typography>
         <VillagerAutocomplete
           multiple
-          villagers={villagers}
+          villagers={allVillagers}
           value={selectedVillagers}
           onChange={(v) => {
             const newValue = v as Villager[];
@@ -104,7 +106,7 @@ export default function UpdateIslandVillagersModal({
             setSelectedHotelTourists(newValue.slice(0, 9));
           }}
           label="Current Hotel Tourists (max 9)"
-          helperText="Select villagers currently visiting as hotel tourists"
+          helperText="Select villagers currently visiting as hotel tourists (amiibo-only villagers excluded)"
           maxSelection={9}
           excludeVillagerIds={selectedVillagers.map(s => s.villager_id)}
         />

@@ -2,6 +2,7 @@
 DROP MATERIALIZED VIEW IF EXISTS global_hunt_stats CASCADE;
 
 -- Create materialized view for global statistics
+-- Note: Excludes amiibo-only villagers as they cannot be encountered on mystery islands
 CREATE MATERIALIZED VIEW global_hunt_stats AS
 WITH public_hunts AS (
     SELECT 
@@ -15,13 +16,22 @@ WITH public_hunts AS (
     WHERE c.is_public = true
     AND h.hunt_status IN ('ACTIVE', 'COMPLETED')
 ),
+-- Filter encounters to only include non-amiibo villagers
+valid_encounters AS (
+    SELECT 
+        e.hunt_id,
+        e.villager_id
+    FROM encounters e
+    INNER JOIN villagers v ON e.villager_id = v.villager_id
+    WHERE e.is_deleted = false
+    AND (v.amiibo_only IS NULL OR v.amiibo_only = false)
+),
 encounter_counts AS (
     SELECT 
         e.hunt_id,
         e.villager_id,
         COUNT(*) as encounter_count
-    FROM encounters e
-    WHERE e.is_deleted = false
+    FROM valid_encounters e
     GROUP BY e.hunt_id, e.villager_id
 ),
 hunt_totals AS (
@@ -49,6 +59,8 @@ dreamie_totals AS (
         COUNT(*) as dreamie_count
     FROM public_hunts
     CROSS JOIN LATERAL unnest(target_villager_id) as villager_id
+    INNER JOIN villagers v ON villager_id = v.villager_id
+    WHERE (v.amiibo_only IS NULL OR v.amiibo_only = false)
     GROUP BY villager_id
 )
 SELECT 

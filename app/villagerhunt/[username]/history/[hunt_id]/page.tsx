@@ -44,7 +44,7 @@ export default async function HuntDetailPage(props: PageProps) {
   // Fetch villagers for encounter lookup
   const { data: villagersData } = await supabase
     .from('villagers')
-    .select('villager_id, name, image_url');
+    .select('villager_id, name, image_url, amiibo_only');
 
   const villagers = filterExcludedVillagers(villagersData || []);
 

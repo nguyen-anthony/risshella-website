@@ -61,7 +61,8 @@ export default function HuntPageWrapper({
 }: Props) {
   const [hunt, setHunt] = React.useState<Hunt | null>(null);
   const [huntLoading, setHuntLoading] = React.useState(true);
-  const { villagers } = useVillagers();
+  const { villagers } = useVillagers(); // Exclude amiibo-only
+  const { villagers: allVillagers } = useVillagers({ includeAmiiboOnly: true }); // Include all
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
   const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
@@ -319,9 +320,9 @@ export default function HuntPageWrapper({
       setIslandVillagersData([]);
       return;
     }
-    const islandVillagers = villagers.filter(v => hunt.island_villagers.includes(v.villager_id));
+    const islandVillagers = allVillagers.filter(v => hunt.island_villagers.includes(v.villager_id));
     setIslandVillagersData(islandVillagers);
-  }, [hunt?.island_villagers, villagers]);
+  }, [hunt?.island_villagers, allVillagers]);
 
   // Resolve hotel tourists data
   const [hotelTouristsData, setHotelTouristsData] = React.useState<Villager[]>([]);
@@ -609,6 +610,7 @@ export default function HuntPageWrapper({
             currentIslandVillagers={hunt.island_villagers}
             currentHotelTourists={hunt.hotel_tourists}
             villagers={villagers}
+            allVillagers={allVillagers}
             onUpdated={fetchHuntData}
           />
 
@@ -832,6 +834,7 @@ export default function HuntPageWrapper({
         currentIslandVillagers={hunt?.island_villagers || []}
         currentHotelTourists={hunt?.hotel_tourists || []}
         villagers={villagers}
+        allVillagers={allVillagers}
         onUpdated={fetchHuntData}
       />
       <BingoCardModal

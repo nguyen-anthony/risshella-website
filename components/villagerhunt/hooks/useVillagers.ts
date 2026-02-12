@@ -5,10 +5,10 @@ import type { Villager } from "@/types/villagerhunt";
 import { filterExcludedVillagers } from "@/utils/villagerhunt";
 import { getLocalStorage, setLocalStorage } from "@/utils/villagerhunt";
 
-const LS_KEY = "villagersIndex.v1";
+const LS_KEY_BASE = "villagersIndex.v2";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-export function useVillagers() {
+export function useVillagers(options: { includeAmiiboOnly?: boolean } = {}) {
   const [villagers, setVillagers] = useState<Villager[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -18,6 +18,9 @@ export function useVillagers() {
 
     const loadVillagers = async () => {
       try {
+        // Create cache key based on options
+        const LS_KEY = options.includeAmiiboOnly ? `${LS_KEY_BASE}.amiibo` : LS_KEY_BASE;
+        
         // Try localStorage first
         const cached = getLocalStorage<Villager[]>(LS_KEY, TTL_MS);
         if (cached && !cancelled) {
@@ -30,11 +33,11 @@ export function useVillagers() {
         const supabase = createClient();
         const { data, error: fetchError } = await supabase
           .from("villagers")
-          .select("villager_id, name, image_url");
+          .select("villager_id, name, image_url, amiibo_only");
 
         if (fetchError) throw fetchError;
 
-        const filtered = filterExcludedVillagers(data || []);
+        const filtered = filterExcludedVillagers(data || [], options);
         
         if (!cancelled) {
           setVillagers(filtered);
