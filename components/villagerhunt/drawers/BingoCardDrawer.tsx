@@ -20,6 +20,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import BuildIcon from '@mui/icons-material/Build';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Link from 'next/link';
 import InteractiveBingoCard from '../displays/InteractiveBingoCard';
 import BingoFilters from '../inputs/BingoFilters';
 import CustomBingoCardBuilder from '../inputs/CustomBingoCardBuilder';
@@ -218,7 +220,7 @@ export default function BingoCardDrawer({
         ) : cardData ? (
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Click on villager squares to mark them as found! Your progress is automatically saved.
+              Bingo cards are saved on your browser. Highly recommend using backup/restore options.
             </Alert>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
               <InteractiveBingoCard
@@ -228,6 +230,19 @@ export default function BingoCardDrawer({
                 size={cardData.size}
                 onSquareClick={onSquareClick}
               />
+            </Box>
+
+            {/* Full Screen Mode Button */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+              <Button
+                component={Link}
+                href={`/villagerhunt/${username}/bingocard`}
+                variant="outlined"
+                startIcon={<OpenInNewIcon />}
+                fullWidth
+              >
+                Full Screen Mode
+              </Button>
             </Box>
           </Box>
         ) : (

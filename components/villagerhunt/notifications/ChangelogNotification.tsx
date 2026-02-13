@@ -102,7 +102,7 @@ export default function ChangelogNotification() {
           <CloseIcon fontSize="small" />
         </IconButton>
         <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
-          Interactive Bingo Card is now live! More details in the {' '}
+          Interactive Bingo Cards are now live! There is also a Chrome Extension! More details in the {' '}
           <Link
             href="/villagerhunt/changelog"
             onClick={handleLinkClick}

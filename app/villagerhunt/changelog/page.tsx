@@ -15,6 +15,7 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  Link,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -157,13 +158,50 @@ export default function ChangelogPage() {
             <List dense>
               <ListItem>
                 <ListItemText primary="Interactive Bingo Cards!" 
-                  secondary="Bingo Cards are no longer just generated images. You can now make interactive bingo cards right on the webpage!
-                    Generating bingo cards with all villagers or add filters to restrict the villager list further!
-                    You can even create your own custom cards (perfect to replacet your card from before this update)!
-                    Important to note that your card data is NOT being stored by me, I am utilizing your browser cache.
-                    Because of this, I've added the ability to download and restore your card data in case your browser resets. Play around with this feature and as always, provide feedback on how to improve it!"
+                  secondary={`Bingo Cards are no longer just generated images. 
+                    You can now make interactive bingo cards right on the webpage!
+
+                    Generating bingo cards with all villagers or add filters.
+                    You can even create your own custom cards (perfect to replace your card from before this update)!
+
+                    Important: your card data is NOT stored by me.
+                    It uses your browser cache.
+                    There's download and upload features to help backup your bingo data.
+
+                    Transparently, storing everyone's bingo cards and having live updates can get costly on the infrastructure.
+                    I will evaluate after some time to see if it's feasible to do so!
+
+                    As always, thank you for the support and feel free to provide feedback via the support button!
+                    `}
+
+                    slotProps={{
+                      secondary: {
+                        sx: { whiteSpace: 'pre-line' },
+                        component: 'p'           // optional: control the rendered element
+                      }
+                    }}
                 />
               </ListItem>
+              <ListItem>
+              <ListItemText
+                primary="Chrome Extension for Mods and Streamers by Sery!"
+                secondary={
+                  <>
+                    Sery did an amazing project to add a Chrome extension that adds the
+                    encounters controls for mods and streamers to Twitch&apos;s mod view! Check
+                    it out here at the Chrome Store under{" "}
+                    <Link
+                      href="https://chromewebstore.google.com/detail/villager-hunt-assistant/eflcjhalgdobabndeclijlpkoiogbeee"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Villager Hunt Assistant
+                    </Link>
+                    .
+                  </>
+                }
+              />
+            </ListItem>
               <ListItem>
                 <ListItemText primary="Collapsible island villager and dreamie lists" 
                   secondary="I pulled villager lists OUT of the modals and back on the main page, but put them in collapsible sections to help with organize the page."
@@ -201,7 +239,7 @@ export default function ChangelogPage() {
           </AccordionDetails>
         </Accordion>
 
-        <Accordion defaultExpanded>
+        <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
               All v0.13.x Updates
