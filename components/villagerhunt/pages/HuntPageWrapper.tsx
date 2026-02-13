@@ -421,7 +421,7 @@ export default function HuntPageWrapper({
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
       {/* Help Button for authenticated owners/moderators */}
       {(initialIsOwner || isModerator) && initialSession && (
-        <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
+        <Box sx={{ position: 'fixed', top: 80, right: 20, zIndex: 1000 }}>
           <IconButton
             onClick={() => setInstructionsDrawerOpen(true)}
             sx={{
