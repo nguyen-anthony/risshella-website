@@ -177,6 +177,13 @@ export default function BingoCardDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
+      slotProps={{
+        backdrop: {
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.0)', // Reduced from default 0.5
+          },
+        },
+      }}
       sx={{
         '& .MuiDrawer-paper': {
           width: { xs: '100vw', sm: `${getDrawerWidth()}px` },
