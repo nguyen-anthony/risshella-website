@@ -170,9 +170,9 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 3 } }}>
       {/* Header with Back Button */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 2, sm: 3 } }}>
         <Button
           component={Link}
           href={`/villagerhunt/${username}`}
@@ -187,7 +187,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
       </Box>
 
       {/* Mobile Title */}
-      <Typography variant="h6" fontWeight={600} sx={{ mb: 3, display: { xs: 'block', sm: 'none' } }}>
+      <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 2, sm: 3 }, display: { xs: 'block', sm: 'none' } }}>
         {hunt.hunt_name} - Bingo Card
       </Typography>
 
@@ -201,11 +201,11 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
         </Box>
       ) : bingoCard.cardData ? (
         <Box>
-          <Alert severity="info" sx={{ mb: 3 }}>
+          <Alert severity="info" sx={{ mb: { xs: 2, sm: 3 }, display: { xs: 'none', sm: 'flex' } }}>
             Click on villager squares to mark them as found! Your progress is automatically saved.
           </Alert>
           
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, sm: 4 } }}>
             <InteractiveBingoCard
               villagers={allVillagers}
               villagerIds={bingoCard.cardData.villagerIds}
@@ -216,7 +216,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
           </Box>
 
           {/* Card Actions */}
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+          <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 3 } }}>
             <Button
               variant="text"
               startIcon={<FilterListIcon />}
@@ -297,8 +297,8 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
         </Box>
       ) : (
         <Box>
-          <Paper elevation={2} sx={{ p: 4, textAlign: 'center', mb: 3 }}>
-            <CasinoIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+          <Paper elevation={2} sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center', mb: { xs: 2, sm: 3 } }}>
+            <CasinoIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: 'text.disabled', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
               No Bingo Card Yet
             </Typography>

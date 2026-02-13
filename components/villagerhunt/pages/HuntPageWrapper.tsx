@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip, Paper, Collapse } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip, Paper, Collapse, useMediaQuery, useTheme } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
@@ -88,6 +88,10 @@ export default function HuntPageWrapper({
   const [showInactiveNotification, setShowInactiveNotification] = React.useState(false);
   const [isLive, setIsLive] = React.useState(false);
   const [publicToggleModalOpen, setPublicToggleModalOpen] = React.useState(false);
+  
+  // Mobile detection for bingo card
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [pendingPublicValue, setPendingPublicValue] = React.useState<boolean | null>(null);
   const [showPublicTooltip, setShowPublicTooltip] = React.useState<boolean>(true);
 
@@ -645,7 +649,9 @@ export default function HuntPageWrapper({
                 variant="contained"
                 color="primary"
                 startIcon={<CasinoIcon />}
-                onClick={() => setBingoCardDrawerOpen(true)}
+                onClick={() => isMobile ? null : setBingoCardDrawerOpen(true)}
+                component={isMobile ? Link : 'button'}
+                href={isMobile ? `/villagerhunt/${initialUsername}/bingocard` : undefined}
               >
                 Bingo Card
               </Button>

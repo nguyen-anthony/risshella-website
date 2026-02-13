@@ -4,7 +4,7 @@ import { Box, Link, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { usePathname } from 'next/navigation';
 
-const LATEST_CHANGELOG_DATE = new Date('2026-02-14');
+const LATEST_CHANGELOG_DATE = new Date('2026-02-13');
 
 export default function ChangelogNotification() {
   const pathname = usePathname();
@@ -102,7 +102,7 @@ export default function ChangelogNotification() {
           <CloseIcon fontSize="small" />
         </IconButton>
         <Typography variant="body2" sx={{ fontWeight: 500, paddingRight: 2, color: 'black' }}>
-          Interactive Bingo Cards are now live! There is also a Chrome Extension! More details in the {' '}
+          Interactive bingo card is now more mobile-friendly! More details in the {' '}
           <Link
             href="/villagerhunt/changelog"
             onClick={handleLinkClick}

@@ -150,6 +150,36 @@ export default function ChangelogPage() {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="h5" fontWeight="semibold">
+              February 13, 2026 - v0.14.1
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <ListItem>
+              <ListItemText primary="Mobile-friendly bingo cards" 
+                secondary={`Apologies to mobile users!
+
+                  I am not the best at writing web applications that are mobile-friendly, so hopefully this is better!
+                  On mobile screens, you will be directed to the "full-page" bingo card.
+                  On larger screens, the bingo card will appear from a drawer that pops out from the right side of your screen.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="New Villager Indicator Improvement" 
+                secondary="The 'NEW' icon for when you encounter a new villager was sometimes not very clear depending on your browser settings.
+                  I updated it so it's now a bright orange in all locations"
+              />
+            </ListItem>
+            <Divider/>
+            <Typography variant="h5" fontWeight="semibold">
               February 13, 2026 - v0.14.0
             </Typography>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
