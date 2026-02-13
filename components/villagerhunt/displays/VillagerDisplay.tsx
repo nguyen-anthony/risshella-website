@@ -4,7 +4,7 @@ import { Box, Typography } from "@mui/material";
 import Image from "next/image";
 import type { Villager } from "@/types/villagerhunt";
 
-type DisplayVariant = "avatar" | "image" | "minimal";
+type DisplayVariant = "avatar" | "image" | "minimal" | "card";
 
 type Props = {
   villager: Villager;
@@ -45,6 +45,40 @@ export default function VillagerDisplay({
         </Box>
         {showName && (
           <Typography variant="caption">{villager.name}</Typography>
+        )}
+      </Box>
+    );
+  }
+
+  if (variant === "card") {
+    return (
+      <Box 
+        sx={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          gap: 0.5,
+          minWidth: imageWidth,
+        }}
+      >
+        <Box sx={{ position: "relative", width: imageWidth, height: imageHeight }}>
+          <Image
+            src={villager.image_url || "/placeholder.png"}
+            alt={villager.name}
+            width={imageWidth}
+            height={imageHeight}
+            style={{ objectFit: "contain", borderRadius: 4 }}
+            unoptimized
+          />
+        </Box>
+        {showName && (
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ textAlign: "center", lineHeight: 1.2, maxWidth: imageWidth + 20 }}
+          >
+            {villager.name}
+          </Typography>
         )}
       </Box>
     );
