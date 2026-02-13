@@ -644,6 +644,9 @@ export default function HuntPageWrapper({
             islandVillagers={hunt.island_villagers}
             hotelTourists={hunt.hotel_tourists}
             bingoCardSize={hunt.bingo_card_size}
+            username={initialUsername}
+            huntName={hunt.hunt_name}
+            onRestoreCard={(data) => bingoCard.generateCard(data.villagerIds, data.size)}
           />
 
           {/* Delete Confirmation Modal */}
@@ -866,6 +869,9 @@ export default function HuntPageWrapper({
         islandVillagers={hunt?.island_villagers || []}
         hotelTourists={hunt?.hotel_tourists || []}
         bingoCardSize={hunt?.bingo_card_size || 5}
+        username={initialUsername}
+        huntName={hunt?.hunt_name || 'unknown'}
+        onRestoreCard={(data) => bingoCard.generateCard(data.villagerIds, data.size)}
       />
       <HuntStatisticsModal
         open={huntStatsModalOpen}

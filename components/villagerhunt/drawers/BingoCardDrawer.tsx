@@ -18,6 +18,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import BuildIcon from '@mui/icons-material/Build';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload';
 import InteractiveBingoCard from '../displays/InteractiveBingoCard';
 import BingoFilters from '../inputs/BingoFilters';
 import CustomBingoCardBuilder from '../inputs/CustomBingoCardBuilder';
@@ -39,6 +41,9 @@ type Props = {
   islandVillagers: number[];
   hotelTourists: number[];
   bingoCardSize: number;
+  username: string;
+  huntName: string;
+  onRestoreCard: (cardData: BingoCardData) => void;
 };
 
 export default function BingoCardDrawer({
@@ -55,6 +60,9 @@ export default function BingoCardDrawer({
   islandVillagers,
   hotelTourists,
   bingoCardSize,
+  username,
+  huntName,
+  onRestoreCard,
 }: Props) {
   const [filters, setFilters] = React.useState<BingoFiltersType>({
     species: [],
@@ -62,6 +70,69 @@ export default function BingoCardDrawer({
   });
   const [showFilters, setShowFilters] = React.useState(false);
   const [creationMode, setCreationMode] = React.useState<'generate' | 'custom'>('generate');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Handle backup/download
+  const handleDownloadBackup = () => {
+    if (!cardData) return;
+
+    const backup = {
+      ...cardData,
+      username,
+      huntName,
+      backupDate: new Date().toISOString(),
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.download = `bingo-${username}-${huntName.replace(/\s+/g, '-')}-${dateStr}.json`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Handle restore/upload
+  const handleUploadBackup = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const backup = JSON.parse(content) as BingoCardData & { username?: string; huntName?: string; backupDate?: string };
+        
+        // Validate the backup data
+        if (!backup.villagerIds || !backup.markedSquares || !backup.size) {
+          alert('Invalid backup file format');
+          return;
+        }
+
+        // Restore the card data
+        onRestoreCard({
+          villagerIds: backup.villagerIds,
+          markedSquares: backup.markedSquares,
+          size: backup.size,
+          generatedAt: backup.generatedAt || Date.now(),
+        });
+
+        alert('Bingo card restored successfully!');
+      } catch (error) {
+        console.error('Failed to restore backup:', error);
+        alert('Failed to restore backup. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset input so the same file can be selected again
+    event.target.value = '';
+  };
 
   // Calculate required villagers for the card
   const totalSquares = bingoCardSize * bingoCardSize;
@@ -285,7 +356,7 @@ export default function BingoCardDrawer({
             </Box>
           </Collapse>
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
             <Button
               variant="outlined"
               onClick={handleGenerate}
@@ -304,8 +375,63 @@ export default function BingoCardDrawer({
               Clear Card
             </Button>
           </Box>
+
+          {/* Backup/Restore Section */}
+          <Divider sx={{ mb: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              Backup & Restore
+            </Typography>
+          </Divider>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="text"
+              startIcon={<DownloadIcon />}
+              onClick={handleDownloadBackup}
+              disabled={loading}
+              fullWidth
+              size="small"
+            >
+              Backup
+            </Button>
+            <Button
+              variant="text"
+              startIcon={<UploadIcon />}
+              onClick={handleUploadBackup}
+              disabled={loading}
+              fullWidth
+              size="small"
+            >
+              Restore
+            </Button>
+          </Box>
         </Box>
       )}
+
+      {/* Restore Card - Always Available when no card */}
+      {!cardData && !loading && (
+        <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Button
+            variant="text"
+            startIcon={<UploadIcon />}
+            onClick={handleUploadBackup}
+            disabled={loading}
+            fullWidth
+            size="small"
+          >
+            Restore Card from Backup
+          </Button>
+        </Box>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
     </Drawer>
   );
 }
