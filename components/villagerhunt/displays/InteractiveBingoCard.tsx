@@ -33,23 +33,19 @@ export default function InteractiveBingoCard({
   const hasFreeSpace = size === 3 || size === 5;
   const freeSpaceIndex = hasFreeSpace ? Math.floor((size * size) / 2) : -1;
 
-  // Calculate appropriate square size based on grid size
-  const getSquareSize = () => {
-    if (size === 3) return 140;
-    if (size === 4) return 120;
-    return 100; // 5x5
-  };
-
-  const squareSize = getSquareSize();
-
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${size}, ${squareSize}px)`,
-        gap: 1,
+        gridTemplateColumns: `repeat(${size}, 1fr)`,
+        gap: { xs: 0.5, sm: 1 },
         mx: 'auto',
-        width: 'fit-content',
+        width: '100%',
+        maxWidth: {
+          xs: '100%',
+          sm: size === 3 ? '450px' : size === 4 ? '500px' : '550px',
+        },
+        aspectRatio: '1 / 1', // Keep it square
       }}
     >
       {Array.from({ length: size * size }).map((_, index) => {
@@ -62,15 +58,15 @@ export default function InteractiveBingoCard({
               key={index}
               elevation={2}
               sx={{
-                width: squareSize,
-                height: squareSize,
+                width: '100%',
+                aspectRatio: '1 / 1',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 bgcolor: 'success.light',
                 color: 'success.contrastText',
                 fontWeight: 'bold',
-                fontSize: size === 3 ? '1.5rem' : '1.2rem',
+                fontSize: { xs: '1rem', sm: size === 3 ? '1.5rem' : '1.2rem' },
               }}
             >
               FREE
@@ -93,8 +89,8 @@ export default function InteractiveBingoCard({
               key={index}
               elevation={2}
               sx={{
-                width: squareSize,
-                height: squareSize,
+                width: '100%',
+                aspectRatio: '1 / 1',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -114,8 +110,8 @@ export default function InteractiveBingoCard({
               elevation={isMarked ? 4 : 2}
               onClick={() => !readonly && onSquareClick(index)}
               sx={{
-                width: squareSize,
-                height: squareSize,
+                width: '100%',
+                aspectRatio: '1 / 1',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -136,8 +132,8 @@ export default function InteractiveBingoCard({
               <Box
                 sx={{
                   position: 'relative',
-                  width: squareSize * 0.6,
-                  height: squareSize * 0.6,
+                  width: '60%',
+                  height: '60%',
                   mb: 0.5,
                 }}
               >
@@ -154,7 +150,10 @@ export default function InteractiveBingoCard({
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: size === 5 ? '0.65rem' : '0.75rem',
+                  fontSize: { 
+                    xs: size === 5 ? '0.55rem' : size === 4 ? '0.65rem' : '0.75rem',
+                    sm: size === 5 ? '0.65rem' : '0.75rem'
+                  },
                   textAlign: 'center',
                   px: 0.5,
                   fontWeight: isMarked ? 'bold' : 'normal',
@@ -169,9 +168,9 @@ export default function InteractiveBingoCard({
                 <CheckCircleIcon
                   sx={{
                     position: 'absolute',
-                    top: 4,
-                    right: 4,
-                    fontSize: size === 5 ? '1.2rem' : '1.5rem',
+                    top: { xs: 2, sm: 4 },
+                    right: { xs: 2, sm: 4 },
+                    fontSize: { xs: '1rem', sm: size === 5 ? '1.2rem' : '1.5rem' },
                     color: 'success.main',
                     bgcolor: 'background.paper',
                     borderRadius: '50%',
