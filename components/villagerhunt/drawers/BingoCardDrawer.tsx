@@ -203,6 +203,8 @@ export default function BingoCardDrawer({
       sx={{
         '& .MuiDrawer-paper': {
           width: { xs: '100vw', sm: `${getDrawerWidth()}px` },
+          top: { xs: 56, sm: 64 }, // Start below the navigation header
+          height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' }, // Adjust height accordingly
           p: { xs: 2, sm: 3 },
           display: 'flex',
           flexDirection: 'column',
