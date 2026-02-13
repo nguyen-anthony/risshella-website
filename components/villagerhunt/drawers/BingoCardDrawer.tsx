@@ -205,7 +205,7 @@ export default function BingoCardDrawer({
       sx={{
         '& .MuiDrawer-paper': {
           width: { xs: '100vw', sm: `${getDrawerWidth()}px` },
-          p: 3,
+          p: { xs: 2, sm: 3 },
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -213,7 +213,7 @@ export default function BingoCardDrawer({
       }}
     >
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1, sm: 2 }, flexShrink: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CasinoIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
@@ -225,11 +225,11 @@ export default function BingoCardDrawer({
         </IconButton>
       </Box>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ mb: { xs: 1, sm: 2 }, flexShrink: 0 }} />
 
-      {/* Info Alert - Always visible when card exists */}
-      {cardData && !loading && (
-        <Alert severity="info" sx={{ mb: 2, fontSize: '0.875rem' }}>
+      {/* Info Alert - Hidden on small screens OR when controls are shown */}
+      {cardData && !loading && !showControls && (
+        <Alert severity="info" sx={{ mb: 2, fontSize: '0.875rem', display: { xs: 'none', sm: 'flex' }, flexShrink: 0 }}>
           Bingo cards are saved on your browser. Highly recommend using backup/restore options.
         </Alert>
       )}
@@ -243,7 +243,7 @@ export default function BingoCardDrawer({
           startIcon={<OpenInNewIcon />}
           fullWidth
           size="small"
-          sx={{ mb: 2 }}
+          sx={{ mb: { xs: 1, sm: 2 }, flexShrink: 0 }}
         >
           Full Screen Mode
         </Button>
@@ -259,9 +259,17 @@ export default function BingoCardDrawer({
             </Typography>
           </Box>
         ) : cardData ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'auto' }}>
-            {/* Bingo Card - Static, centered */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 2 }, minHeight: 0, flex: 1, overflow: 'hidden' }}>
+            {/* Bingo Card - Static, centered, scales to fit */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              flexShrink: 1,
+              flexGrow: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              alignItems: 'center',
+            }}>
               <InteractiveBingoCard
                 villagers={villagers}
                 villagerIds={cardData.villagerIds}
@@ -272,7 +280,7 @@ export default function BingoCardDrawer({
             </Box>
 
             {/* Collapsible Controls Section */}
-            <Box sx={{ flexShrink: 0 }}>
+            <Box sx={{ flexShrink: 0, flexGrow: 0 }}>
               <Button
                 variant="text"
                 onClick={() => setShowControls(!showControls)}
@@ -284,21 +292,21 @@ export default function BingoCardDrawer({
               </Button>
               
               <Collapse in={showControls}>
-                <Box sx={{ pt: 2 }}>
+                <Box sx={{ pt: { xs: 1, sm: 2 }, maxHeight: '40vh', overflowY: 'auto' }}>
                   {/* Show filters when regenerating */}
                   <Button
                     variant="text"
                     startIcon={<FilterListIcon />}
                     onClick={() => setShowFilters(!showFilters)}
                     fullWidth
-                    sx={{ mb: 2 }}
+                    sx={{ mb: { xs: 1, sm: 2 } }}
                     size="small"
                   >
                     {showFilters ? 'Hide Filters' : 'Show Filters for New Card'}
                   </Button>
 
                   <Collapse in={showFilters}>
-                    <Box sx={{ mb: 2 }}>
+                    <Box sx={{ mb: { xs: 1, sm: 2 } }}>
                       <BingoFilters
                         filters={filters}
                         onChange={setFilters}
@@ -319,7 +327,7 @@ export default function BingoCardDrawer({
                     </Box>
                   </Collapse>
 
-                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                  <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, mb: { xs: 2, sm: 3 } }}>
                     <Button
                       variant="outlined"
                       onClick={handleGenerate}
@@ -340,13 +348,13 @@ export default function BingoCardDrawer({
                   </Box>
 
                   {/* Backup/Restore Section */}
-                  <Divider sx={{ mb: 2 }}>
+                  <Divider sx={{ mb: { xs: 1, sm: 2 } }}>
                     <Typography variant="caption" color="text.secondary">
                       Backup & Restore
                     </Typography>
                   </Divider>
 
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 } }}>
                     <Button
                       variant="text"
                       startIcon={<DownloadIcon />}
