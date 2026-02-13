@@ -172,7 +172,7 @@ export default function HuntPageWrapper({
 
     checkLiveStatus();
     // Check every 60 seconds
-    const interval = setInterval(checkLiveStatus, 60000);
+    const interval = setInterval(checkLiveStatus, 300000);
     
     return () => clearInterval(interval);
   }, [initialTwitchId]);

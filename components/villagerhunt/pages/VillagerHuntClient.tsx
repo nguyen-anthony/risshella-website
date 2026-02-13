@@ -9,11 +9,13 @@ import CreatorCard from '@/components/villagerhunt/cards/CreatorCard';
 import InfoDialog from '@/components/villagerhunt/modals/InfoDialog';
 import Link from 'next/link';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import BackendErrorDisplay from '@/components/villagerhunt/displays/BackendErrorDisplay';
 
 type PageData = {
   creators: Creator[];
   session: ReturnType<typeof getSessionFromCookie> extends Promise<infer T> ? T : never;
   error?: Error | null;
+  isCriticalError?: boolean;
   activeHunts: { hunt_id: string; hunt_name: string; twitch_id: number; current_island?: number }[];
   liveStreamUserIds: string[];
 };
@@ -50,7 +52,13 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
     setInfoDialogExpiry(30); // Don't show again for 30 days
   };
 
-  const { creators, session, error, activeHunts, liveStreamUserIds } = data;
+  const { creators, session, error, isCriticalError, activeHunts, liveStreamUserIds } = data;
+  
+  // Show backend error screen if there's a critical error
+  if (isCriticalError) {
+    return <BackendErrorDisplay error={error} />;
+  }
+  
   const selfCreator = session ? creators.find(c => c.twitch_username.toLowerCase() === session.login.toLowerCase()) : undefined;
   const creatorsForGrid = selfCreator ? creators.filter(c => c.twitch_id !== selfCreator.twitch_id) : creators;
 
