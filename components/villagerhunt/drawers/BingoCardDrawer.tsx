@@ -13,6 +13,7 @@ import {
   Collapse,
   ToggleButtonGroup,
   ToggleButton,
+  useMediaQuery,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -21,6 +22,8 @@ import BuildIcon from '@mui/icons-material/Build';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Link from 'next/link';
 import InteractiveBingoCard from '../displays/InteractiveBingoCard';
 import BingoFilters from '../inputs/BingoFilters';
@@ -73,6 +76,19 @@ export default function BingoCardDrawer({
   const [showFilters, setShowFilters] = React.useState(false);
   const [creationMode, setCreationMode] = React.useState<'generate' | 'custom'>('generate');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Detect if there's enough vertical space to show controls expanded
+  const hasTallScreen = useMediaQuery('(min-height: 900px)');
+  const [showControls, setShowControls] = React.useState(hasTallScreen);
+
+  // Update showControls when screen size changes or card data changes
+  React.useEffect(() => {
+    if (cardData && hasTallScreen) {
+      setShowControls(true);
+    } else if (!hasTallScreen) {
+      setShowControls(false);
+    }
+  }, [cardData, hasTallScreen]);
 
   // Handle backup/download
   const handleDownloadBackup = () => {
@@ -179,22 +195,25 @@ export default function BingoCardDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      slotProps={{
-        backdrop: {
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.0)', // Reduced from default 0.5
-          },
-        },
+      variant="persistent"
+      hideBackdrop={true}
+      ModalProps={{
+        keepMounted: false,
       }}
       sx={{
         '& .MuiDrawer-paper': {
           width: { xs: '100vw', sm: `${getDrawerWidth()}px` },
-          p: 3,
+          top: { xs: 56, sm: 64 }, // Start below the navigation header
+          height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' }, // Adjust height accordingly
+          p: { xs: 2, sm: 3 },
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         },
       }}
     >
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1, sm: 2 }, flexShrink: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CasinoIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
@@ -206,10 +225,32 @@ export default function BingoCardDrawer({
         </IconButton>
       </Box>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ mb: { xs: 1, sm: 2 }, flexShrink: 0 }} />
+
+      {/* Info Alert - Hidden on small screens OR when controls are shown */}
+      {cardData && !loading && !showControls && (
+        <Alert severity="info" sx={{ mb: 2, fontSize: '0.875rem', display: { xs: 'none', sm: 'flex' }, flexShrink: 0 }}>
+          Bingo cards are saved on your browser. Highly recommend using backup/restore options.
+        </Alert>
+      )}
+
+      {/* Full Screen Mode Button - Always visible when card exists */}
+      {cardData && !loading && (
+        <Button
+          component={Link}
+          href={`/villagerhunt/${username}/bingocard`}
+          variant="outlined"
+          startIcon={<OpenInNewIcon />}
+          fullWidth
+          size="small"
+          sx={{ mb: { xs: 1, sm: 2 }, flexShrink: 0 }}
+        >
+          Full Screen Mode
+        </Button>
+      )}
 
       {/* Content */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {loading ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <CircularProgress size={48} sx={{ mb: 2 }} />
@@ -218,11 +259,17 @@ export default function BingoCardDrawer({
             </Typography>
           </Box>
         ) : cardData ? (
-          <Box>
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Bingo cards are saved on your browser. Highly recommend using backup/restore options.
-            </Alert>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 2 }, minHeight: 0, flex: 1, overflow: 'hidden' }}>
+            {/* Bingo Card - Static, centered, scales to fit */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              flexShrink: 1,
+              flexGrow: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              alignItems: 'center',
+            }}>
               <InteractiveBingoCard
                 villagers={villagers}
                 villagerIds={cardData.villagerIds}
@@ -232,17 +279,105 @@ export default function BingoCardDrawer({
               />
             </Box>
 
-            {/* Full Screen Mode Button */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            {/* Collapsible Controls Section */}
+            <Box sx={{ flexShrink: 0, flexGrow: 0 }}>
               <Button
-                component={Link}
-                href={`/villagerhunt/${username}/bingocard`}
-                variant="outlined"
-                startIcon={<OpenInNewIcon />}
+                variant="text"
+                onClick={() => setShowControls(!showControls)}
                 fullWidth
+                endIcon={showControls ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                size="small"
               >
-                Full Screen Mode
+                {showControls ? 'Hide' : 'Show'} Card Controls
               </Button>
+              
+              <Collapse in={showControls}>
+                <Box sx={{ pt: { xs: 1, sm: 2 }, maxHeight: '40vh', overflowY: 'auto' }}>
+                  {/* Show filters when regenerating */}
+                  <Button
+                    variant="text"
+                    startIcon={<FilterListIcon />}
+                    onClick={() => setShowFilters(!showFilters)}
+                    fullWidth
+                    sx={{ mb: { xs: 1, sm: 2 } }}
+                    size="small"
+                  >
+                    {showFilters ? 'Hide Filters' : 'Show Filters for New Card'}
+                  </Button>
+
+                  <Collapse in={showFilters}>
+                    <Box sx={{ mb: { xs: 1, sm: 2 } }}>
+                      <BingoFilters
+                        filters={filters}
+                        onChange={setFilters}
+                        availableCount={availableCount}
+                        requiredCount={requiredCount}
+                      />
+                      {hasFilters && (
+                        <Button
+                          variant="text"
+                          onClick={handleClearFilters}
+                          fullWidth
+                          size="small"
+                          sx={{ mb: 1 }}
+                        >
+                          Clear All Filters
+                        </Button>
+                      )}
+                    </Box>
+                  </Collapse>
+
+                  <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, mb: { xs: 2, sm: 3 } }}>
+                    <Button
+                      variant="outlined"
+                      onClick={handleGenerate}
+                      disabled={loading || !hasEnoughVillagers}
+                      fullWidth
+                    >
+                      Generate New Card
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={onClear}
+                      disabled={loading}
+                      fullWidth
+                    >
+                      Clear Card
+                    </Button>
+                  </Box>
+
+                  {/* Backup/Restore Section */}
+                  <Divider sx={{ mb: { xs: 1, sm: 2 } }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Backup & Restore
+                    </Typography>
+                  </Divider>
+
+                  <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 } }}>
+                    <Button
+                      variant="text"
+                      startIcon={<DownloadIcon />}
+                      onClick={handleDownloadBackup}
+                      disabled={loading}
+                      fullWidth
+                      size="small"
+                    >
+                      Backup
+                    </Button>
+                    <Button
+                      variant="text"
+                      startIcon={<UploadIcon />}
+                      onClick={handleUploadBackup}
+                      disabled={loading}
+                      fullWidth
+                      size="small"
+                    >
+                      Restore
+                    </Button>
+                  </Box>
+                </Box>
+              </Collapse>
             </Box>
           </Box>
         ) : (
@@ -341,98 +476,9 @@ export default function BingoCardDrawer({
         )}
       </Box>
 
-      {/* Footer Actions */}
-      {cardData && !loading && (
-        <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          {/* Show filters when regenerating */}
-          <Button
-            variant="text"
-            startIcon={<FilterListIcon />}
-            onClick={() => setShowFilters(!showFilters)}
-            fullWidth
-            sx={{ mb: 2 }}
-            size="small"
-          >
-            {showFilters ? 'Hide Filters' : 'Show Filters for New Card'}
-          </Button>
-
-          <Collapse in={showFilters}>
-            <Box sx={{ mb: 2 }}>
-              <BingoFilters
-                filters={filters}
-                onChange={setFilters}
-                availableCount={availableCount}
-                requiredCount={requiredCount}
-              />
-              {hasFilters && (
-                <Button
-                  variant="text"
-                  onClick={handleClearFilters}
-                  fullWidth
-                  size="small"
-                  sx={{ mb: 1 }}
-                >
-                  Clear All Filters
-                </Button>
-              )}
-            </Box>
-          </Collapse>
-
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Button
-              variant="outlined"
-              onClick={handleGenerate}
-              disabled={loading || !hasEnoughVillagers}
-              fullWidth
-            >
-              Generate New Card
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={onClear}
-              disabled={loading}
-              fullWidth
-            >
-              Clear Card
-            </Button>
-          </Box>
-
-          {/* Backup/Restore Section */}
-          <Divider sx={{ mb: 2 }}>
-            <Typography variant="caption" color="text.secondary">
-              Backup & Restore
-            </Typography>
-          </Divider>
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="text"
-              startIcon={<DownloadIcon />}
-              onClick={handleDownloadBackup}
-              disabled={loading}
-              fullWidth
-              size="small"
-            >
-              Backup
-            </Button>
-            <Button
-              variant="text"
-              startIcon={<UploadIcon />}
-              onClick={handleUploadBackup}
-              disabled={loading}
-              fullWidth
-              size="small"
-            >
-              Restore
-            </Button>
-          </Box>
-        </Box>
-      )}
-
       {/* Restore Card - Always Available when no card */}
       {!cardData && !loading && (
-        <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+        <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider', flexShrink: 0 }}>
           <Button
             variant="text"
             startIcon={<UploadIcon />}

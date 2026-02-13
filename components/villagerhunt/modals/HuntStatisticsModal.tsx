@@ -66,16 +66,31 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
     try {
       const supabase = createClient();
 
-      // Fetch encounters for this hunt
-      const { data: encounters, error: encountersError } = await supabase
-        .from('encounters')
-        .select('villager_id')
-        .eq('hunt_id', huntId)
-        .eq('is_deleted', false);
+      // Fetch encounters for this hunt - paginate to handle >1000 rows
+      let allEncounters: Array<{ villager_id: number | null }> = [];
+      let from = 0;
+      const batchSize = 1000;
 
-      if (encountersError) {
-        console.error('Error fetching encounters:', encountersError);
-        return;
+      while (true) {
+        const { data: encounters, error: encountersError } = await supabase
+          .from('encounters')
+          .select('villager_id')
+          .eq('hunt_id', huntId)
+          .eq('is_deleted', false)
+          .range(from, from + batchSize - 1);
+
+        if (encountersError) {
+          console.error('Error fetching encounters:', encountersError);
+          return;
+        }
+
+        if (!encounters || encounters.length === 0) break;
+
+        allEncounters = allEncounters.concat(encounters);
+
+        if (encounters.length < batchSize) break;
+
+        from += batchSize;
       }
 
       // Use provided IDs or fetch from database
@@ -117,7 +132,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
         }
       }
 
-      if (!encounters || encounters.length === 0) {
+      if (!allEncounters || allEncounters.length === 0) {
         setSpeciesData([]);
         setPersonalityData([]);
         setTopVillagers([]);
@@ -131,7 +146,7 @@ export default function HuntStatisticsModal({ open, onClose, huntId, islandVilla
 
       // Get unique villager IDs and their counts
       const villagerCounts: Record<number, number> = {};
-      encounters.forEach((encounter) => {
+      allEncounters.forEach((encounter) => {
         if (encounter.villager_id) {
           villagerCounts[encounter.villager_id] = (villagerCounts[encounter.villager_id] || 0) + 1;
         }

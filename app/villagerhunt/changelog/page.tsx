@@ -150,6 +150,37 @@ export default function ChangelogPage() {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="h5" fontWeight="semibold">
+              February 13, 2026 - v0.14.2
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <ListItem>
+              <ListItemText primary="Improved Bingo Card Drawer" 
+                secondary={`The bingo card drawer can now be opened without taking over control focus!
+
+                  You should be able to open the bingo card drawer and still interact with the rest of the page!
+                  I also cleaned up the look of the drawer so that the bingo card grid is more of the focus.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <ListItem>
+              <ListItemText primary="Inaccurate Hunt Statistics for 1000+ encounters" 
+                secondary="First, can you get good and find your villagers faster? If not, then I corrected an issue where statistics were inaccurate if you had more than 1000 encounters."
+              />
+            </ListItem>
+            <Divider/>
+            <Typography variant="h5" fontWeight="semibold">
               February 13, 2026 - v0.14.1
             </Typography>
             <Typography variant="h6" gutterBottom fontWeight="semibold">

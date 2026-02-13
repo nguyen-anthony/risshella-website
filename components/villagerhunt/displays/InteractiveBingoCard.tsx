@@ -45,6 +45,7 @@ export default function InteractiveBingoCard({
           xs: '100%',
           sm: size === 3 ? '450px' : size === 4 ? '500px' : '550px',
         },
+        maxHeight: '100%',
         aspectRatio: '1 / 1', // Keep it square
       }}
     >
