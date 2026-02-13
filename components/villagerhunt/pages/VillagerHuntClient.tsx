@@ -92,9 +92,10 @@ export default function VillagerHuntClient({ data }: { data: PageData }) {
             <Button
               component={Link}
               href="/villagerhunt/globalstats"
-              variant="outlined"
+              variant="contained"
+              color="secondary"
               startIcon={<BarChartIcon />}
-              size="small"
+              size="medium"
             >
               Global Statistics
             </Button>

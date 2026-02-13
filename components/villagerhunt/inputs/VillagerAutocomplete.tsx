@@ -2,7 +2,6 @@
 import * as React from "react";
 import { 
   Autocomplete, 
-  Avatar, 
   Box, 
   Button,
   Collapse,
@@ -14,6 +13,7 @@ import {
   TextField,
   Typography 
 } from "@mui/material";
+import Image from "next/image";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -202,11 +202,16 @@ export default function VillagerAutocomplete({
           key={option.villager_id}
           sx={{ display: "flex", alignItems: "center", gap: 1 }}
         >
-          <Avatar
-            src={option.image_url ?? undefined}
-            alt={option.name}
-            sx={{ width: 24, height: 24 }}
-          />
+          <Box sx={{ position: "relative", width: 40, height: 40, flexShrink: 0 }}>
+            <Image
+              src={option.image_url || "/placeholder.png"}
+              alt={option.name}
+              width={40}
+              height={40}
+              style={{ objectFit: "contain", borderRadius: 4 }}
+              unoptimized
+            />
+          </Box>
           {option.name}
         </Box>
       )}
@@ -230,11 +235,16 @@ export default function VillagerAutocomplete({
               key={option.villager_id}
               sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
             >
-              <Avatar
-                src={`/villagers/${option.name.toLowerCase().replace(/[^a-zA-Z0-9\u00C0-\u017F-]/g, '_')}.png`}
-                alt={option.name}
-                sx={{ width: 20, height: 20 }}
-              />
+              <Box sx={{ position: "relative", width: 28, height: 28, flexShrink: 0 }}>
+                <Image
+                  src={option.image_url || "/placeholder.png"}
+                  alt={option.name}
+                  width={28}
+                  height={28}
+                  style={{ objectFit: "contain", borderRadius: 4 }}
+                  unoptimized
+                />
+              </Box>
               {option.name}
             </Box>
           )),

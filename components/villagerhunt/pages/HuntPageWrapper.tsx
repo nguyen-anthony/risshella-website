@@ -1,13 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip, Paper } from '@mui/material';
+import { Box, Button, Container, Stack, Typography, Drawer, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Tooltip, Chip, Paper, Collapse } from '@mui/material';
 import Link from 'next/link';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import CasinoIcon from '@mui/icons-material/Casino';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -21,23 +23,23 @@ import HistoryIcon from '@mui/icons-material/History';
 import OwnerHuntControls from '@/components/villagerhunt/controls/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import AuthLink from '@/components/villagerhunt/controls/AuthLink';
-import { generateBingoCard } from '@/utils/bingoCardGenerator';
+import { selectBingoVillagers, type BingoFilters } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/modals/UpdateIslandVillagersModal';
 import UpdateTargetVillagersModal from '@/components/villagerhunt/modals/UpdateTargetVillagersModal';
-import BingoCardModal from '@/components/villagerhunt/modals/BingoCardModal';
+import BingoCardDrawer from '@/components/villagerhunt/drawers/BingoCardDrawer';
 import HuntStatisticsModal from '@/components/villagerhunt/modals/HuntStatisticsModal';
 import BingoCardControlModal from '@/components/villagerhunt/modals/BingoCardControlModal';
 import InactiveHuntNotification from '@/components/villagerhunt/notifications/InactiveHuntNotification';
 import AddTempModModal from '@/components/villagerhunt/modals/AddTempModModal';
 import TempModsTable from '@/components/villagerhunt/tables/TempModsTable';
-import IslandDetailsModal from '@/components/villagerhunt/modals/IslandDetailsModal';
 import HuntSettingsModal from '@/components/villagerhunt/modals/HuntSettingsModal';
 import ConfirmDeleteModal from '@/components/villagerhunt/modals/ConfirmDeleteModal';
 import DreamieFoundModal from '@/components/villagerhunt/modals/DreamieFoundModal';
 import PublicPrivateToggleModal from '@/components/villagerhunt/modals/PublicPrivateToggleModal';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
-import { useVillagers } from '@/components/villagerhunt/hooks';
+import { useVillagers, useBingoCard } from '@/components/villagerhunt/hooks';
 import { createClient } from '@/utils/supabase/client';
+import { cleanupOldBingoCards } from '@/utils/villagerhunt/bingoCardCleanup';
 import type { Hunt, Villager, Session } from '@/types/villagerhunt';
 
 type Props = {
@@ -66,8 +68,7 @@ export default function HuntPageWrapper({
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
   const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
-  const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
-  const [bingoCardImage, setBingoCardImage] = React.useState<string | null>(null);
+  const [bingoCardDrawerOpen, setBingoCardDrawerOpen] = React.useState(false);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
@@ -82,12 +83,16 @@ export default function HuntPageWrapper({
   const [overlayUrl, setOverlayUrl] = React.useState<string>('');
   const [dreamieModalOpen, setDreamieModalOpen] = React.useState(false);
   const [isTempMod, setIsTempMod] = React.useState(false);
-  const [islandDetailsModalOpen, setIslandDetailsModalOpen] = React.useState(false);
+  const [islandDetailsExpanded, setIslandDetailsExpanded] = React.useState(false);
+  const [dreamieListExpanded, setDreamieListExpanded] = React.useState(true);
   const [showInactiveNotification, setShowInactiveNotification] = React.useState(false);
   const [isLive, setIsLive] = React.useState(false);
   const [publicToggleModalOpen, setPublicToggleModalOpen] = React.useState(false);
   const [pendingPublicValue, setPendingPublicValue] = React.useState<boolean | null>(null);
   const [showPublicTooltip, setShowPublicTooltip] = React.useState<boolean>(true);
+
+  // Bingo card hook - uses localStorage
+  const bingoCard = useBingoCard(hunt?.hunt_id || '');
 
   // Fetch hunt data
   const fetchHuntData = React.useCallback(async () => {
@@ -135,6 +140,8 @@ export default function HuntPageWrapper({
   // Initial fetch
   React.useEffect(() => {
     fetchHuntData();
+    // Clean up old bingo cards from localStorage
+    cleanupOldBingoCards();
   }, [fetchHuntData]);
 
   // Show inactive notification when hunt status is INACTIVE
@@ -234,32 +241,34 @@ export default function HuntPageWrapper({
   }, [initialTwitchId, fetchHuntData]);
 
   // Handle bingo card generation
-  const handleGenerateBingoCard = async () => {
+  const handleGenerateBingoCard = async (filters?: BingoFilters) => {
     if (!hunt) return;
 
     setGeneratingBingo(true);
-    setBingoCardImage(null); // Clear previous image
-    setBingoCardModalOpen(true);
 
     try {
-      const imageDataUrl = await generateBingoCard({
-        huntId: hunt.hunt_id,
-        huntName: hunt.hunt_name,
-        creatorName: initialDisplayName,
+      const villagerIds = selectBingoVillagers({
         targetVillagers: targetVillagers,
         islandVillagers: hunt.island_villagers,
         hotelTourists: hunt.hotel_tourists,
         villagers,
         bingoCardSize: hunt.bingo_card_size,
+        filters,
       });
 
-      setBingoCardImage(imageDataUrl);
+      bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
     } catch (error) {
       console.error('Failed to generate bingo card:', error);
-      setBingoCardImage(null);
+      alert(error instanceof Error ? error.message : 'Failed to generate bingo card');
     } finally {
       setGeneratingBingo(false);
     }
+  };
+
+  // Handle custom bingo card creation
+  const handleGenerateCustomBingoCard = (villagerIds: number[]) => {
+    if (!hunt) return;
+    bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
   };
 
   // Handle hunt statistics modal
@@ -412,7 +421,7 @@ export default function HuntPageWrapper({
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 6 } }}>
       {/* Help Button for authenticated owners/moderators */}
       {(initialIsOwner || isModerator) && initialSession && (
-        <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 1000 }}>
+        <Box sx={{ position: 'fixed', top: 80, right: 20, zIndex: 1000 }}>
           <IconButton
             onClick={() => setInstructionsDrawerOpen(true)}
             sx={{
@@ -546,6 +555,11 @@ export default function HuntPageWrapper({
           <Button component={Link} href={`/villagerhunt/${encodeURIComponent(initialUsername)}/history`} variant="outlined" startIcon={<HistoryIcon />}>
             View Hunt History
           </Button>
+          {hunt && (
+            <Button variant="outlined" startIcon={<BarChartIcon />} onClick={handleHuntStats}>
+              Hunt Statistics
+            </Button>
+          )}
         </Box>
       </Stack>
 
@@ -564,42 +578,79 @@ export default function HuntPageWrapper({
           <Typography variant="h6" component="h2" color="text.secondary" sx={{ mb: 2 }}>{hunt.hunt_name}</Typography>
 
           {targetVillagers.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {targetVillagers.map((villager) => (
-                  <VillagerDisplay key={villager.villager_id} villager={villager} variant="image" />
-                ))}
-              </Box>
+            <Box sx={{ mb: 2 }}>
+              <Button
+                onClick={() => setDreamieListExpanded(!dreamieListExpanded)}
+                endIcon={<ExpandMoreIcon sx={{ transform: dreamieListExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />}
+                sx={{ mb: 1, textTransform: 'none' }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Dreamie List
+                </Typography>
+              </Button>
+              <Collapse in={dreamieListExpanded}>
+                <Box sx={{ pl: 2 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    {targetVillagers.map((villager) => (
+                      <VillagerDisplay key={villager.villager_id} villager={villager} variant="card" />
+                    ))}
+                  </Box>
+                </Box>
+              </Collapse>
             </Box>
           )}
 
-          <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {isBingoEnabled && (
+          {/* Island Villagers & Hotel Guests Collapsible Section */}
+          {(islandVillagersData.length > 0 || hotelTouristsData.length > 0) && (
+            <Box sx={{ mb: 2 }}>
+              <Button
+                onClick={() => setIslandDetailsExpanded(!islandDetailsExpanded)}
+                endIcon={<ExpandMoreIcon sx={{ transform: islandDetailsExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />}
+                sx={{ mb: 1, textTransform: 'none' }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Island Villagers & Hotel Guests
+                </Typography>
+              </Button>
+              <Collapse in={islandDetailsExpanded}>
+                <Box sx={{ pl: 2 }}>
+                  {islandVillagersData.length > 0 && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary">Current Island Villagers:</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {islandVillagersData.map((villager) => (
+                          <VillagerDisplay key={villager.villager_id} villager={villager} variant="card" />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                  {hotelTouristsData.length > 0 && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Typography variant="caption" color="text.secondary">Current Hotel Tourists:</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {hotelTouristsData.map((villager) => (
+                          <VillagerDisplay key={villager.villager_id} villager={villager} variant="card" />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              </Collapse>
+            </Box>
+          )}
+
+          {isBingoEnabled && (
+            <Box sx={{ mb: 2 }}>
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleGenerateBingoCard}
-                disabled={generatingBingo}
+                startIcon={<CasinoIcon />}
+                onClick={() => setBingoCardDrawerOpen(true)}
               >
-                {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
+                Bingo Card
               </Button>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setIslandDetailsModalOpen(true)}
-            >
-              View Island Villagers
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleHuntStats}
-            >
-              {'Hunt Statistics'}
-            </Button>
-          </Box>
+            </Box>
+          )}
 
           <EncountersTable villagers={villagers} isOwner={initialIsOwner} isModerator={isModerator} huntId={hunt.hunt_id} targetVillagerIds={hunt.target_villager_id} onDreamieFound={() => { if (hunt && !localStorage.getItem(`dreamiePopupShown_${hunt.hunt_id}`)) setDreamieModalOpen(true); }} />
 
@@ -623,12 +674,23 @@ export default function HuntPageWrapper({
             onUpdated={fetchHuntData}
           />
 
-          <BingoCardModal
-            open={bingoCardModalOpen}
-            onClose={() => setBingoCardModalOpen(false)}
-            onRegenerate={handleGenerateBingoCard}
-            bingoCardImage={bingoCardImage}
+          <BingoCardDrawer
+            open={bingoCardDrawerOpen}
+            onClose={() => setBingoCardDrawerOpen(false)}
+            onGenerate={handleGenerateBingoCard}
+            onGenerateCustom={handleGenerateCustomBingoCard}
+            onClear={bingoCard.clearCard}
+            cardData={bingoCard.cardData}
+            villagers={allVillagers}
+            onSquareClick={bingoCard.toggleSquare}
             loading={generatingBingo}
+            targetVillagers={targetVillagers}
+            islandVillagers={hunt.island_villagers}
+            hotelTourists={hunt.hotel_tourists}
+            bingoCardSize={hunt.bingo_card_size}
+            username={initialUsername}
+            huntName={hunt.hunt_name}
+            onRestoreCard={bingoCard.restoreCard}
           />
 
           {/* Delete Confirmation Modal */}
@@ -703,8 +765,8 @@ export default function HuntPageWrapper({
               <CasinoIcon color="primary" />
             </ListItemIcon>
             <ListItemText
-              primary="Generate Bingo Card"
-              secondary="Creates a bingo card for your community to play along. Automatically excludes your dreamies and island villagers."
+              primary="Bingo Card"
+              secondary="View and interact with your bingo card. Click the button to open the card in a side panel where you can generate new cards and mark squares as you find villagers."
             />
           </ListItem>
           
@@ -837,23 +899,28 @@ export default function HuntPageWrapper({
         allVillagers={allVillagers}
         onUpdated={fetchHuntData}
       />
-      <BingoCardModal
-        open={bingoCardModalOpen}
-        onClose={() => setBingoCardModalOpen(false)}
-        bingoCardImage={bingoCardImage}
+      <BingoCardDrawer
+        open={bingoCardDrawerOpen}
+        onClose={() => setBingoCardDrawerOpen(false)}
+        onGenerate={handleGenerateBingoCard}
+        onGenerateCustom={handleGenerateCustomBingoCard}
+        onClear={bingoCard.clearCard}
+        cardData={bingoCard.cardData}
+        villagers={allVillagers}
+        onSquareClick={bingoCard.toggleSquare}
         loading={generatingBingo}
+        targetVillagers={targetVillagers}
+        islandVillagers={hunt?.island_villagers || []}
+        hotelTourists={hunt?.hotel_tourists || []}
+        bingoCardSize={hunt?.bingo_card_size || 5}
+        username={initialUsername}
+        huntName={hunt?.hunt_name || 'unknown'}
+        onRestoreCard={bingoCard.restoreCard}
       />
       <HuntStatisticsModal
         open={huntStatsModalOpen}
         onClose={() => setHuntStatsModalOpen(false)}
         huntId={hunt?.hunt_id || ''}
-      />
-
-      <IslandDetailsModal
-        open={islandDetailsModalOpen}
-        onClose={() => setIslandDetailsModalOpen(false)}
-        islandVillagers={islandVillagersData}
-        hotelTourists={hotelTouristsData}
       />
 
       <HuntSettingsModal
