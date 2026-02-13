@@ -649,7 +649,7 @@ export default function HuntPageWrapper({
                 variant="contained"
                 color="primary"
                 startIcon={<CasinoIcon />}
-                onClick={() => isMobile ? null : setBingoCardDrawerOpen(true)}
+                onClick={() => isMobile ? null : setBingoCardDrawerOpen(!bingoCardDrawerOpen)}
                 component={isMobile ? Link : 'button'}
                 href={isMobile ? `/villagerhunt/${initialUsername}/bingocard` : undefined}
               >

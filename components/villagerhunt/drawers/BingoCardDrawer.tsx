@@ -195,12 +195,10 @@ export default function BingoCardDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      slotProps={{
-        backdrop: {
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.0)', // Reduced from default 0.5
-          },
-        },
+      variant="persistent"
+      hideBackdrop={true}
+      ModalProps={{
+        keepMounted: false,
       }}
       sx={{
         '& .MuiDrawer-paper': {
