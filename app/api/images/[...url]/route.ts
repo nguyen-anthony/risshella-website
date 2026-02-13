@@ -44,7 +44,8 @@ export async function GET(
       status: 200,
       headers: {
         'Content-Type': response.headers.get('content-type') || 'image/png',
-        'Cache-Control': 'public, max-age=86400', // Cache for 1 day
+        // Cache for 7 days client-side, 30 days on CDN (villager images never change)
+        'Cache-Control': 'public, max-age=604800, s-maxage=2592000, immutable',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET',
         'Access-Control-Allow-Headers': 'Content-Type',

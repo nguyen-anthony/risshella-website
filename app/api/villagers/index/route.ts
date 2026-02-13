@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
 
 export async function GET() {
   const cookieStore = await cookies();
@@ -13,7 +13,7 @@ export async function GET() {
     .order('name');
 
   if (error) {
-    return NextResponse.json({ villagers: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ villagers: [] }, { status: 200, headers: { 'Cache-Control': 'public, max-age=300' } });
   }
 
   // Exclude amiibo-only villagers (cannot appear on mystery islands)
@@ -25,8 +25,8 @@ export async function GET() {
     { villagers: filteredVillagers },
     {
       headers: {
-        // Avoid serving stale lists in the modal; let clients cache in-memory if desired
-        'Cache-Control': 'no-store',
+        // Cache for 1 hour client-side, 1 day on CDN, serve stale while revalidating
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
       },
     }
   );

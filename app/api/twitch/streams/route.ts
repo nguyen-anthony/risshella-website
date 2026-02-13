@@ -16,7 +16,15 @@ export async function POST(request: NextRequest) {
     const streams = await getStreams([twitchId.toString()], ACNH_GAME_ID);
     const isLive = streams.length > 0;
 
-    return NextResponse.json({ isLive });
+    return NextResponse.json(
+      { isLive },
+      {
+        headers: {
+          // Cache for 3 minutes to reduce Twitch API calls
+          'Cache-Control': 'public, max-age=180, s-maxage=180',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error checking stream status:', error);
     return NextResponse.json({ isLive: false });
