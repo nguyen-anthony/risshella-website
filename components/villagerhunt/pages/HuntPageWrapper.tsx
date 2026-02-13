@@ -24,7 +24,7 @@ import AuthLink from '@/components/villagerhunt/controls/AuthLink';
 import { selectBingoVillagers } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/modals/UpdateIslandVillagersModal';
 import UpdateTargetVillagersModal from '@/components/villagerhunt/modals/UpdateTargetVillagersModal';
-import BingoCardModal from '@/components/villagerhunt/modals/BingoCardModal';
+import BingoCardDrawer from '@/components/villagerhunt/drawers/BingoCardDrawer';
 import HuntStatisticsModal from '@/components/villagerhunt/modals/HuntStatisticsModal';
 import BingoCardControlModal from '@/components/villagerhunt/modals/BingoCardControlModal';
 import InactiveHuntNotification from '@/components/villagerhunt/notifications/InactiveHuntNotification';
@@ -67,7 +67,7 @@ export default function HuntPageWrapper({
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
   const [updateIslandModalOpen, setUpdateIslandModalOpen] = React.useState(false);
   const [updateTargetModalOpen, setUpdateTargetModalOpen] = React.useState(false);
-  const [bingoCardModalOpen, setBingoCardModalOpen] = React.useState(false);
+  const [bingoCardDrawerOpen, setBingoCardDrawerOpen] = React.useState(false);
   const [instructionsDrawerOpen, setInstructionsDrawerOpen] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
@@ -243,7 +243,6 @@ export default function HuntPageWrapper({
     if (!hunt) return;
 
     setGeneratingBingo(true);
-    setBingoCardModalOpen(true);
 
     try {
       const villagerIds = selectBingoVillagers({
@@ -580,10 +579,10 @@ export default function HuntPageWrapper({
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleGenerateBingoCard}
-                disabled={generatingBingo}
+                startIcon={<CasinoIcon />}
+                onClick={() => setBingoCardDrawerOpen(true)}
               >
-                {generatingBingo ? 'Generating...' : 'Generate Bingo Card'}
+                Bingo Card
               </Button>
             )}
             <Button
@@ -624,10 +623,10 @@ export default function HuntPageWrapper({
             onUpdated={fetchHuntData}
           />
 
-          <BingoCardModal
-            open={bingoCardModalOpen}
-            onClose={() => setBingoCardModalOpen(false)}
-            onRegenerate={handleGenerateBingoCard}
+          <BingoCardDrawer
+            open={bingoCardDrawerOpen}
+            onClose={() => setBingoCardDrawerOpen(false)}
+            onGenerate={handleGenerateBingoCard}
             onClear={bingoCard.clearCard}
             cardData={bingoCard.cardData}
             villagers={allVillagers}
@@ -707,8 +706,8 @@ export default function HuntPageWrapper({
               <CasinoIcon color="primary" />
             </ListItemIcon>
             <ListItemText
-              primary="Generate Bingo Card"
-              secondary="Creates a bingo card for your community to play along. Automatically excludes your dreamies and island villagers."
+              primary="Bingo Card"
+              secondary="View and interact with your bingo card. Click the button to open the card in a side panel where you can generate new cards and mark squares as you find villagers."
             />
           </ListItem>
           
@@ -841,10 +840,10 @@ export default function HuntPageWrapper({
         allVillagers={allVillagers}
         onUpdated={fetchHuntData}
       />
-      <BingoCardModal
-        open={bingoCardModalOpen}
-        onClose={() => setBingoCardModalOpen(false)}
-        onRegenerate={handleGenerateBingoCard}
+      <BingoCardDrawer
+        open={bingoCardDrawerOpen}
+        onClose={() => setBingoCardDrawerOpen(false)}
+        onGenerate={handleGenerateBingoCard}
         onClear={bingoCard.clearCard}
         cardData={bingoCard.cardData}
         villagers={allVillagers}

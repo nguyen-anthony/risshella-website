@@ -1,5 +1,5 @@
 "use client";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useLocalStorage } from "./useLocalStorage";
 
 export interface BingoCardData {
@@ -18,6 +18,24 @@ export function useBingoCard(huntId: string) {
     `bingoCard_${huntId}`,
     null
   );
+
+  // Re-read from localStorage when huntId changes
+  useEffect(() => {
+    if (!huntId || typeof window === 'undefined') return;
+    
+    try {
+      const item = window.localStorage.getItem(`bingoCard_${huntId}`);
+      if (item) {
+        const parsed = JSON.parse(item);
+        setCardData(parsed);
+      } else {
+        setCardData(null);
+      }
+    } catch (error) {
+      console.error(`Error reading bingo card for hunt ${huntId}:`, error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [huntId]);
 
   /**
    * Generate a new bingo card with the provided villager IDs
