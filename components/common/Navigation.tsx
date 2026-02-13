@@ -147,8 +147,7 @@ const Navigation: React.FC = () => {
               alt="Support me on Ko-fi"
               width={150}
               height={32}
-              style={{ objectFit: 'contain' }}
-            />
+              style={{ objectFit: 'contain' }}              unoptimized            />
           </IconButton>
           <IconButton color="inherit" onClick={toggleMode}>
             {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}

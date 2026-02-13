@@ -324,8 +324,10 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
                         <Image
                           src={image_url}
                           alt={name}
-                          fill
+                          width={28}
+                          height={28}
                           style={{ objectFit: 'contain' }}
+                          unoptimized
                         />
                       </Box>
                     )}
