@@ -11,12 +11,16 @@ import {
   Alert,
   CircularProgress,
   Collapse,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import BuildIcon from '@mui/icons-material/Build';
 import InteractiveBingoCard from '../displays/InteractiveBingoCard';
 import BingoFilters from '../inputs/BingoFilters';
+import CustomBingoCardBuilder from '../inputs/CustomBingoCardBuilder';
 import { countMatchingVillagers, type BingoFilters as BingoFiltersType } from '@/utils/bingoCardGenerator';
 import type { Villager } from '@/types/villagerhunt';
 import type { BingoCardData } from '../hooks/useBingoCard';
@@ -25,6 +29,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onGenerate: (filters?: BingoFiltersType) => void;
+  onGenerateCustom: (villagerIds: number[]) => void;
   onClear: () => void;
   cardData: BingoCardData | null;
   villagers: Villager[];
@@ -40,6 +45,7 @@ export default function BingoCardDrawer({
   open,
   onClose,
   onGenerate,
+  onGenerateCustom,
   onClear,
   cardData,
   villagers,
@@ -55,6 +61,7 @@ export default function BingoCardDrawer({
     personalities: [],
   });
   const [showFilters, setShowFilters] = React.useState(false);
+  const [creationMode, setCreationMode] = React.useState<'generate' | 'custom'>('generate');
 
   // Calculate required villagers for the card
   const totalSquares = bingoCardSize * bingoCardSize;
@@ -111,7 +118,7 @@ export default function BingoCardDrawer({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CasinoIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            Bingo Card
+            Interactive Bingo Card
           </Typography>
         </Box>
         <IconButton onClick={onClose}>
@@ -155,53 +162,87 @@ export default function BingoCardDrawer({
               Generate a bingo card to start tracking villagers during your hunt!
             </Typography>
 
-            {/* Filter Toggle */}
-            <Button
-              variant="outlined"
-              startIcon={<FilterListIcon />}
-              onClick={() => setShowFilters(!showFilters)}
+            {/* Mode Toggle */}
+            <ToggleButtonGroup
+              value={creationMode}
+              exclusive
+              onChange={(_, newMode) => newMode && setCreationMode(newMode)}
               fullWidth
-              sx={{ mb: 2 }}
+              sx={{ mb: 3 }}
             >
-              {showFilters ? 'Hide Filters' : 'Show Filters (Optional)'}
-            </Button>
+              <ToggleButton value="generate">
+                <CasinoIcon sx={{ mr: 1 }} />
+                Generate Random
+              </ToggleButton>
+              <ToggleButton value="custom">
+                <BuildIcon sx={{ mr: 1 }} />
+                Create Custom
+              </ToggleButton>
+            </ToggleButtonGroup>
 
-            {/* Filters */}
-            <Collapse in={showFilters}>
-              <BingoFilters
-                filters={filters}
-                onChange={setFilters}
-                availableCount={availableCount}
-                requiredCount={requiredCount}
-              />
-              {hasFilters && (
+            {creationMode === 'generate' ? (
+              <Box>
+                {/* Filter Toggle */}
                 <Button
-                  variant="text"
-                  onClick={handleClearFilters}
+                  variant="outlined"
+                  startIcon={<FilterListIcon />}
+                  onClick={() => setShowFilters(!showFilters)}
                   fullWidth
                   sx={{ mb: 2 }}
                 >
-                  Clear All Filters
+                  {showFilters ? 'Hide Filters' : 'Show Filters (Optional)'}
                 </Button>
-              )}
-            </Collapse>
 
-            {/* Generate Button */}
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<CasinoIcon />}
-              onClick={handleGenerate}
-              disabled={!hasEnoughVillagers}
-              fullWidth
-            >
-              Generate Bingo Card
-            </Button>
+                {/* Filters */}
+                <Collapse in={showFilters}>
+                  <BingoFilters
+                    filters={filters}
+                    onChange={setFilters}
+                    availableCount={availableCount}
+                    requiredCount={requiredCount}
+                  />
+                  {hasFilters && (
+                    <Button
+                      variant="text"
+                      onClick={handleClearFilters}
+                      fullWidth
+                      sx={{ mb: 2 }}
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
+                </Collapse>
 
-            {!hasEnoughVillagers && hasFilters && (
-              <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
-                Not enough villagers match your filters
-              </Typography>
+                {/* Generate Button */}
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<CasinoIcon />}
+                  onClick={handleGenerate}
+                  disabled={!hasEnoughVillagers}
+                  fullWidth
+                >
+                  Generate Bingo Card
+                </Button>
+
+                {!hasEnoughVillagers && hasFilters && (
+                  <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                    Not enough villagers match your filters
+                  </Typography>
+                )}
+              </Box>
+            ) : (
+              <CustomBingoCardBuilder
+                villagers={villagers.filter(v => 
+                  !targetVillagers.some(tv => tv.villager_id === v.villager_id) &&
+                  !islandVillagers.includes(v.villager_id) &&
+                  !hotelTourists.includes(v.villager_id) &&
+                  !v.amiibo_only
+                )}
+                bingoCardSize={bingoCardSize}
+                onSave={onGenerateCustom}
+                onCancel={() => setCreationMode('generate')}
+              />
             )}
           </Box>
         )}

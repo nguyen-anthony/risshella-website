@@ -263,6 +263,12 @@ export default function HuntPageWrapper({
     }
   };
 
+  // Handle custom bingo card creation
+  const handleGenerateCustomBingoCard = (villagerIds: number[]) => {
+    if (!hunt) return;
+    bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
+  };
+
   // Handle hunt statistics modal
   const handleHuntStats = () => {
     setHuntStatsModalOpen(true);
@@ -628,6 +634,7 @@ export default function HuntPageWrapper({
             open={bingoCardDrawerOpen}
             onClose={() => setBingoCardDrawerOpen(false)}
             onGenerate={handleGenerateBingoCard}
+            onGenerateCustom={handleGenerateCustomBingoCard}
             onClear={bingoCard.clearCard}
             cardData={bingoCard.cardData}
             villagers={allVillagers}
@@ -849,6 +856,7 @@ export default function HuntPageWrapper({
         open={bingoCardDrawerOpen}
         onClose={() => setBingoCardDrawerOpen(false)}
         onGenerate={handleGenerateBingoCard}
+        onGenerateCustom={handleGenerateCustomBingoCard}
         onClear={bingoCard.clearCard}
         cardData={bingoCard.cardData}
         villagers={allVillagers}
