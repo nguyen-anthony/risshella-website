@@ -333,7 +333,7 @@ export default function EncountersTable({ villagers, isOwner, isModerator, huntI
                     )}
                     <Typography variant="body2">{name}</Typography>
                     {isFirstSighting && (
-                      <FiberNewIcon />
+                      <FiberNewIcon sx={{ color: '#FF9500' }} />
                     )}
                   </Box>
                 </TableCell>

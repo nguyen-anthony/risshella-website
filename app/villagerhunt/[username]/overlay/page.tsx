@@ -417,6 +417,7 @@ export default function OverlayPage({ params }: PageProps) {
                     <FiberNewIcon 
                       sx={{ 
                         fontSize: '48px',
+                        color: '#FF9500',
                         filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'
                       }} 
                     />
