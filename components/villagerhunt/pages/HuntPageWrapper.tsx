@@ -21,7 +21,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import OwnerHuntControls from '@/components/villagerhunt/controls/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import AuthLink from '@/components/villagerhunt/controls/AuthLink';
-import { selectBingoVillagers } from '@/utils/bingoCardGenerator';
+import { selectBingoVillagers, type BingoFilters } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/modals/UpdateIslandVillagersModal';
 import UpdateTargetVillagersModal from '@/components/villagerhunt/modals/UpdateTargetVillagersModal';
 import BingoCardDrawer from '@/components/villagerhunt/drawers/BingoCardDrawer';
@@ -239,7 +239,7 @@ export default function HuntPageWrapper({
   }, [initialTwitchId, fetchHuntData]);
 
   // Handle bingo card generation
-  const handleGenerateBingoCard = async () => {
+  const handleGenerateBingoCard = async (filters?: BingoFilters) => {
     if (!hunt) return;
 
     setGeneratingBingo(true);
@@ -251,6 +251,7 @@ export default function HuntPageWrapper({
         hotelTourists: hunt.hotel_tourists,
         villagers,
         bingoCardSize: hunt.bingo_card_size,
+        filters,
       });
 
       bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
@@ -632,6 +633,10 @@ export default function HuntPageWrapper({
             villagers={allVillagers}
             onSquareClick={bingoCard.toggleSquare}
             loading={generatingBingo}
+            targetVillagers={targetVillagers}
+            islandVillagers={hunt.island_villagers}
+            hotelTourists={hunt.hotel_tourists}
+            bingoCardSize={hunt.bingo_card_size}
           />
 
           {/* Delete Confirmation Modal */}
@@ -849,6 +854,10 @@ export default function HuntPageWrapper({
         villagers={allVillagers}
         onSquareClick={bingoCard.toggleSquare}
         loading={generatingBingo}
+        targetVillagers={targetVillagers}
+        islandVillagers={hunt?.island_villagers || []}
+        hotelTourists={hunt?.hotel_tourists || []}
+        bingoCardSize={hunt?.bingo_card_size || 5}
       />
       <HuntStatisticsModal
         open={huntStatsModalOpen}
