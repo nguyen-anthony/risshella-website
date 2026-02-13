@@ -84,6 +84,7 @@ export default function HuntPageWrapper({
   const [dreamieModalOpen, setDreamieModalOpen] = React.useState(false);
   const [isTempMod, setIsTempMod] = React.useState(false);
   const [islandDetailsExpanded, setIslandDetailsExpanded] = React.useState(false);
+  const [dreamieListExpanded, setDreamieListExpanded] = React.useState(true);
   const [showInactiveNotification, setShowInactiveNotification] = React.useState(false);
   const [isLive, setIsLive] = React.useState(false);
   const [publicToggleModalOpen, setPublicToggleModalOpen] = React.useState(false);
@@ -577,13 +578,25 @@ export default function HuntPageWrapper({
           <Typography variant="h6" component="h2" color="text.secondary" sx={{ mb: 2 }}>{hunt.hunt_name}</Typography>
 
           {targetVillagers.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">Dreamie List:</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                {targetVillagers.map((villager) => (
-                  <VillagerDisplay key={villager.villager_id} villager={villager} variant="card" />
-                ))}
-              </Box>
+            <Box sx={{ mb: 2 }}>
+              <Button
+                onClick={() => setDreamieListExpanded(!dreamieListExpanded)}
+                endIcon={<ExpandMoreIcon sx={{ transform: dreamieListExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />}
+                sx={{ mb: 1, textTransform: 'none' }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Dreamie List
+                </Typography>
+              </Button>
+              <Collapse in={dreamieListExpanded}>
+                <Box sx={{ pl: 2 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    {targetVillagers.map((villager) => (
+                      <VillagerDisplay key={villager.villager_id} villager={villager} variant="card" />
+                    ))}
+                  </Box>
+                </Box>
+              </Collapse>
             </Box>
           )}
 
