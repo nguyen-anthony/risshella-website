@@ -79,6 +79,16 @@ export function useBingoCard(huntId: string) {
   }, [removeCardData]);
 
   /**
+   * Restore a complete bingo card from backup (including marked squares)
+   */
+  const restoreCard = useCallback(
+    (data: BingoCardData) => {
+      setCardData(data);
+    },
+    [setCardData]
+  );
+
+  /**
    * Check if a bingo card exists for this hunt
    */
   const hasCard = cardData !== null;
@@ -89,5 +99,6 @@ export function useBingoCard(huntId: string) {
     generateCard,
     toggleSquare,
     clearCard,
+    restoreCard,
   };
 }

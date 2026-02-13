@@ -144,6 +144,66 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              All v0.14.x Updates
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h5" fontWeight="semibold">
+              February 13, 2026 - v0.14.0
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText primary="Interactive Bingo Cards!" 
+                  secondary="Bingo Cards are no longer just generated images. You can now make interactive bingo cards right on the webpage!
+                    Generating bingo cards with all villagers or add filters to restrict the villager list further!
+                    You can even create your own custom cards (perfect to replacet your card from before this update)!
+                    Important to note that your card data is NOT being stored by me, I am utilizing your browser cache.
+                    Because of this, I've added the ability to download and restore your card data in case your browser resets. Play around with this feature and as always, provide feedback on how to improve it!"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Collapsible island villager and dreamie lists" 
+                  secondary="I pulled villager lists OUT of the modals and back on the main page, but put them in collapsible sections to help with organize the page."
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Hunt Statistics Button Moved" 
+                  secondary="The button for hunt statistics is now moved to the top as it's more of a navigation component."
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Global Stats Button Visibility" 
+                  secondary="The button to view global hunts is now more obvious."
+                />
+              </ListItem>
+              
+            </List>
+            <Divider/>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              What is next?
+            </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText 
+                  primary="I'm working on a better design to make this page more Animal Crossing friendly rather than a basic dark mode/light mode color theme."
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText 
+                  primary="Data Exporting" 
+                  secondary="I am working on allowing users to export their hunt data to keep for yourselves!"
+                />
+              </ListItem>
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               All v0.13.x Updates
             </Typography>
           </AccordionSummary>
