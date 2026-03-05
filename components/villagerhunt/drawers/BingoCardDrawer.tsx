@@ -49,6 +49,8 @@ type Props = {
   username: string;
   huntName: string;
   onRestoreCard: (cardData: BingoCardData) => void;
+  ownerFilters?: BingoFiltersType;
+  ownerDisplayName?: string;
 };
 
 export default function BingoCardDrawer({
@@ -68,6 +70,8 @@ export default function BingoCardDrawer({
   username,
   huntName,
   onRestoreCard,
+  ownerFilters,
+  ownerDisplayName,
 }: Props) {
   const [filters, setFilters] = React.useState<BingoFiltersType>({
     species: [],
@@ -80,6 +84,15 @@ export default function BingoCardDrawer({
   // Detect if there's enough vertical space to show controls expanded
   const hasTallScreen = useMediaQuery('(min-height: 900px)');
   const [showControls, setShowControls] = React.useState(hasTallScreen);
+
+  // Pre-populate filters from owner's settings when drawer opens and no card exists yet
+  React.useEffect(() => {
+    if (open && !cardData && ownerFilters && (ownerFilters.species.length > 0 || ownerFilters.personalities.length > 0)) {
+      setFilters({ species: [...ownerFilters.species], personalities: [...ownerFilters.personalities] });
+    }
+  // Only run when the drawer opens, not on every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Update showControls when screen size changes or card data changes
   React.useEffect(() => {
@@ -171,6 +184,15 @@ export default function BingoCardDrawer({
   const hasEnoughVillagers = availableCount >= requiredCount;
   const hasFilters = filters.species.length > 0 || filters.personalities.length > 0;
 
+  // Owner filter helpers
+  const hasOwnerFilters = !!(ownerFilters && (ownerFilters.species.length > 0 || ownerFilters.personalities.length > 0));
+  const isUsingOwnerFilters = hasOwnerFilters && (
+    filters.species.length === (ownerFilters?.species.length ?? 0) &&
+    filters.personalities.length === (ownerFilters?.personalities.length ?? 0) &&
+    filters.species.every(s => ownerFilters!.species.includes(s)) &&
+    filters.personalities.every(p => ownerFilters!.personalities.includes(p))
+  );
+
   const handleGenerate = () => {
     onGenerate(hasFilters ? filters : undefined);
   };
@@ -180,6 +202,12 @@ export default function BingoCardDrawer({
       species: [],
       personalities: [],
     });
+  };
+
+  const handleResetToOwnerFilters = () => {
+    if (ownerFilters) {
+      setFilters({ species: [...ownerFilters.species], personalities: [...ownerFilters.personalities] });
+    }
   };
 
   // Calculate drawer width based on card size
@@ -294,6 +322,27 @@ export default function BingoCardDrawer({
               <Collapse in={showControls}>
                 <Box sx={{ pt: { xs: 1, sm: 2 }, maxHeight: '40vh', overflowY: 'auto' }}>
                   {/* Show filters when regenerating */}
+                  {hasOwnerFilters && (
+                    <Box sx={{ mb: { xs: 1, sm: 2 } }}>
+                      {isUsingOwnerFilters ? (
+                        <Alert severity="info" sx={{ fontSize: '0.8rem' }}>
+                          Filters set by <strong>{ownerDisplayName}</strong> are pre-applied.
+                        </Alert>
+                      ) : (
+                        <Alert
+                          severity="warning"
+                          action={
+                            <Button size="small" onClick={handleResetToOwnerFilters} sx={{ whiteSpace: 'nowrap' }}>
+                              Reset
+                            </Button>
+                          }
+                          sx={{ fontSize: '0.8rem' }}
+                        >
+                          You&apos;ve overridden <strong>{ownerDisplayName}</strong>&apos;s filters.
+                        </Alert>
+                      )}
+                    </Box>
+                  )}
                   <Button
                     variant="text"
                     startIcon={<FilterListIcon />}
@@ -410,6 +459,29 @@ export default function BingoCardDrawer({
 
             {creationMode === 'generate' ? (
               <Box>
+                {/* Owner filter notice */}
+                {hasOwnerFilters && (
+                  <Box sx={{ mb: 2 }}>
+                    {isUsingOwnerFilters ? (
+                      <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
+                        Filters applied automatically by <strong>{ownerDisplayName}</strong>. Expand filters below to override.
+                      </Alert>
+                    ) : (
+                      <Alert
+                        severity="warning"
+                        action={
+                          <Button size="small" onClick={handleResetToOwnerFilters} sx={{ whiteSpace: 'nowrap' }}>
+                            Reset
+                          </Button>
+                        }
+                        sx={{ fontSize: '0.85rem' }}
+                      >
+                        You&apos;ve overridden <strong>{ownerDisplayName}</strong>&apos;s filters.
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+
                 {/* Filter Toggle */}
                 <Button
                   variant="outlined"
@@ -418,7 +490,7 @@ export default function BingoCardDrawer({
                   fullWidth
                   sx={{ mb: 2 }}
                 >
-                  {showFilters ? 'Hide Filters' : 'Show Filters (Optional)'}
+                  {showFilters ? 'Hide Filters' : (hasOwnerFilters ? 'Override Filters' : 'Show Filters (Optional)')}
                 </Button>
 
                 {/* Filters */}
@@ -430,14 +502,26 @@ export default function BingoCardDrawer({
                     requiredCount={requiredCount}
                   />
                   {hasFilters && (
-                    <Button
-                      variant="text"
-                      onClick={handleClearFilters}
-                      fullWidth
-                      sx={{ mb: 2 }}
-                    >
-                      Clear All Filters
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="text"
+                        onClick={handleClearFilters}
+                        fullWidth
+                        sx={{ mb: 2 }}
+                      >
+                        Clear All Filters
+                      </Button>
+                      {hasOwnerFilters && !isUsingOwnerFilters && (
+                        <Button
+                          variant="text"
+                          onClick={handleResetToOwnerFilters}
+                          fullWidth
+                          sx={{ mb: 2 }}
+                        >
+                          Reset to {ownerDisplayName}&apos;s Filters
+                        </Button>
+                      )}
+                    </Box>
                   )}
                 </Collapse>
 

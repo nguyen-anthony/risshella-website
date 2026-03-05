@@ -26,10 +26,10 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
   const { villagers: allVillagers } = useVillagers({ includeAmiiboOnly: true });
   const bingoCard = useBingoCard(hunt?.hunt_id || '');
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
-  const [filters, setFilters] = React.useState<BingoFiltersType>({
-    species: [],
-    personalities: [],
-  });
+  const [filters, setFilters] = React.useState<BingoFiltersType>(() => ({
+    species: hunt?.bingo_filter_species || [],
+    personalities: hunt?.bingo_filter_personalities || [],
+  }));
   const [showFilters, setShowFilters] = React.useState(false);
   const [creationMode, setCreationMode] = React.useState<'generate' | 'custom'>('generate');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -80,6 +80,17 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
   const hasEnoughVillagers = availableCount >= requiredCount;
   const hasFilters = filters.species.length > 0 || filters.personalities.length > 0;
 
+  // Owner filter helpers
+  const ownerSpecies = hunt?.bingo_filter_species || [];
+  const ownerPersonalities = hunt?.bingo_filter_personalities || [];
+  const hasOwnerFilters = ownerSpecies.length > 0 || ownerPersonalities.length > 0;
+  const isUsingOwnerFilters = hasOwnerFilters && (
+    filters.species.length === ownerSpecies.length &&
+    filters.personalities.length === ownerPersonalities.length &&
+    filters.species.every(s => ownerSpecies.includes(s)) &&
+    filters.personalities.every(p => ownerPersonalities.includes(p))
+  );
+
   const handleGenerate = () => {
     setGeneratingBingo(true);
     try {
@@ -109,6 +120,10 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
       species: [],
       personalities: [],
     });
+  };
+
+  const handleResetToOwnerFilters = () => {
+    setFilters({ species: [...ownerSpecies], personalities: [...ownerPersonalities] });
   };
 
   // Handle backup/download
@@ -230,6 +245,27 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
 
             <Collapse in={showFilters}>
               <Box sx={{ mb: 2 }}>
+                {hasOwnerFilters && (
+                  <Box sx={{ mb: 2 }}>
+                    {isUsingOwnerFilters ? (
+                      <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
+                        Filters set by <strong>{displayName}</strong> are pre-applied.
+                      </Alert>
+                    ) : (
+                      <Alert
+                        severity="warning"
+                        action={
+                          <Button size="small" onClick={handleResetToOwnerFilters} sx={{ whiteSpace: 'nowrap' }}>
+                            Reset
+                          </Button>
+                        }
+                        sx={{ fontSize: '0.85rem' }}
+                      >
+                        You&apos;ve overridden <strong>{displayName}</strong>&apos;s filters.
+                      </Alert>
+                    )}
+                  </Box>
+                )}
                 <BingoFilters
                   filters={filters}
                   onChange={setFilters}
@@ -326,6 +362,29 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
 
             {creationMode === 'generate' ? (
               <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+                {/* Owner filter notice */}
+                {hasOwnerFilters && (
+                  <Box sx={{ mb: 2 }}>
+                    {isUsingOwnerFilters ? (
+                      <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
+                        Filters applied automatically by <strong>{displayName}</strong>. Expand filters below to override.
+                      </Alert>
+                    ) : (
+                      <Alert
+                        severity="warning"
+                        action={
+                          <Button size="small" onClick={handleResetToOwnerFilters} sx={{ whiteSpace: 'nowrap' }}>
+                            Reset
+                          </Button>
+                        }
+                        sx={{ fontSize: '0.85rem' }}
+                      >
+                        You&apos;ve overridden <strong>{displayName}</strong>&apos;s filters.
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+
                 <Button
                   variant="text"
                   startIcon={<FilterListIcon />}
@@ -333,7 +392,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
                   fullWidth
                   sx={{ mb: 2 }}
                 >
-                  {showFilters ? 'Hide Filters' : 'Show Filters (Optional)'}
+                  {showFilters ? 'Hide Filters' : (hasOwnerFilters ? 'Override Filters' : 'Show Filters (Optional)')}
                 </Button>
 
                 <Collapse in={showFilters}>
@@ -344,14 +403,26 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
                     requiredCount={requiredCount}
                   />
                   {hasFilters && (
-                    <Button
-                      variant="text"
-                      onClick={handleClearFilters}
-                      fullWidth
-                      sx={{ mb: 2 }}
-                    >
-                      Clear All Filters
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="text"
+                        onClick={handleClearFilters}
+                        fullWidth
+                        sx={{ mb: 2 }}
+                      >
+                        Clear All Filters
+                      </Button>
+                      {hasOwnerFilters && !isUsingOwnerFilters && (
+                        <Button
+                          variant="text"
+                          onClick={handleResetToOwnerFilters}
+                          fullWidth
+                          sx={{ mb: 2 }}
+                        >
+                          Reset to {displayName}&apos;s Filters
+                        </Button>
+                      )}
+                    </Box>
                   )}
                 </Collapse>
 
