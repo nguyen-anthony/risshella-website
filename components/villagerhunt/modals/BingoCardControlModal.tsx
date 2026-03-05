@@ -28,12 +28,12 @@ type Props = {
   onClose: () => void;
   isBingoEnabled: boolean;
   bingoCardSize: number;
-  bingoFilterSpecies: string[];
-  bingoFilterPersonalities: string[];
-  villagers: Villager[];
-  targetVillagers: { villager_id: number }[];
-  islandVillagers: number[];
-  hotelTourists: number[];
+  bingoFilterSpecies?: string[];
+  bingoFilterPersonalities?: string[];
+  villagers?: Villager[];
+  targetVillagers?: { villager_id: number }[];
+  islandVillagers?: number[];
+  hotelTourists?: number[];
   onSave: (isEnabled: boolean, size: number, filters: BingoFilters) => void;
 };
 
@@ -53,12 +53,12 @@ export default function BingoCardControlModal({
   onClose,
   isBingoEnabled,
   bingoCardSize,
-  bingoFilterSpecies,
-  bingoFilterPersonalities,
-  villagers,
-  targetVillagers,
-  islandVillagers,
-  hotelTourists,
+  bingoFilterSpecies = [],
+  bingoFilterPersonalities = [],
+  villagers = [],
+  targetVillagers = [],
+  islandVillagers = [],
+  hotelTourists = [],
   onSave,
 }: Props) {
   const [enabled, setEnabled] = React.useState(isBingoEnabled);
