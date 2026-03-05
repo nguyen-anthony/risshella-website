@@ -23,6 +23,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import OwnerHuntControls from '@/components/villagerhunt/controls/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import AuthLink from '@/components/villagerhunt/controls/AuthLink';
+import ExportHuntButton from '@/components/villagerhunt/controls/ExportHuntButton';
 import { selectBingoVillagers, type BingoFilters } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/modals/UpdateIslandVillagersModal';
 import UpdateTargetVillagersModal from '@/components/villagerhunt/modals/UpdateTargetVillagersModal';
@@ -563,6 +564,15 @@ export default function HuntPageWrapper({
             <Button variant="outlined" startIcon={<BarChartIcon />} onClick={handleHuntStats}>
               Hunt Statistics
             </Button>
+          )}
+          {hunt && (initialIsOwner || isModerator || isTempMod) && (
+            <ExportHuntButton
+              huntId={hunt.hunt_id}
+              huntName={hunt.hunt_name}
+              targetVillagerIds={hunt.target_villager_id}
+              islandVillagerIds={hunt.island_villagers ?? []}
+              villagers={allVillagers}
+            />
           )}
         </Box>
       </Stack>

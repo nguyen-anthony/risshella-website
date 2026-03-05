@@ -8,6 +8,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import HuntStatisticsModal from '@/components/villagerhunt/modals/HuntStatisticsModal';
 import ResumeButton from '@/components/villagerhunt/controls/ResumeButton';
+import ExportHuntButton from '@/components/villagerhunt/controls/ExportHuntButton';
 import VillagerDisplay from '@/components/villagerhunt/displays/VillagerDisplay';
 import type { Villager } from '@/types/villagerhunt';
 
@@ -16,6 +17,7 @@ type Props = {
     hunt_id: string;
     hunt_name: string;
     target_villager_id: number[];
+    island_villagers?: number[];
     twitch_id: number;
     hunt_status: string;
   };
@@ -25,6 +27,7 @@ type Props = {
   isOwner: boolean;
   isAuthenticated: boolean;
   username: string;
+  islandVillagerIds?: number[];
 };
 
 export default function HuntHistoryDetailClient({
@@ -35,6 +38,7 @@ export default function HuntHistoryDetailClient({
   isOwner,
   isAuthenticated,
   username,
+  islandVillagerIds = [],
 }: Props) {
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
 
@@ -55,7 +59,7 @@ export default function HuntHistoryDetailClient({
             Go back to hunt history
           </Button>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 1, flexWrap: 'wrap' }}>
           <Button
             variant="contained"
             color="primary"
@@ -63,6 +67,15 @@ export default function HuntHistoryDetailClient({
           >
             Hunt Statistics
           </Button>
+          {isOwner && (
+            <ExportHuntButton
+              huntId={hunt.hunt_id}
+              huntName={hunt.hunt_name}
+              targetVillagerIds={hunt.target_villager_id}
+              islandVillagerIds={islandVillagerIds}
+              villagers={villagers}
+            />
+          )}
         </Box>
       </Box>
       {targetVillagers.length > 0 && (
