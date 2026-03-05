@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
     target_villager_id?: number[];
     is_bingo_enabled?: boolean;
     bingo_card_size?: number;
+    bingo_filter_species?: string[];
+    bingo_filter_personalities?: string[];
   } | null;
 
   if (!body || typeof body.hunt_id !== 'string') {
@@ -28,8 +30,10 @@ export async function POST(req: NextRequest) {
   const hasTargetVillagers = Array.isArray(body.target_villager_id);
   const hasBingoEnabled = typeof body.is_bingo_enabled === 'boolean';
   const hasBingoCardSize = typeof body.bingo_card_size === 'number';
+  const hasBingoFilterSpecies = Array.isArray(body.bingo_filter_species);
+  const hasBingoFilterPersonalities = Array.isArray(body.bingo_filter_personalities);
 
-  if (!hasIslandVillagers && !hasHotelTourists && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize) {
+  if (!hasIslandVillagers && !hasHotelTourists && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize && !hasBingoFilterSpecies && !hasBingoFilterPersonalities) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Update the hunt
-  const updateData: { island_villagers?: number[]; hotel_tourists?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number } = {};
+  const updateData: { island_villagers?: number[]; hotel_tourists?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number; bingo_filter_species?: string[]; bingo_filter_personalities?: string[] } = {};
   if (hasIslandVillagers) {
     updateData.island_villagers = body.island_villagers;
   }
@@ -85,6 +89,12 @@ export async function POST(req: NextRequest) {
   if (hasBingoCardSize) {
     updateData.bingo_card_size = body.bingo_card_size;
   }
+  if (hasBingoFilterSpecies) {
+    updateData.bingo_filter_species = body.bingo_filter_species;
+  }
+  if (hasBingoFilterPersonalities) {
+    updateData.bingo_filter_personalities = body.bingo_filter_personalities;
+  }
 
   const { error } = await supabase
     .from('hunts')
@@ -92,6 +102,7 @@ export async function POST(req: NextRequest) {
     .eq('hunt_id', body.hunt_id);
 
   if (error) {
+    console.log(error)
     return NextResponse.json({ error: 'update_failed' }, { status: 500 });
   }
 

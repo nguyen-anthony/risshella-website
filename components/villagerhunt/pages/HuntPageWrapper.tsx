@@ -922,6 +922,11 @@ export default function HuntPageWrapper({
         username={initialUsername}
         huntName={hunt?.hunt_name || 'unknown'}
         onRestoreCard={bingoCard.restoreCard}
+        ownerFilters={{
+          species: hunt?.bingo_filter_species || [],
+          personalities: hunt?.bingo_filter_personalities || [],
+        }}
+        ownerDisplayName={initialDisplayName}
       />
       <HuntStatisticsModal
         open={huntStatsModalOpen}
@@ -992,14 +997,26 @@ export default function HuntPageWrapper({
         onClose={() => setBingoSettingsModalOpen(false)}
         isBingoEnabled={isBingoEnabled}
         bingoCardSize={bingoCardSize}
-        onSave={async (enabled, size) => {
+        bingoFilterSpecies={hunt?.bingo_filter_species || []}
+        bingoFilterPersonalities={hunt?.bingo_filter_personalities || []}
+        villagers={villagers}
+        targetVillagers={targetVillagers}
+        islandVillagers={hunt?.island_villagers || []}
+        hotelTourists={hunt?.hotel_tourists || []}
+        onSave={async (enabled, size, filters) => {
           setIsBingoEnabled(enabled);
           setBingoCardSize(size);
           try {
             const res = await fetch('/api/hunts/update', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ hunt_id: hunt?.hunt_id, is_bingo_enabled: enabled, bingo_card_size: size }),
+              body: JSON.stringify({
+                hunt_id: hunt?.hunt_id,
+                is_bingo_enabled: enabled,
+                bingo_card_size: size,
+                bingo_filter_species: filters.species,
+                bingo_filter_personalities: filters.personalities,
+              }),
             });
             if (!res.ok) {
               throw new Error('Failed to update');
