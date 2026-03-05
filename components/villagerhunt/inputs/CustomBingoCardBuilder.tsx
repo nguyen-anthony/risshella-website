@@ -24,6 +24,7 @@ type Props = {
   bingoCardSize: number;
   onSave: (villagerIds: number[]) => void;
   onCancel: () => void;
+  removeFreeSpace?: boolean;
 };
 
 export default function CustomBingoCardBuilder({
@@ -31,9 +32,10 @@ export default function CustomBingoCardBuilder({
   bingoCardSize,
   onSave,
   onCancel,
+  removeFreeSpace = false,
 }: Props) {
   const totalSquares = bingoCardSize * bingoCardSize;
-  const hasFreeSpace = bingoCardSize === 3 || bingoCardSize === 5;
+  const hasFreeSpace = !removeFreeSpace && (bingoCardSize === 3 || bingoCardSize === 5);
   const freeSpaceIndex = hasFreeSpace ? Math.floor(totalSquares / 2) : -1;
   const requiredSquares = totalSquares - (hasFreeSpace ? 1 : 0);
 

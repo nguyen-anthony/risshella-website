@@ -3,5 +3,6 @@
 -- that are automatically applied when visitors generate a bingo card.
 
 ALTER TABLE hunts
-  ADD COLUMN IF NOT EXISTS bingo_filter_species       TEXT[] NOT NULL DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS bingo_filter_personalities TEXT[] NOT NULL DEFAULT '{}';
+  ADD COLUMN IF NOT EXISTS bingo_filter_species       TEXT[]  NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS bingo_filter_personalities TEXT[]  NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS bingo_remove_free_space    BOOLEAN NOT NULL DEFAULT false;

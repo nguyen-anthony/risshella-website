@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     bingo_card_size?: number;
     bingo_filter_species?: string[];
     bingo_filter_personalities?: string[];
+    bingo_remove_free_space?: boolean;
   } | null;
 
   if (!body || typeof body.hunt_id !== 'string') {
@@ -32,8 +33,9 @@ export async function POST(req: NextRequest) {
   const hasBingoCardSize = typeof body.bingo_card_size === 'number';
   const hasBingoFilterSpecies = Array.isArray(body.bingo_filter_species);
   const hasBingoFilterPersonalities = Array.isArray(body.bingo_filter_personalities);
+  const hasBingoRemoveFreeSpace = typeof body.bingo_remove_free_space === 'boolean';
 
-  if (!hasIslandVillagers && !hasHotelTourists && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize && !hasBingoFilterSpecies && !hasBingoFilterPersonalities) {
+  if (!hasIslandVillagers && !hasHotelTourists && !hasTargetVillagers && !hasBingoEnabled && !hasBingoCardSize && !hasBingoFilterSpecies && !hasBingoFilterPersonalities && !hasBingoRemoveFreeSpace) {
     return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
   }
 
@@ -73,7 +75,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Update the hunt
-  const updateData: { island_villagers?: number[]; hotel_tourists?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number; bingo_filter_species?: string[]; bingo_filter_personalities?: string[] } = {};
+  const updateData: { island_villagers?: number[]; hotel_tourists?: number[]; target_villager_id?: number[]; is_bingo_enabled?: boolean; bingo_card_size?: number; bingo_filter_species?: string[]; bingo_filter_personalities?: string[]; bingo_remove_free_space?: boolean } = {};
   if (hasIslandVillagers) {
     updateData.island_villagers = body.island_villagers;
   }
@@ -94,6 +96,9 @@ export async function POST(req: NextRequest) {
   }
   if (hasBingoFilterPersonalities) {
     updateData.bingo_filter_personalities = body.bingo_filter_personalities;
+  }
+  if (hasBingoRemoveFreeSpace) {
+    updateData.bingo_remove_free_space = body.bingo_remove_free_space;
   }
 
   const { error } = await supabase

@@ -13,6 +13,8 @@ import {
   Collapse,
   ToggleButtonGroup,
   ToggleButton,
+  FormControlLabel,
+  Switch,
   useMediaQuery,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -37,8 +39,8 @@ import type { BingoCardData } from '../hooks/useBingoCard';
 type Props = {
   open: boolean;
   onClose: () => void;
-  onGenerate: (filters?: BingoFiltersType) => void;
-  onGenerateCustom: (villagerIds: number[]) => void;
+  onGenerate: (filters?: BingoFiltersType, removeFreeSpace?: boolean) => void;
+  onGenerateCustom: (villagerIds: number[], removeFreeSpace?: boolean) => void;
   onClear: () => void;
   cardData: BingoCardData | null;
   villagers: Villager[];
@@ -53,6 +55,7 @@ type Props = {
   onRestoreCard: (cardData: BingoCardData) => void;
   ownerFilters?: BingoFiltersType;
   ownerDisplayName?: string;
+  ownerRemoveFreeSpace?: boolean;
 };
 
 export default function BingoCardDrawer({
@@ -74,11 +77,13 @@ export default function BingoCardDrawer({
   onRestoreCard,
   ownerFilters,
   ownerDisplayName,
+  ownerRemoveFreeSpace,
 }: Props) {
   const [filters, setFilters] = React.useState<BingoFiltersType>({
     species: [],
     personalities: [],
   });
+  const [removeFreeSpace, setRemoveFreeSpace] = React.useState(ownerRemoveFreeSpace ?? false);
   const [showFilters, setShowFilters] = React.useState(false);
   const [creationMode, setCreationMode] = React.useState<'generate' | 'custom'>('generate');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -91,6 +96,9 @@ export default function BingoCardDrawer({
   React.useEffect(() => {
     if (open && !cardData && ownerFilters && (ownerFilters.species.length > 0 || ownerFilters.personalities.length > 0)) {
       setFilters({ species: [...ownerFilters.species], personalities: [...ownerFilters.personalities] });
+    }
+    if (open && !cardData) {
+      setRemoveFreeSpace(ownerRemoveFreeSpace ?? false);
     }
   // Only run when the drawer opens, not on every render
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,6 +172,7 @@ export default function BingoCardDrawer({
           villagerIds: backup.villagerIds,
           markedSquares: backup.markedSquares,
           size: backup.size,
+          removeFreeSpace: backup.removeFreeSpace ?? false,
           generatedAt: backup.generatedAt || Date.now(),
         });
 
@@ -181,7 +190,7 @@ export default function BingoCardDrawer({
 
   // Calculate required villagers for the card
   const totalSquares = bingoCardSize * bingoCardSize;
-  const freeSpaces = bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0;
+  const freeSpaces = removeFreeSpace ? 0 : (bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0);
   const requiredCount = totalSquares - freeSpaces;
 
   // Count available villagers matching current filters
@@ -207,8 +216,11 @@ export default function BingoCardDrawer({
     filters.personalities.every(p => ownerFilters!.personalities.includes(p))
   );
 
+  const ownerHasRemoveFreeSpace = ownerRemoveFreeSpace ?? false;
+  const isUsingOwnerRemoveFreeSpace = removeFreeSpace === ownerHasRemoveFreeSpace;
+
   const handleGenerate = () => {
-    onGenerate(hasFilters ? filters : undefined);
+    onGenerate(hasFilters ? filters : undefined, removeFreeSpace);
   };
 
   const handleClearFilters = () => {
@@ -222,6 +234,10 @@ export default function BingoCardDrawer({
     if (ownerFilters) {
       setFilters({ species: [...ownerFilters.species], personalities: [...ownerFilters.personalities] });
     }
+  };
+
+  const handleResetToOwnerRemoveFreeSpace = () => {
+    setRemoveFreeSpace(ownerRemoveFreeSpace ?? false);
   };
 
   // Calculate drawer width based on card size
@@ -318,6 +334,7 @@ export default function BingoCardDrawer({
                 markedSquares={cardData.markedSquares}
                 size={cardData.size}
                 onSquareClick={onSquareClick}
+                removeFreeSpace={cardData.removeFreeSpace}
               />
             </Box>
 
@@ -357,6 +374,39 @@ export default function BingoCardDrawer({
                       )}
                     </Box>
                   )}
+                  {/* Remove free space setting */}
+                  {ownerHasRemoveFreeSpace && (
+                    <Box sx={{ mb: { xs: 1, sm: 2 } }}>
+                      {isUsingOwnerRemoveFreeSpace ? (
+                        <Alert severity="info" sx={{ fontSize: '0.8rem' }}>
+                          Free space removal set by <strong>{ownerDisplayName}</strong> is pre-applied.
+                        </Alert>
+                      ) : (
+                        <Alert
+                          severity="warning"
+                          action={
+                            <Button size="small" onClick={handleResetToOwnerRemoveFreeSpace} sx={{ whiteSpace: 'nowrap' }}>
+                              Reset
+                            </Button>
+                          }
+                          sx={{ fontSize: '0.8rem' }}
+                        >
+                          You&apos;ve overridden <strong>{ownerDisplayName}</strong>&apos;s free space setting.
+                        </Alert>
+                      )}
+                    </Box>
+                  )}
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={removeFreeSpace}
+                        onChange={(e) => setRemoveFreeSpace(e.target.checked)}
+                        size="small"
+                      />
+                    }
+                    label={<Typography variant="body2">Remove free space</Typography>}
+                    sx={{ mb: { xs: 1, sm: 2 } }}
+                  />
                   <Button
                     variant="text"
                     startIcon={<FilterListIcon />}
@@ -508,6 +558,39 @@ export default function BingoCardDrawer({
                   </Box>
                 )}
 
+                {/* Remove free space notice + toggle */}
+                {ownerHasRemoveFreeSpace && (
+                  <Box sx={{ mb: 2 }}>
+                    {isUsingOwnerRemoveFreeSpace ? (
+                      <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
+                        Free space removal applied by <strong>{ownerDisplayName}</strong>.
+                      </Alert>
+                    ) : (
+                      <Alert
+                        severity="warning"
+                        action={
+                          <Button size="small" onClick={handleResetToOwnerRemoveFreeSpace} sx={{ whiteSpace: 'nowrap' }}>
+                            Reset
+                          </Button>
+                        }
+                        sx={{ fontSize: '0.85rem' }}
+                      >
+                        You&apos;ve overridden <strong>{ownerDisplayName}</strong>&apos;s free space setting.
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={removeFreeSpace}
+                      onChange={(e) => setRemoveFreeSpace(e.target.checked)}
+                    />
+                  }
+                  label="Remove free space"
+                  sx={{ mb: 2 }}
+                />
+
                 {/* Filter Toggle */}
                 <Button
                   variant="outlined"
@@ -578,8 +661,9 @@ export default function BingoCardDrawer({
                   !v.amiibo_only
                 )}
                 bingoCardSize={bingoCardSize}
-                onSave={onGenerateCustom}
+                onSave={(ids) => onGenerateCustom(ids, removeFreeSpace)}
                 onCancel={() => setCreationMode('generate')}
+                removeFreeSpace={removeFreeSpace}
               />
             )}
           </Box>

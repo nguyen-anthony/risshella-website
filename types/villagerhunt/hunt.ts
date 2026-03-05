@@ -29,6 +29,7 @@ export interface HuntFull extends HuntWithTimestamps {
   bingo_card_size: number;
   bingo_filter_species: string[];
   bingo_filter_personalities: string[];
+  bingo_remove_free_space: boolean;
   is_public: boolean;
 }
 

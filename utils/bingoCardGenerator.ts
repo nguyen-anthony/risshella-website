@@ -14,6 +14,7 @@ export function selectBingoVillagers({
   villagers,
   bingoCardSize = 5,
   filters,
+  removeFreeSpace,
 }: {
   targetVillagers: { villager_id: number }[];
   islandVillagers: number[];
@@ -21,6 +22,7 @@ export function selectBingoVillagers({
   villagers: { villager_id: number; species?: string; personality?: string }[];
   bingoCardSize?: number;
   filters?: BingoFilters;
+  removeFreeSpace?: boolean;
 }): number[] {
   // Get available villagers (exclude target, island, and hotel tourists)
   const excludedIds = new Set([
@@ -47,7 +49,7 @@ export function selectBingoVillagers({
 
   // Calculate required villagers based on size and free spaces
   const totalSquares = bingoCardSize * bingoCardSize;
-  const freeSpaces = bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0;
+  const freeSpaces = removeFreeSpace ? 0 : (bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0);
   const requiredVillagers = totalSquares - freeSpaces;
 
   if (availableVillagers.length < requiredVillagers) {

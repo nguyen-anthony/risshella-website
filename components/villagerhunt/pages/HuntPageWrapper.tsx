@@ -246,7 +246,7 @@ export default function HuntPageWrapper({
   }, [initialTwitchId, fetchHuntData]);
 
   // Handle bingo card generation
-  const handleGenerateBingoCard = async (filters?: BingoFilters) => {
+  const handleGenerateBingoCard = async (filters?: BingoFilters, removeFreeSpace?: boolean) => {
     if (!hunt) return;
 
     setGeneratingBingo(true);
@@ -259,9 +259,10 @@ export default function HuntPageWrapper({
         villagers,
         bingoCardSize: hunt.bingo_card_size,
         filters,
+        removeFreeSpace,
       });
 
-      bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
+      bingoCard.generateCard(villagerIds, hunt.bingo_card_size, removeFreeSpace ?? false);
     } catch (error) {
       console.error('Failed to generate bingo card:', error);
       alert(error instanceof Error ? error.message : 'Failed to generate bingo card');
@@ -271,9 +272,9 @@ export default function HuntPageWrapper({
   };
 
   // Handle custom bingo card creation
-  const handleGenerateCustomBingoCard = (villagerIds: number[]) => {
+  const handleGenerateCustomBingoCard = (villagerIds: number[], removeFreeSpace = false) => {
     if (!hunt) return;
-    bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
+    bingoCard.generateCard(villagerIds, hunt.bingo_card_size, removeFreeSpace);
   };
 
   // Handle hunt statistics modal
@@ -937,6 +938,7 @@ export default function HuntPageWrapper({
           personalities: hunt?.bingo_filter_personalities || [],
         }}
         ownerDisplayName={initialDisplayName}
+        ownerRemoveFreeSpace={hunt?.bingo_remove_free_space ?? false}
       />
       <HuntStatisticsModal
         open={huntStatsModalOpen}
@@ -1009,11 +1011,12 @@ export default function HuntPageWrapper({
         bingoCardSize={bingoCardSize}
         bingoFilterSpecies={hunt?.bingo_filter_species || []}
         bingoFilterPersonalities={hunt?.bingo_filter_personalities || []}
+        bingoRemoveFreeSpace={hunt?.bingo_remove_free_space ?? false}
         villagers={villagers}
         targetVillagers={targetVillagers}
         islandVillagers={hunt?.island_villagers || []}
         hotelTourists={hunt?.hotel_tourists || []}
-        onSave={async (enabled, size, filters) => {
+        onSave={async (enabled, size, filters, removeFreeSpace) => {
           setIsBingoEnabled(enabled);
           setBingoCardSize(size);
           try {
@@ -1026,6 +1029,7 @@ export default function HuntPageWrapper({
                 bingo_card_size: size,
                 bingo_filter_species: filters.species,
                 bingo_filter_personalities: filters.personalities,
+                bingo_remove_free_space: removeFreeSpace,
               }),
             });
             if (!res.ok) {
