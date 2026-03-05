@@ -21,7 +21,7 @@ export default async function HuntDetailPage(props: PageProps) {
   // Fetch hunt by hunt_id
   const { data: hunt, error: huntError } = await supabase
     .from('hunts')
-    .select('hunt_id, hunt_name, target_villager_id, twitch_id, hunt_status')
+    .select('hunt_id, hunt_name, target_villager_id, island_villagers, twitch_id, hunt_status')
     .eq('hunt_id', hunt_id)
     .maybeSingle();
 
@@ -62,6 +62,7 @@ export default async function HuntDetailPage(props: PageProps) {
         isOwner={isOwner || false}
         isAuthenticated={!!session}
         username={username}
+        islandVillagerIds={hunt.island_villagers ?? []}
       />
     </Container>
   );
