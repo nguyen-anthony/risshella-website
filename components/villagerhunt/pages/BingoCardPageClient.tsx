@@ -134,7 +134,8 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
       size: bingoCard.cardData.size,
       title: `${username} - ${hunt.hunt_name}`,
     });
-    
+  };
+
   const handleResetToOwnerFilters = () => {
     setFilters({ species: [...ownerSpecies], personalities: [...ownerPersonalities] });
   };
