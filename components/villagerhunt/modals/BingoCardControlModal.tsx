@@ -30,11 +30,12 @@ type Props = {
   bingoCardSize: number;
   bingoFilterSpecies?: string[];
   bingoFilterPersonalities?: string[];
+  bingoRemoveFreeSpace?: boolean;
   villagers?: Villager[];
   targetVillagers?: { villager_id: number }[];
   islandVillagers?: number[];
   hotelTourists?: number[];
-  onSave: (isEnabled: boolean, size: number, filters: BingoFilters) => void;
+  onSave: (isEnabled: boolean, size: number, filters: BingoFilters, removeFreeSpace: boolean) => void;
 };
 
 const ITEM_HEIGHT = 48;
@@ -55,6 +56,7 @@ export default function BingoCardControlModal({
   bingoCardSize,
   bingoFilterSpecies = [],
   bingoFilterPersonalities = [],
+  bingoRemoveFreeSpace = false,
   villagers = [],
   targetVillagers = [],
   islandVillagers = [],
@@ -65,6 +67,7 @@ export default function BingoCardControlModal({
   const [size, setSize] = React.useState(bingoCardSize);
   const [filterSpecies, setFilterSpecies] = React.useState<string[]>(bingoFilterSpecies ?? []);
   const [filterPersonalities, setFilterPersonalities] = React.useState<string[]>(bingoFilterPersonalities ?? []);
+  const [removeFreeSpace, setRemoveFreeSpace] = React.useState(bingoRemoveFreeSpace ?? false);
 
   React.useEffect(() => {
     if (open) {
@@ -72,8 +75,9 @@ export default function BingoCardControlModal({
       setSize(bingoCardSize);
       setFilterSpecies(bingoFilterSpecies ?? []);
       setFilterPersonalities(bingoFilterPersonalities ?? []);
+      setRemoveFreeSpace(bingoRemoveFreeSpace ?? false);
     }
-  }, [open, isBingoEnabled, bingoCardSize, bingoFilterSpecies, bingoFilterPersonalities]);
+  }, [open, isBingoEnabled, bingoCardSize, bingoFilterSpecies, bingoFilterPersonalities, bingoRemoveFreeSpace]);
 
   const handleSpeciesChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
@@ -86,7 +90,7 @@ export default function BingoCardControlModal({
   };
 
   const handleSave = () => {
-    onSave(enabled, size, { species: filterSpecies, personalities: filterPersonalities });
+    onSave(enabled, size, { species: filterSpecies, personalities: filterPersonalities }, removeFreeSpace);
     onClose();
   };
 
@@ -104,7 +108,7 @@ export default function BingoCardControlModal({
   }, [enabled, filterSpecies, filterPersonalities, targetVillagers, islandVillagers, hotelTourists, villagers, hasActiveFilters]);
 
   const totalSquares = size * size;
-  const freeSpaces = size === 3 || size === 5 ? 1 : 0;
+  const freeSpaces = removeFreeSpace ? 0 : (size === 3 || size === 5 ? 1 : 0);
   const requiredCount = totalSquares - freeSpaces;
   const hasEnoughVillagers = availableCount >= requiredCount;
 
@@ -135,6 +139,19 @@ export default function BingoCardControlModal({
               <MenuItem value={5}>5x5</MenuItem>
             </Select>
           </FormControl>
+
+          <Divider />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={removeFreeSpace}
+                onChange={(e) => setRemoveFreeSpace(e.target.checked)}
+                disabled={!enabled}
+              />
+            }
+            label="Remove free space"
+          />
 
           <Divider />
 

@@ -1,6 +1,6 @@
 "use client";
 import * as React from 'react';
-import { Box, Button, Container, Typography, Alert, CircularProgress, ToggleButtonGroup, ToggleButton, Collapse, Paper } from '@mui/material';
+import { Box, Button, Container, Typography, Alert, CircularProgress, ToggleButtonGroup, ToggleButton, Collapse, Paper, FormControlLabel, Switch } from '@mui/material';
 import Link from 'next/link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -32,6 +32,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
     species: hunt?.bingo_filter_species || [],
     personalities: hunt?.bingo_filter_personalities || [],
   }));
+  const [removeFreeSpace, setRemoveFreeSpace] = React.useState(() => hunt?.bingo_remove_free_space ?? false);
   const [showFilters, setShowFilters] = React.useState(false);
   const [creationMode, setCreationMode] = React.useState<'generate' | 'custom'>('generate');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -45,7 +46,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
   // Calculate required villagers count
   const bingoCardSize = hunt?.bingo_card_size || 5;
   const totalSquares = bingoCardSize * bingoCardSize;
-  const freeSpaces = bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0;
+  const freeSpaces = removeFreeSpace ? 0 : (bingoCardSize === 3 || bingoCardSize === 5 ? 1 : 0);
   const requiredCount = totalSquares - freeSpaces;
 
   // Count available villagers matching current filters
@@ -93,6 +94,9 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
     filters.personalities.every(p => ownerPersonalities.includes(p))
   );
 
+  const ownerRemoveFreeSpace = hunt?.bingo_remove_free_space ?? false;
+  const isUsingOwnerRemoveFreeSpace = removeFreeSpace === ownerRemoveFreeSpace;
+
   const handleGenerate = () => {
     setGeneratingBingo(true);
     try {
@@ -103,8 +107,9 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
         villagers,
         bingoCardSize,
         filters: hasFilters ? filters : undefined,
+        removeFreeSpace,
       });
-      bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
+      bingoCard.generateCard(villagerIds, hunt.bingo_card_size, removeFreeSpace);
     } catch (error) {
       console.error('Failed to generate bingo card:', error);
       alert(error instanceof Error ? error.message : 'Failed to generate bingo card');
@@ -114,7 +119,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
   };
 
   const handleGenerateCustom = (villagerIds: number[]) => {
-    bingoCard.generateCard(villagerIds, hunt.bingo_card_size);
+    bingoCard.generateCard(villagerIds, hunt.bingo_card_size, removeFreeSpace);
   };
 
   const handleClearFilters = () => {
@@ -138,6 +143,10 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
 
   const handleResetToOwnerFilters = () => {
     setFilters({ species: [...ownerSpecies], personalities: [...ownerPersonalities] });
+  };
+
+  const handleResetToOwnerRemoveFreeSpace = () => {
+    setRemoveFreeSpace(ownerRemoveFreeSpace);
   };
 
   // Handle backup/download
@@ -185,6 +194,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
           villagerIds: backup.villagerIds,
           markedSquares: backup.markedSquares,
           size: backup.size,
+          removeFreeSpace: backup.removeFreeSpace ?? false,
           generatedAt: backup.generatedAt || Date.now(),
         });
 
@@ -241,6 +251,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
               markedSquares={bingoCard.cardData.markedSquares}
               size={bingoCard.cardData.size}
               onSquareClick={bingoCard.toggleSquare}
+              removeFreeSpace={bingoCard.cardData.removeFreeSpace}
             />
           </Box>
 
@@ -299,6 +310,40 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
                 )}
               </Box>
             </Collapse>
+
+            {/* Remove free space banner + toggle */}
+            {ownerRemoveFreeSpace && (
+              <Box sx={{ mb: 2 }}>
+                {isUsingOwnerRemoveFreeSpace ? (
+                  <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
+                    Free space removal set by <strong>{displayName}</strong> is pre-applied.
+                  </Alert>
+                ) : (
+                  <Alert
+                    severity="warning"
+                    action={
+                      <Button size="small" onClick={handleResetToOwnerRemoveFreeSpace} sx={{ whiteSpace: 'nowrap' }}>
+                        Reset
+                      </Button>
+                    }
+                    sx={{ fontSize: '0.85rem' }}
+                  >
+                    You&apos;ve overridden <strong>{displayName}</strong>&apos;s free space setting.
+                  </Alert>
+                )}
+              </Box>
+            )}
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={removeFreeSpace}
+                  onChange={(e) => setRemoveFreeSpace(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={<Typography variant="body2">Remove free space</Typography>}
+              sx={{ mb: 2 }}
+            />
 
             <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
               <Button
@@ -412,6 +457,39 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
                   </Box>
                 )}
 
+                {/* Remove free space notice + toggle */}
+                {ownerRemoveFreeSpace && (
+                  <Box sx={{ mb: 2 }}>
+                    {isUsingOwnerRemoveFreeSpace ? (
+                      <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
+                        Free space removal applied by <strong>{displayName}</strong>.
+                      </Alert>
+                    ) : (
+                      <Alert
+                        severity="warning"
+                        action={
+                          <Button size="small" onClick={handleResetToOwnerRemoveFreeSpace} sx={{ whiteSpace: 'nowrap' }}>
+                            Reset
+                          </Button>
+                        }
+                        sx={{ fontSize: '0.85rem' }}
+                      >
+                        You&apos;ve overridden <strong>{displayName}</strong>&apos;s free space setting.
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={removeFreeSpace}
+                      onChange={(e) => setRemoveFreeSpace(e.target.checked)}
+                    />
+                  }
+                  label="Remove free space"
+                  sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}
+                />
+
                 <Button
                   variant="text"
                   startIcon={<FilterListIcon />}
@@ -482,6 +560,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
                   bingoCardSize={hunt.bingo_card_size}
                   onSave={handleGenerateCustom}
                   onCancel={() => setCreationMode('generate')}
+                  removeFreeSpace={removeFreeSpace}
                 />
               </Box>
             )}

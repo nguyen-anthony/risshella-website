@@ -12,6 +12,7 @@ type Props = {
   size: number;
   onSquareClick: (index: number) => void;
   readonly?: boolean;
+  removeFreeSpace?: boolean;
 };
 
 export default function InteractiveBingoCard({
@@ -21,6 +22,7 @@ export default function InteractiveBingoCard({
   size,
   onSquareClick,
   readonly = false,
+  removeFreeSpace = false,
 }: Props) {
   // Create a map for quick villager lookup
   const villagerMap = React.useMemo(() => {
@@ -30,7 +32,7 @@ export default function InteractiveBingoCard({
   }, [villagers]);
 
   // Determine if there's a free space (center square for 3x3 and 5x5)
-  const hasFreeSpace = size === 3 || size === 5;
+  const hasFreeSpace = !removeFreeSpace && (size === 3 || size === 5);
   const freeSpaceIndex = hasFreeSpace ? Math.floor((size * size) / 2) : -1;
 
   return (

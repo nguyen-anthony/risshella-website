@@ -6,6 +6,7 @@ export interface BingoCardData {
   villagerIds: number[];
   markedSquares: boolean[];
   size: number;
+  removeFreeSpace: boolean;
   generatedAt: number;
 }
 
@@ -41,12 +42,13 @@ export function useBingoCard(huntId: string) {
    * Generate a new bingo card with the provided villager IDs
    */
   const generateCard = useCallback(
-    (villagerIds: number[], size: number) => {
+    (villagerIds: number[], size: number, removeFreeSpace = false) => {
       const totalSquares = size * size;
       setCardData({
         villagerIds,
         markedSquares: new Array(totalSquares).fill(false),
         size,
+        removeFreeSpace,
         generatedAt: Date.now(),
       });
     },
