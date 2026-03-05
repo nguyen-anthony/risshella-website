@@ -22,6 +22,7 @@ import BuildIcon from '@mui/icons-material/Build';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ImageIcon from '@mui/icons-material/Image';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ import InteractiveBingoCard from '../displays/InteractiveBingoCard';
 import BingoFilters from '../inputs/BingoFilters';
 import CustomBingoCardBuilder from '../inputs/CustomBingoCardBuilder';
 import { countMatchingVillagers, type BingoFilters as BingoFiltersType } from '@/utils/bingoCardGenerator';
+import { downloadBingoCardImage } from '@/utils/villagerhunt/downloadBingoCardImage';
 import type { Villager } from '@/types/villagerhunt';
 import type { BingoCardData } from '../hooks/useBingoCard';
 
@@ -102,6 +104,18 @@ export default function BingoCardDrawer({
       setShowControls(false);
     }
   }, [cardData, hasTallScreen]);
+
+  // Handle image download
+  const handleDownloadImage = async () => {
+    if (!cardData) return;
+    await downloadBingoCardImage({
+      villagers,
+      villagerIds: cardData.villagerIds,
+      markedSquares: cardData.markedSquares,
+      size: cardData.size,
+      title: `${username} - ${huntName}`,
+    });
+  };
 
   // Handle backup/download
   const handleDownloadBackup = () => {
@@ -397,6 +411,18 @@ export default function BingoCardDrawer({
                   </Box>
 
                   {/* Backup/Restore Section */}
+                  <Button
+                    variant="outlined"
+                    startIcon={<ImageIcon />}
+                    onClick={handleDownloadImage}
+                    disabled={loading}
+                    fullWidth
+                    size="small"
+                    sx={{ mb: { xs: 1, sm: 2 } }}
+                  >
+                    Download as Image
+                  </Button>
+
                   <Divider sx={{ mb: { xs: 1, sm: 2 } }}>
                     <Typography variant="caption" color="text.secondary">
                       Backup & Restore

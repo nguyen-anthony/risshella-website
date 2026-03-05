@@ -8,12 +8,14 @@ import BuildIcon from '@mui/icons-material/Build';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
+import ImageIcon from '@mui/icons-material/Image';
 import type { Hunt } from '@/types/villagerhunt';
 import { useVillagers, useBingoCard } from '@/components/villagerhunt/hooks';
 import InteractiveBingoCard from '@/components/villagerhunt/displays/InteractiveBingoCard';
 import BingoFilters from '@/components/villagerhunt/inputs/BingoFilters';
 import CustomBingoCardBuilder from '@/components/villagerhunt/inputs/CustomBingoCardBuilder';
 import { selectBingoVillagers, countMatchingVillagers, type BingoFilters as BingoFiltersType } from '@/utils/bingoCardGenerator';
+import { downloadBingoCardImage } from '@/utils/villagerhunt/downloadBingoCardImage';
 
 type Props = {
   hunt: Hunt | null;
@@ -119,6 +121,18 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
     setFilters({
       species: [],
       personalities: [],
+    });
+  };
+
+  // Handle image download
+  const handleDownloadImage = async () => {
+    if (!bingoCard.cardData) return;
+    await downloadBingoCardImage({
+      villagers: allVillagers,
+      villagerIds: bingoCard.cardData.villagerIds,
+      markedSquares: bingoCard.cardData.markedSquares,
+      size: bingoCard.cardData.size,
+      title: `${username} - ${hunt.hunt_name}`,
     });
   };
 
@@ -305,6 +319,19 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
                 Clear Card
               </Button>
             </Box>
+
+            {/* Download as Image */}
+            <Button
+              variant="outlined"
+              startIcon={<ImageIcon />}
+              onClick={handleDownloadImage}
+              disabled={generatingBingo}
+              fullWidth
+              size="small"
+              sx={{ mb: 2 }}
+            >
+              Download as Image
+            </Button>
 
             {/* Backup/Restore Section */}
             <Box sx={{ display: 'flex', gap: 2 }}>
