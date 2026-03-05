@@ -117,7 +117,7 @@ export default function ChangelogNotification() {
           >
             changelog
           </Link>
-          !
+          ! Also, enjoy the Pokopia release!
         </Typography>
       </Box>
     </Box>
