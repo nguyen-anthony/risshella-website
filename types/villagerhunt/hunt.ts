@@ -27,6 +27,8 @@ export interface HuntFull extends HuntWithTimestamps {
   hotel_tourists: number[];
   is_bingo_enabled: boolean;
   bingo_card_size: number;
+  bingo_filter_species: string[];
+  bingo_filter_personalities: string[];
   is_public: boolean;
 }
 

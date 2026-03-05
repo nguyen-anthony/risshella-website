@@ -23,6 +23,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import OwnerHuntControls from '@/components/villagerhunt/controls/OwnerHuntControls';
 import EncountersTable from '@/components/villagerhunt/tables/EncountersTable';
 import AuthLink from '@/components/villagerhunt/controls/AuthLink';
+import ExportHuntButton from '@/components/villagerhunt/controls/ExportHuntButton';
 import { selectBingoVillagers, type BingoFilters } from '@/utils/bingoCardGenerator';
 import UpdateIslandVillagersModal from '@/components/villagerhunt/modals/UpdateIslandVillagersModal';
 import UpdateTargetVillagersModal from '@/components/villagerhunt/modals/UpdateTargetVillagersModal';
@@ -564,6 +565,15 @@ export default function HuntPageWrapper({
               Hunt Statistics
             </Button>
           )}
+          {hunt && (initialIsOwner || isModerator || isTempMod) && (
+            <ExportHuntButton
+              huntId={hunt.hunt_id}
+              huntName={hunt.hunt_name}
+              targetVillagerIds={hunt.target_villager_id}
+              islandVillagerIds={hunt.island_villagers ?? []}
+              villagers={allVillagers}
+            />
+          )}
         </Box>
       </Stack>
 
@@ -922,6 +932,11 @@ export default function HuntPageWrapper({
         username={initialUsername}
         huntName={hunt?.hunt_name || 'unknown'}
         onRestoreCard={bingoCard.restoreCard}
+        ownerFilters={{
+          species: hunt?.bingo_filter_species || [],
+          personalities: hunt?.bingo_filter_personalities || [],
+        }}
+        ownerDisplayName={initialDisplayName}
       />
       <HuntStatisticsModal
         open={huntStatsModalOpen}
@@ -992,14 +1007,26 @@ export default function HuntPageWrapper({
         onClose={() => setBingoSettingsModalOpen(false)}
         isBingoEnabled={isBingoEnabled}
         bingoCardSize={bingoCardSize}
-        onSave={async (enabled, size) => {
+        bingoFilterSpecies={hunt?.bingo_filter_species || []}
+        bingoFilterPersonalities={hunt?.bingo_filter_personalities || []}
+        villagers={villagers}
+        targetVillagers={targetVillagers}
+        islandVillagers={hunt?.island_villagers || []}
+        hotelTourists={hunt?.hotel_tourists || []}
+        onSave={async (enabled, size, filters) => {
           setIsBingoEnabled(enabled);
           setBingoCardSize(size);
           try {
             const res = await fetch('/api/hunts/update', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ hunt_id: hunt?.hunt_id, is_bingo_enabled: enabled, bingo_card_size: size }),
+              body: JSON.stringify({
+                hunt_id: hunt?.hunt_id,
+                is_bingo_enabled: enabled,
+                bingo_card_size: size,
+                bingo_filter_species: filters.species,
+                bingo_filter_personalities: filters.personalities,
+              }),
             });
             if (!res.ok) {
               throw new Error('Failed to update');
