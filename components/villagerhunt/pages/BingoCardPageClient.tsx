@@ -21,9 +21,11 @@ type Props = {
   hunt: Hunt | null;
   username: string;
   displayName: string;
+  backUrl?: string;
 };
 
-export default function BingoCardPageClient({ hunt, username, displayName }: Props) {
+export default function BingoCardPageClient({ hunt, username, displayName, backUrl }: Props) {
+  const resolvedBackUrl = backUrl ?? `/villagerhunt/${username}`;
   const { villagers } = useVillagers();
   const { villagers: allVillagers } = useVillagers({ includeAmiiboOnly: true });
   const bingoCard = useBingoCard(hunt?.hunt_id || '');
@@ -67,7 +69,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
       <Container maxWidth="lg" sx={{ py: 6 }}>
         <Button
           component={Link}
-          href={`/villagerhunt/${username}`}
+          href={resolvedBackUrl}
           startIcon={<ArrowBackIcon />}
           sx={{ mb: 3 }}
         >
@@ -214,7 +216,7 @@ export default function BingoCardPageClient({ hunt, username, displayName }: Pro
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 2, sm: 3 } }}>
         <Button
           component={Link}
-          href={`/villagerhunt/${username}`}
+          href={resolvedBackUrl}
           startIcon={<ArrowBackIcon />}
           variant="outlined"
         >

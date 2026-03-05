@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Link from 'next/link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HistoryIcon from '@mui/icons-material/History';
@@ -54,6 +54,8 @@ export default function HuntHistoryDetailClient({
   const [huntStatsModalOpen, setHuntStatsModalOpen] = React.useState(false);
   const [bingoCardDrawerOpen, setBingoCardDrawerOpen] = React.useState(false);
   const [generatingBingo, setGeneratingBingo] = React.useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const bingoCardSize = hunt.bingo_card_size ?? 5;
   const hotelTourists = hunt.hotel_tourists ?? [];
@@ -117,7 +119,9 @@ export default function HuntHistoryDetailClient({
             variant="outlined"
             color="primary"
             startIcon={<CasinoIcon />}
-            onClick={() => setBingoCardDrawerOpen(!bingoCardDrawerOpen)}
+            onClick={() => isMobile ? null : setBingoCardDrawerOpen(!bingoCardDrawerOpen)}
+            component={isMobile ? Link : 'button'}
+            href={isMobile ? `/villagerhunt/${encodeURIComponent(username)}/bingocard/${hunt.hunt_id}` : undefined}
           >
             Bingo Card
           </Button>
@@ -173,6 +177,7 @@ export default function HuntHistoryDetailClient({
         ownerFilters={ownerFilters}
         ownerDisplayName={displayName}
         ownerRemoveFreeSpace={hunt.bingo_remove_free_space ?? false}
+        huntId={hunt.hunt_id}
       />
     </Stack>
   );
