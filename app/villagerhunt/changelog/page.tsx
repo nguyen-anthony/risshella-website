@@ -145,6 +145,97 @@ export default function ChangelogPage() {
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5" fontWeight="semibold">
+              All v0.15.x Updates
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="h5" fontWeight="semibold">
+              March 5, 2026 - v0.15.0
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Enhancements
+            </Typography>
+            <ListItem>
+              <ListItemText primary="Downloadable hunt data!" 
+                secondary={`You can now download your hunt data for each hunt, including your completed hunts in your history!
+                  This downloads as a CSV file which you should be able to view in Excel, Google Sheets, etc. 
+                  There's no easy way to make it uniform for everyone's needs, so you will have to transform it yourself however you want in your own spreadsheets.
+                  I will NOT be adding a mass download option for all hunts, so you will need to go through each hunt and download them individually.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="Downloadable bingo card images!" 
+                secondary={`I've gotten a lot of great feedback regarding the interactive bingo card and I thank you all for that.
+                  I've added an option to download your bingo card as an image in case you want to do manually marking in paint, photoshop, or whatever.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="Creator-Controlled Bingo Card Default settings" 
+                secondary={`Creators can now control the bingo card generation even more!
+                  Say you want to host a bingo with only certain villager species or personalities!
+                  Frog only bingo or something like that!
+                  This also helps for villager hunts on your first few islands that are restricted to a few personalities.
+                  Viewers can override your filter settings if they want to do their own bingo without abiding to your settings for funsies.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="Remove Free Space option" 
+                secondary={`In addition to the filters mentioned above, you can now remove the free space if you want to.
+                  Creators can control this as a default setting but viewers can control it themselves too.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="Play Bingo on past hunts!" 
+                secondary={`For all you VOD watchers, I've enabled bingo cards on completed hunts!
+                  So you can now generate bingo cards on completed hunts as if you're watching it live and play along with the VOD
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5" fontWeight="semibold">
               All v0.14.x Updates
             </Typography>
           </AccordionSummary>
