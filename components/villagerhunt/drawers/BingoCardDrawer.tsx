@@ -56,6 +56,8 @@ type Props = {
   ownerFilters?: BingoFiltersType;
   ownerDisplayName?: string;
   ownerRemoveFreeSpace?: boolean;
+  /** When set, the Full Screen Mode button navigates to /bingocard/{huntId} instead of /bingocard */
+  huntId?: string;
 };
 
 export default function BingoCardDrawer({
@@ -78,6 +80,7 @@ export default function BingoCardDrawer({
   ownerFilters,
   ownerDisplayName,
   ownerRemoveFreeSpace,
+  huntId,
 }: Props) {
   const [filters, setFilters] = React.useState<BingoFiltersType>({
     species: [],
@@ -296,7 +299,7 @@ export default function BingoCardDrawer({
       {cardData && !loading && (
         <Button
           component={Link}
-          href={`/villagerhunt/${username}/bingocard`}
+          href={huntId ? `/villagerhunt/${username}/bingocard/${huntId}` : `/villagerhunt/${username}/bingocard`}
           variant="outlined"
           startIcon={<OpenInNewIcon />}
           fullWidth

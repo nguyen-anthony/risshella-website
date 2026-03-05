@@ -21,7 +21,7 @@ export default async function HuntDetailPage(props: PageProps) {
   // Fetch hunt by hunt_id
   const { data: hunt, error: huntError } = await supabase
     .from('hunts')
-    .select('hunt_id, hunt_name, target_villager_id, island_villagers, twitch_id, hunt_status')
+    .select('hunt_id, hunt_name, target_villager_id, island_villagers, hotel_tourists, twitch_id, hunt_status, bingo_card_size, bingo_filter_species, bingo_filter_personalities, bingo_remove_free_space, is_bingo_enabled')
     .eq('hunt_id', hunt_id)
     .maybeSingle();
 
