@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient as createSupabaseMiddlewareClient } from '@/utils/supabase/middleware';
 import { decodeSession, encodeSession, type Session } from '@/app/lib/session';
-import { refreshAccessToken } from '@/app/lib/twitch';
+import { refreshAccessToken, getTwitchUser } from '@/app/lib/twitch';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 const COOKIE_NAME = 'vh_session';
 
@@ -49,6 +50,28 @@ async function refreshSessionIfNeeded(request: NextRequest, response: NextRespon
     });
 
     console.log('Token refreshed successfully in middleware');
+
+    // Best-effort avatar sync — runs after the response is sent
+    after(async () => {
+      try {
+        const user = await getTwitchUser(newToken.access_token);
+        if (!user) return;
+        const supabase = createSupabaseClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        );
+        await supabase
+          .from('creators')
+          .update({
+            avatar_url: user.profile_image_url,
+            display_name: user.display_name,
+            twitch_username: user.login,
+          })
+          .eq('twitch_id', parseInt(session.userId));
+      } catch {
+        // Ignore — best-effort only
+      }
+    });
   } catch (error) {
     console.error('Error refreshing token in middleware:', error);
   }
