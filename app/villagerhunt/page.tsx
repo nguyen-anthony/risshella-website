@@ -32,12 +32,34 @@ export default async function VillagerHunt() {
 
   // Wrap in try-catch to handle connection errors (like 522 when Supabase is down)
   try {
-    // Get all public creators
-    const { data: publicCreators, error: publicError } = await supabase
-      .from('creators')
-      .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
-      .eq('is_public', true)
-      .order('created_at', { ascending: true });
+    // Get all public creators (paginate to bypass the 1000-row PostgREST default limit)
+    let allPublicCreators: Creator[] = [];
+    let creatorsPage = 0;
+    const creatorsPageSize = 1000;
+    let creatorsHasMore = true;
+    let publicError = null;
+
+    while (creatorsHasMore) {
+      const { data: publicCreatorsPage, error: pageError } = await supabase
+        .from('creators')
+        .select('twitch_id, twitch_username, display_name, avatar_url, is_public')
+        .eq('is_public', true)
+        .order('created_at', { ascending: true })
+        .range(creatorsPage * creatorsPageSize, (creatorsPage + 1) * creatorsPageSize - 1);
+
+      if (pageError) {
+        publicError = pageError;
+        break;
+      }
+
+      if (publicCreatorsPage && publicCreatorsPage.length > 0) {
+        allPublicCreators = [...allPublicCreators, ...publicCreatorsPage as Creator[]];
+        creatorsHasMore = publicCreatorsPage.length === creatorsPageSize;
+        creatorsPage++;
+      } else {
+        creatorsHasMore = false;
+      }
+    }
 
     if (publicError) {
       console.error('Error fetching public creators:', publicError);
@@ -49,7 +71,7 @@ export default async function VillagerHunt() {
         isCriticalError = true;
       }
     } else {
-      creators = (publicCreators ?? []) as Creator[];
+      creators = allPublicCreators;
     }
 
     // If user is authenticated, also fetch their creator record (even if private)
@@ -119,7 +141,7 @@ export default async function VillagerHunt() {
   const activeHunts = allActiveHunts;
 
   // Get set of twitch IDs with active hunts
-  const activeHuntTwitchIds = new Set((activeHunts ?? []).map((hunt: ActiveHunt) => hunt.twitch_id));
+  const activeHuntTwitchIds = new Set((activeHunts ?? []).map((hunt: ActiveHunt) => Number(hunt.twitch_id)));
   const creatorsWithActiveHunts = creators.filter(creator => activeHuntTwitchIds.has(creator.twitch_id));
 
   // Check which creators are live streaming Animal Crossing: New Horizons
