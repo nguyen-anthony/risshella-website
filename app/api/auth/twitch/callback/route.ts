@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForToken, getTwitchUser } from '@/app/lib/twitch';
 import { setSessionCookie } from '@/app/lib/session';
+import { cookies } from 'next/headers';
+import { createServiceClient } from '@/utils/supabase/server';
 
 const STATE_COOKIE = 'vh_oauth_state';
 
@@ -42,6 +44,22 @@ export async function GET(req: NextRequest) {
     // Create a session with proper expiry and refresh token
     const exp = Math.floor(Date.now() / 1000) + token.expires_in;
     await setSessionCookie({ userId: user.id, login: user.login, accessToken: token.access_token, refreshToken: token.refresh_token, exp });
+
+    // Best-effort avatar refresh for existing creators
+    try {
+      const cookieStore = await cookies();
+      const supabase = createServiceClient(cookieStore);
+      await supabase
+        .from('creators')
+        .update({
+          avatar_url: user.profile_image_url,
+          display_name: user.display_name,
+          twitch_username: user.login,
+        })
+        .eq('twitch_id', parseInt(user.id));
+    } catch {
+      // Ignore — don't block the redirect on a failed profile sync
+    }
 
     const absoluteReturn = /^https?:\/\//i.test(returnPath)
       ? returnPath

@@ -91,7 +91,7 @@ export async function getTwitchUser(accessToken: string) {
   }
   const data = await res.json();
   return (data?.data?.[0] ?? null) as
-    | { id: string; login: string; display_name: string; email?: string }
+    | { id: string; login: string; display_name: string; profile_image_url: string; email?: string }
     | null;
 }
 
