@@ -150,6 +150,39 @@ export default function ChangelogPage() {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="h5" fontWeight="semibold">
+              March 5, 2026 - v0.15.1
+            </Typography>
+            <Typography variant="h6" gutterBottom fontWeight="semibold">
+              Bug Fixes
+            </Typography>
+            <ListItem>
+              <ListItemText primary="Home Page Grid Not Showing Everyone" 
+                secondary={`There are so many people that use this site now that I sometimes get limited on how many people show up from the database. This has been fixed now.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="Twitch User Updates" 
+                secondary={`If you changed your Twitch username or avatar/profile image recently, this wasn't being reflected on the site. This should be fixed now.
+                  `}
+
+                  slotProps={{
+                    secondary: {
+                      sx: { whiteSpace: 'pre-line' },
+                      component: 'p'           // optional: control the rendered element
+                    }
+                  }}
+              />
+            </ListItem>
+            <Divider />
+            <Typography variant="h5" fontWeight="semibold">
               March 5, 2026 - v0.15.0
             </Typography>
             <Typography variant="h6" gutterBottom fontWeight="semibold">
